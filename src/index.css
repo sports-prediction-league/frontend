@@ -1,11 +1,106 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* .line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+} */
+
+@layer base {
+  :root {
+    --background: 165 100% 7%;
+    --foreground: 138, 52%, 95%, 1;
+
+    --card: 165 100% 7%;
+    --card-foreground: 138, 52%, 95%, 1;
+
+    --popover: 165 100% 7%;
+    --popover-foreground: 138, 52%, 95%, 1;
+
+    --primary: 165, 100%, 7%;
+    --primary-foreground: 142, 69%, 58%, 1;
+
+    --secondary: 166, 29%, 28%, 0.6;
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 166, 29%, 28%, 0.6;
+    --muted-foreground: 166, 100%, 10%, 0.75;
+
+    --accent: 166, 29%, 28%, 0.6;
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 166, 29%, 28%, 0.6;
+    --input: 166, 29%, 28%, 0.6;
+    --ring: 138, 52%, 95%, 1;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  h1 {
+    @apply text-6xl md:text-7xl lg:text-[120px] leading-[60px] md:leading-[72px] lg:leading-[120px];
+  }
+
+  h2 {
+    @apply text-[42px] md:text-5xl lg:text-[52px] leading-[46px] lg:leading-[56px];
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl lg:text-[44px];
+  }
+
+  h4 {
+    @apply text-xl md:text-[28px];
+  }
+
+  h5 {
+    @apply text-lg md:text-xl;
+  }
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button {
+  font-family: "Anton", sans-serif;
+}
+
+.input-error {
+  display: none;
+}
+
+input:invalid~.input-error {
+  display: block;
 }
