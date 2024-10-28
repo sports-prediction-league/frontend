@@ -10,8 +10,8 @@ const useConnect = () => {
   const getArgentTMA = () => {
     const argentTMA = ArgentTMA.init({
       environment: "sepolia", // "sepolia" | "mainnet" (not supperted yet)
-      appName: "TestingSPL", // Your Telegram app name
-      appTelegramUrl: "https://t.me/TestingSPLBot/TestSPL", // Your Telegram app URL
+      appName: "SPL", // Your Telegram app name
+      appTelegramUrl: "https://t.me/SPLBot/SPL", // Your Telegram app URL
       sessionParams: {
         allowedMethods: [
           // List of contracts/methods allowed to be called by the session key

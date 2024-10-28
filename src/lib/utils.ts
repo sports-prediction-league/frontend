@@ -152,5 +152,4 @@ export const feltToString = (felt: any) =>
     // Join to a string
     .join("");
 
-export const CONTRACT_ADDRESS =
-  "0x48c4e3a53443511013f9ce6d697f7b59509d91f336f1e5c46db2afa817d8cfa";
+export const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS 
