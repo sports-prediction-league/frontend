@@ -57,7 +57,7 @@ const RegisterModal = ({
               name="username"
               type="text"
               onChange={(e) => {
-                if (!username) {
+                if (!t_username) {
                   setUsername(e.target.value.trim());
                 }
               }}
