@@ -20,9 +20,8 @@ export default function Header() {
   const { getWalletProviderContract } = useContractInstance();
   const [isScrolled, setIsScrolled] = useState(false);
   const [open_popover, set_open_popover] = useState(false);
-  const { connected_address, profile, show_register_modal } = useAppSelector(
-    (state) => state.app
-  );
+  const { connected_address, profile, show_register_modal, is_mini_app } =
+    useAppSelector((state) => state.app);
   const { handleConnect, handleDisconnect } = useConnect();
   // Function to handle scroll events
   const handleScroll = () => {
@@ -49,7 +48,11 @@ export default function Header() {
       set_registering(true);
       const contract = getWalletProviderContract();
       await contract!.register_user(
-        Math.floor(10000000 + Math.random() * 90000000).toString(),
+        is_mini_app && profile?.id
+          ? cairo.felt(profile.id.toString().trim())
+          : cairo.felt(
+              Math.floor(10000000 + Math.random() * 90000000).toString()
+            ),
         cairo.felt(username.trim().toLowerCase())
       );
 

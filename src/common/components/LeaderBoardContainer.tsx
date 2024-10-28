@@ -87,7 +87,9 @@ export default function LeaderBoardContainer() {
           totalPoints: Number(element.total_score),
         });
       }
-      set_filter_result(structured_data);
+      set_filter_result(
+        structured_data.sort((a, b) => b.totalPoints - a.totalPoints)
+      );
 
       const response = await apiClient.get("/leaderboard_images");
       if (response.data.success) {

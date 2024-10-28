@@ -1,5 +1,5 @@
 import React from "react";
-import OTPInput from "react-otp-input";
+// import OTPInput from "react-otp-input";
 import { cn } from "src/lib/utils";
 
 const InputField = (props: {
@@ -34,27 +34,6 @@ const InputField = (props: {
       >
         {props.inputType === "otp" ? (
           <div />
-          <div className="mx-auto w-full flex items-center justify-center">
-            <OTPInput
-              value={props.value}
-              onChange={handleOTPChange}
-              numInputs={4}
-              renderSeparator={<span>-</span>}
-              renderInput={(inputProps: any) => (
-                <input
-                  name={props.name}
-                  {...inputProps}
-                  className={cn(
-                    "otp-input border rounded-md text-2xl h-14 min-w-14 mx-2 bg-[#003428] outline-none focus:border-[#A3E96C] transition-colors disabled:pointer-events-none disabled:cursor-not-allowed",
-                    {
-                      "border-[#EF4444]": props.error,
-                    }
-                  )}
-                  disabled={props.disabled}
-                />
-              )}
-            />
-          </div>
         ) : (
           <input
             disabled={props.disabled}
