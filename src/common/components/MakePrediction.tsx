@@ -221,6 +221,7 @@ export default function MakePrediction({
                       />
                       <span className="lg:w-4 lg:h-2 w-1 h-0.5 bg-white" />
                       <input
+                        type="tel"
                         disabled={
                           closed_prediction || match.predicted || predicting
                         }
