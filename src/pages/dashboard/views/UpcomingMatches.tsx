@@ -318,9 +318,13 @@ export default function UpcomingMatches() {
         <button
           disabled={predicting}
           onClick={handleBulkPredict}
-          className="bg-card text-white shadow shadow-white fixed bottom-10 right-10 rounded-full py-3 px-5"
+          className="!bg-primary-foreground text-black shadow-md shadow-white fixed bottom-10 right-10 rounded-full py-3 px-5"
         >
-          Apply
+          {predicting ? (
+            <TbLoader size={22} color="black" className="mr-1.5 animate-spin" />
+          ) : (
+            "Apply"
+          )}
         </button>
       ) : null}
       <div className="hidden md:flex items-center w-full gap-4">

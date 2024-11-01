@@ -21,6 +21,10 @@ const useConnect = () => {
           },
           {
             contract: CONTRACT_ADDRESS,
+            selector: "make_bulk_prediction",
+          },
+          {
+            contract: CONTRACT_ADDRESS,
             selector: "make_prediction",
           },
         ],
