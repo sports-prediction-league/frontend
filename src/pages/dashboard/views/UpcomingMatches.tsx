@@ -6,9 +6,13 @@ import {
 import { IoCaretDown } from "react-icons/io5";
 import { useState, useRef, useEffect } from "react";
 import MakePrediction from "src/common/components/MakePrediction";
-import { useAppSelector } from "src/state/store";
-import { MatchData } from "src/state/slices/appSlice";
-import { apiClient, groupMatchesByDate } from "src/lib/utils";
+import { useAppDispatch, useAppSelector } from "src/state/store";
+import {
+  MatchData,
+  setShowRegisterModal,
+  updatePredictionState,
+} from "src/state/slices/appSlice";
+import { apiClient, groupMatchesByDate, parse_error } from "src/lib/utils";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { TbLoader } from "react-icons/tb";
@@ -25,12 +29,26 @@ export default function UpcomingMatches() {
     matches,
     loading_state,
     connected_address,
+    is_registered,
   } = useAppSelector((state) => state.app);
+  const dispatch = useAppDispatch();
   const { getWalletProviderContract } = useContractInstance();
   const [activeRounds, setActiveRounds] = useState(current_round);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [predicting, setPredicting] = useState(false);
+  const [predictions, setPredictions] = useState<Record<string, any>>({});
+
+  const onChangePrediction = (match_id: string, value: any) => {
+    setPredictions({
+      ...predictions,
+      [match_id]: {
+        ...predictions[match_id],
+        ...value,
+      },
+    });
+  };
 
   const [roundsMatches, setRoundsMatches] = useState<MatchData[][]>([]);
 
@@ -195,8 +213,116 @@ export default function UpcomingMatches() {
     };
   }, []);
 
+  const handleBulkPredict = async () => {
+    try {
+      if (predicting) return;
+      if (!window.Wallet?.IsConnected) {
+        toast.error("Wallet not connected!");
+        return;
+      }
+      if (!is_registered) {
+        dispatch(setShowRegisterModal(true));
+        return;
+      }
+      const keys = Object.keys(predictions);
+      let construct = [];
+      let dispatch_data = [];
+      let stop = false;
+
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        if (predictions[key].home !== "" || predictions[key].away !== "") {
+          if (predictions[key].home === "" || predictions[key].away === "") {
+            toast.error("Enter scores for both teams");
+            stop = true;
+            break;
+          } else {
+            if (isNaN(Number(predictions[key].home?.trim()))) {
+              toast.error("Invalid fields");
+              stop = true;
+              break;
+            }
+            if (isNaN(Number(predictions[key].away?.trim()))) {
+              toast.error("Invalid fields");
+              stop = true;
+              break;
+            }
+            const prediction = `${predictions[key].home.trim()}:${predictions[
+              key
+            ].away.trim()}`;
+
+            dispatch_data.push({
+              matchId: key,
+              keyIndex: predictions[key].keyIndex,
+              prediction,
+            });
+            construct.push({
+              inputed: true,
+              match_id: cairo.felt(key),
+              home: cairo.uint256(Number(predictions[key].home.trim())),
+              away: cairo.uint256(Number(predictions[key].away.trim())),
+            });
+          }
+        }
+      }
+
+      if (!stop) {
+        setPredicting(true);
+        const contract = getWalletProviderContract();
+
+        if (contract) {
+          await contract.make_bulk_prediction(construct);
+
+          dispatch(updatePredictionState(dispatch_data));
+
+          if (activeRounds !== current_round) {
+            let new_data = roundsMatches;
+
+            for (let i = 0; i < dispatch_data.length; i++) {
+              const element = dispatch_data[i];
+
+              const new_indexed_data = roundsMatches[element.keyIndex].map(
+                (mp) => {
+                  if (mp.details.fixture.id.toString() === element.matchId) {
+                    return {
+                      ...mp,
+                      predicted: true,
+                      predictions: [{ prediction: element.prediction }],
+                    };
+                  }
+                  return mp;
+                }
+              );
+              new_data[element.keyIndex] = new_indexed_data;
+            }
+            setRoundsMatches(new_data);
+          }
+          setPredictions({});
+          toast.success("Prediction Successful!");
+        }
+
+        setPredicting(false);
+      }
+    } catch (error: any) {
+      toast.error(parse_error(error?.message));
+      setPredicting(false);
+      console.log(error);
+    }
+  };
+
   return (
     <div className="px-2 sm:px-4 lg:px-8 py-6 flex flex-col w-full gap-8">
+      {Object.values(predictions).filter(
+        (ft) => Boolean(ft.home) && Boolean(ft.away)
+      ).length ? (
+        <button
+          disabled={predicting}
+          onClick={handleBulkPredict}
+          className="bg-card text-white shadow shadow-white fixed bottom-10 right-10 rounded-full py-3 px-5"
+        >
+          Apply
+        </button>
+      ) : null}
       <div className="hidden md:flex items-center w-full gap-4">
         {isOverflowing ? (
           <Button
@@ -290,25 +416,9 @@ export default function UpcomingMatches() {
         (activeRounds === current_round ? matches : roundsMatches).map(
           (group, _key: number) => (
             <MakePrediction
+              predicting={predicting}
+              onChangePrediction={onChangePrediction}
               group={group}
-              onPredict={(matchId: string, prediction: string) => {
-                if (activeRounds !== current_round) {
-                  let new_data = roundsMatches;
-
-                  const new_indexed_data = roundsMatches[_key].map((mp) => {
-                    if (mp.details.fixture.id.toString() === matchId) {
-                      return {
-                        ...mp,
-                        predicted: true,
-                        predictions: [{ prediction }],
-                      };
-                    }
-                    return mp;
-                  });
-                  new_data[_key] = new_indexed_data;
-                  setRoundsMatches(new_data);
-                }
-              }}
               key={_key}
               keyIndex={_key}
             />

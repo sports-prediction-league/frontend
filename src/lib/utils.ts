@@ -152,4 +152,18 @@ export const feltToString = (felt: any) =>
     // Join to a string
     .join("");
 
+export function parse_error(error?: string): string {
+  if (!error) {
+    return "OOPPS! Something went wrong!";
+  }
+  const failureReasonMatch = error.match(/Failure reason: .*?\('([^']+)'\)/);
+
+  if (failureReasonMatch && failureReasonMatch[1]) {
+    const failureReason = failureReasonMatch[1];
+    return failureReason;
+  } else {
+    return error;
+  }
+}
+
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;

@@ -1,8 +1,8 @@
 import { SessionAccountInterface, ArgentTMA } from "@argent/tma-wallet";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import { WalletAccount } from "starknet";
-import { connect, disconnect } from "get-starknet"; // v4.0.0 min
+import { connect, disconnect } from "starknetkit";
 import { setConnectedAddress } from "src/state/slices/appSlice";
 import { CONTRACT_ADDRESS } from "./utils";
 
@@ -103,26 +103,24 @@ const useConnect = () => {
         // from the connect() method -- see above
         await argentTMA.requestConnection("custom_callback_data");
       } else {
-        const myFrontendProviderUrl =
-          "https://free-rpc.nethermind.io/sepolia-juno/v0_7";
+        const { wallet } = await connect();
 
-        // standard UI to select a wallet :
-        const selectedWalletSWO = await connect({
-          modalMode: "canAsk",
-          modalTheme: "system",
-        });
-        const myWalletAccount = new WalletAccount(
-          { nodeUrl: myFrontendProviderUrl },
-          selectedWalletSWO as any
-        );
+        if (wallet && wallet.isConnected) {
+          const myFrontendProviderUrl =
+            "https://free-rpc.nethermind.io/sepolia-juno/v0_7";
 
-        window.Wallet = {
-          Account: myWalletAccount as any,
-          IsConnected: true,
-        };
-        // Dispatch a custom event to notify about the change
-        const event = new Event("windowWalletClassChange");
-        window.dispatchEvent(event);
+          const myWalletAccount = new WalletAccount(
+            { nodeUrl: myFrontendProviderUrl },
+            wallet as any
+          );
+          window.Wallet = {
+            Account: myWalletAccount as any,
+            IsConnected: true,
+          };
+          // Dispatch a custom event to notify about the change
+          const event = new Event("windowWalletClassChange");
+          window.dispatchEvent(event);
+        }
       }
     } catch (error) {
       console.log(error);

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Assets from "src/assets";
 import MaxWrapper from "./MaxWrapper";
-import { cn } from "src/lib/utils";
+import { apiClient, cn, parse_error } from "src/lib/utils";
 import Button from "./Button";
 
 import useConnect from "src/lib/useConnect";
@@ -11,7 +11,11 @@ import { Popover } from "antd";
 import { cairo } from "starknet";
 import useContractInstance from "src/lib/useContractInstance";
 import toast from "react-hot-toast";
-import { setShowRegisterModal } from "src/state/slices/appSlice";
+import {
+  addLeaderboard,
+  setShowRegisterModal,
+  update_profile,
+} from "src/state/slices/appSlice";
 import RegisterModal from "./RegisterModal";
 
 export default function Header() {
@@ -47,20 +51,33 @@ export default function Header() {
       if (!username.trim()) return;
       set_registering(true);
       const contract = getWalletProviderContract();
+      const random = Math.floor(10000000 + Math.random() * 90000000).toString();
+
       await contract!.register_user(
         is_mini_app && profile?.id
           ? cairo.felt(profile.id.toString().trim())
-          : cairo.felt(
-              Math.floor(10000000 + Math.random() * 90000000).toString()
-            ),
-        cairo.felt(username.trim().toLowerCase())
+          : cairo.felt(random),
+        cairo.felt(username.trim().toLowerCase()),
+        {
+          // version: 3,
+          maxFee: 10 ** 15,
+        }
       );
 
+      dispatch(
+        addLeaderboard({
+          totalPoints: 0,
+          user: {
+            id: Number(random),
+            username: username,
+          },
+        })
+      );
       set_registering(false);
       dispatch(setShowRegisterModal(false));
       toast.success("Username set!");
     } catch (error: any) {
-      toast.error(error.message ?? "OOPS Something went wrong");
+      toast.error(parse_error(error?.message));
       set_registering(false);
     }
   };

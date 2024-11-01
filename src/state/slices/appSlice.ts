@@ -126,6 +126,15 @@ export const appSlice = createSlice({
       state.leaderboard = sorted;
     },
 
+    addLeaderboard: (state, action: PayloadAction<LeaderboardProp>) => {
+      state.leaderboard.push(action.payload);
+      state.profile = {
+        ...state.profile,
+        username: action.payload.user.username,
+        id: action.payload.user.id,
+      };
+    },
+
     bulkSetMatches: (state, action: PayloadAction<MatchData[][]>) => {
       state.matches = action.payload;
     },
@@ -207,23 +216,28 @@ export const appSlice = createSlice({
 
     updatePredictionState: (
       state,
-      action: PayloadAction<{
-        matchId: string;
-        keyIndex: number;
-        prediction: string;
-      }>
+      action: PayloadAction<
+        {
+          matchId: string;
+          keyIndex: number;
+          prediction: string;
+        }[]
+      >
     ) => {
-      const matchId = action.payload.matchId;
-      const keyIndex = action.payload.keyIndex;
-      const prediction = action.payload.prediction;
-      if (keyIndex < state.matches.length && state.matches[keyIndex].length) {
-        const newMatchesConstruct = state.matches[keyIndex].map((mp) => {
-          if (mp.details.fixture.id.toString() === matchId) {
-            return { ...mp, predicted: true, predictions: [{ prediction }] };
-          }
-          return mp;
-        });
-        state.matches[keyIndex] = newMatchesConstruct;
+      for (let i = 0; i < action.payload.length; i++) {
+        const element = action.payload[i];
+        const matchId = element.matchId;
+        const keyIndex = element.keyIndex;
+        const prediction = element.prediction;
+        if (keyIndex < state.matches.length && state.matches[keyIndex].length) {
+          const newMatchesConstruct = state.matches[keyIndex].map((mp) => {
+            if (mp.details.fixture.id.toString() === matchId) {
+              return { ...mp, predicted: true, predictions: [{ prediction }] };
+            }
+            return mp;
+          });
+          state.matches[keyIndex] = newMatchesConstruct;
+        }
       }
     },
 
@@ -250,6 +264,7 @@ export const {
   updateLeaderboardImages,
   setShowRegisterModal,
   setIsRegistered,
+  addLeaderboard,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

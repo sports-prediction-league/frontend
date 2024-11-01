@@ -1,72 +1,82 @@
 import Assets from "src/assets";
 import Button from "./Button";
-import { MatchData, updatePredictionState } from "src/state/slices/appSlice";
+import { MatchData } from "src/state/slices/appSlice";
 import {
   calculateScore,
   formatDateNative,
   formatTimeNative,
 } from "src/lib/utils";
 import { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
-import { useAppDispatch } from "src/state/store";
-import { TbLoader } from "react-icons/tb";
-import useContractInstance from "src/lib/useContractInstance";
-import { cairo } from "starknet";
 
 interface Props {
   group: MatchData[];
   keyIndex: number;
-  onPredict: (matchId: string, prediction: string) => void;
+  predicting: boolean;
+  onChangePrediction: (matchId: string, value: any) => void;
 }
-export default function MakePrediction({ group, keyIndex, onPredict }: Props) {
-  const dispatch = useAppDispatch();
-  const { getWalletProviderContract } = useContractInstance();
+export default function MakePrediction({
+  group,
+  keyIndex,
+  predicting,
+  onChangePrediction,
+}: Props) {
+  // const dispatch = useAppDispatch();
+  // const is_registered = useAppSelector((state) => state.app.is_registered);
+  // const { getWalletProviderContract } = useContractInstance();
   const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
-  const [predictions, setPredictions] = useState<Record<string, any>>({});
-  const [predicting, setPredicting] = useState<Record<string, boolean>>({});
+  // const [predictions, setPredictions] = useState<Record<string, any>>({});
+  // const [predicting, setPredicting] = useState<Record<string, boolean>>({});
 
-  const applyPrediction = async (matchId: string) => {
-    const home_value = predictions[matchId]?.home;
-    const away_value = predictions[matchId]?.away;
-    if (predicting[matchId]) return;
-    if (!window.Wallet?.IsConnected) return toast.error("Wallet not connected");
-    if (!home_value?.trim()) return toast.error("Invalid fields");
-    if (!away_value?.trim()) return toast.error("Invalid fields");
-    if (isNaN(Number(away_value?.trim()))) return toast.error("Invalid fields");
-    if (isNaN(Number(home_value?.trim()))) return toast.error("Invalid fields");
+  // const applyPrediction = async (matchId: string) => {
+  // if (!window.Wallet?.IsConnected) {
+  //   toast.error("Wallet not connected!");
+  //   return;
+  // }
+  // if (!is_registered) {
+  //   dispatch(setShowRegisterModal(true));
+  //   return;
+  // }
+  //   const home_value = predictions[matchId]?.home;
+  //   const away_value = predictions[matchId]?.away;
+  //   if (predicting[matchId]) return;
+  //   if (!window.Wallet?.IsConnected) return toast.error("Wallet not connected");
+  //   if (!home_value?.trim()) return toast.error("Invalid fields");
+  //   if (!away_value?.trim()) return toast.error("Invalid fields");
+  // if (isNaN(Number(away_value?.trim()))) return toast.error("Invalid fields");
+  // if (isNaN(Number(home_value?.trim()))) return toast.error("Invalid fields");
 
-    try {
-      setPredicting({
-        ...predicting,
-        [matchId]: true,
-      });
-      const prediction = `${home_value.trim()}:${away_value.trim()}`;
+  //   try {
+  //     setPredicting({
+  //       ...predicting,
+  //       [matchId]: true,
+  //     });
+  // const prediction = `${home_value.trim()}:${away_value.trim()}`;
 
-      const contract = getWalletProviderContract();
+  //     const contract = getWalletProviderContract();
 
-      if (contract) {
-        await contract.make_prediction(
-          cairo.felt(matchId.trim()),
-          cairo.uint256(Number(home_value.trim())),
-          cairo.uint256(Number(away_value.trim()))
-        );
-        dispatch(updatePredictionState({ matchId, keyIndex, prediction }));
-        onPredict(matchId, prediction);
-        toast.success("Prediction Successful!");
-      }
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ??
-          error?.message ??
-          "OOOPPPSS!! Something went wrong"
-      );
-    }
+  //     if (contract) {
+  //       await contract.make_prediction(
+  //         cairo.felt(matchId.trim()),
+  //         cairo.uint256(Number(home_value.trim())),
+  //         cairo.uint256(Number(away_value.trim()))
+  //       );
+  //       dispatch(updatePredictionState({ matchId, keyIndex, prediction }));
+  //       onPredict(matchId, prediction);
+  //       toast.success("Prediction Successful!");
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(
+  //       error?.response?.data?.message ??
+  //         error?.message ??
+  //         "OOOPPPSS!! Something went wrong"
+  //     );
+  //   }
 
-    setPredicting({
-      ...predicting,
-      [matchId]: false,
-    });
-  };
+  //   setPredicting({
+  //     ...predicting,
+  //     [matchId]: false,
+  //   });
+  // };
 
   const headerOffset = 200; // Adjust this value to match your header's height
 
@@ -190,15 +200,15 @@ export default function MakePrediction({ group, keyIndex, onPredict }: Props) {
                   <div className="mx-auto w-[100px] sm:w-auto flex-1 lg:w-[180px]">
                     <div className="flex items-center justify-between gap-2 ">
                       <input
-                        disabled={closed_prediction || match.predicted}
+                        type="tel"
+                        disabled={
+                          closed_prediction || match.predicted || predicting
+                        }
                         onChange={(e) => {
-                          setPredictions({
-                            ...predictions,
-                            [match.details.fixture.id]: {
-                              ...predictions[match.details.fixture.id],
-                              home: e.target.value.trim(),
-                            },
-                          });
+                          onChangePrediction(
+                            match.details.fixture.id.toString(),
+                            { home: e.target.value.trim(), keyIndex }
+                          );
                         }}
                         defaultValue={
                           match.predictions?.length
@@ -211,15 +221,14 @@ export default function MakePrediction({ group, keyIndex, onPredict }: Props) {
                       />
                       <span className="lg:w-4 lg:h-2 w-1 h-0.5 bg-white" />
                       <input
-                        disabled={closed_prediction || match.predicted}
+                        disabled={
+                          closed_prediction || match.predicted || predicting
+                        }
                         onChange={(e) => {
-                          setPredictions({
-                            ...predictions,
-                            [match.details.fixture.id]: {
-                              ...predictions[match.details.fixture.id],
-                              away: e.target.value.trim(),
-                            },
-                          });
+                          onChangePrediction(
+                            match.details.fixture.id.toString(),
+                            { away: e.target.value.trim(), keyIndex }
+                          );
                         }}
                         defaultValue={
                           match.predictions?.length
@@ -313,31 +322,21 @@ export default function MakePrediction({ group, keyIndex, onPredict }: Props) {
                     Make a prediction!
                   </p>
                 )}
-
-                <div className="flex items-center gap-3">
-                  <Button
-                    disabled={
-                      closed_prediction ||
-                      match.predicted ||
-                      predicting[match.details.fixture.id.toString()]
-                    }
-                    onClick={() =>
-                      applyPrediction(match.details.fixture.id.toString())
-                    }
-                    variant={"secondary"}
-                    className="!w-max px-5"
-                  >
-                    {closed_prediction ? (
-                      "Prediction Closed"
-                    ) : match.predicted ? (
-                      "Prediction Applied"
-                    ) : predicting[match.details.fixture.id.toString()] ? (
-                      <TbLoader size={20} className="mr-1.5 animate-spin" />
-                    ) : (
-                      "Apply Prediction"
-                    )}
-                  </Button>
-                </div>
+                {closed_prediction || match.predicted ? (
+                  <div className="flex items-center gap-3">
+                    <Button
+                      disabled={closed_prediction || match.predicted}
+                      variant={"secondary"}
+                      className="!w-max px-5"
+                    >
+                      {closed_prediction
+                        ? "Prediction Closed"
+                        : match.predicted
+                        ? "Prediction Applied"
+                        : "Apply Prediction"}
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </div>
           );

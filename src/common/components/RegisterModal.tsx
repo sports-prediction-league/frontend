@@ -26,7 +26,6 @@ const RegisterModal = ({
   return (
     <>
       <Modal
-        closable={false}
         className="text-white"
         open={open}
         onCancel={onOpenChange}
