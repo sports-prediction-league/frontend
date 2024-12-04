@@ -13,12 +13,20 @@ const Button = ({
   disabled,
   leftIcon,
   rounded = "rounded-[12px]",
+  background,
+  hoverBackground,
+  textColor,
 }: IButtonProps) => {
   return (
     <button
       className={`button-container ${width} ${height} ${fontSize} ${rounded}`}
       onClick={onClick}
       disabled={disabled}
+      style={{
+        '--button-background': background,
+        '--button-background-hover': hoverBackground,
+        '--text-color': textColor,
+      } as React.CSSProperties}
     >
       {leftIcon && <img src={leftIcon} alt="ICON" className="w-[16px] h-[16px]" />}
       {text}

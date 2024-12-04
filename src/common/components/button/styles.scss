@@ -1,9 +1,9 @@
 .button-container {
-  @apply px-[14px] flex justify-center items-center gap-[6px] border border-transparent text-spl-white font-bold leading-[25.7px];
+  @apply px-[14px] flex justify-center items-center gap-[6px] border border-transparent font-bold leading-[25.7px];
 
-  background: 
+  background: var(--button-background, 
   radial-gradient(176.68% 982.5% at 0% 0%, rgba(0, 202, 154, 0.6) 0%, rgba(0, 100, 76, 0.6) 100%),
-  linear-gradient(0deg, #0E131E, #0E131E);
+  linear-gradient(0deg, #0E131E, #0E131E));
 
   border: 1px solid transparent;
 
@@ -11,9 +11,12 @@
 
   transition: background 0.3s, transform 0.1s;
 
+  color: var(--text-color, #FFFFFF);
+
   &:hover {
-    background: 
-    radial-gradient(176.68% 982.5% at 0% 0%, rgba(0, 202, 154, 0.8) 0%, rgba(0, 100, 76, 0.8) 100%);
+    background: var(--button-background-hover, 
+    radial-gradient(176.68% 982.5% at 0% 0%, rgba(0, 202, 154, 0.8) 0%, rgba(0, 100, 76, 0.8) 100%)
+  );
   }
 
   &:active {

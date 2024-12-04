@@ -7,4 +7,7 @@ export interface IButtonProps {
   disabled?: boolean;
   leftIcon?: string;
   rounded?: string;
+  background?: string;
+  hoverBackground?: string;
+  textColor?: string;
 }

@@ -36,7 +36,7 @@ const HowItWorks = () => {
         className="h-[388px] w-[181px] md:hidden"
       />
 
-      <Title title="How It Works" fontSize={{small: "35px"}}/>
+      <Title title="How It Works" fontSizeSmall="35px" />
 
       <div className="how-it-works-cards-container">
         {cardData.map((card) => (
