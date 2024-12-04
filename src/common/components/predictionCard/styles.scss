@@ -1,0 +1,64 @@
+.prediction-card {
+  @apply md:w-[834px] w-full md:h-[390px] h-fit py-1 md:py-0 px-[30px] md:px-[69px] rounded-[20px] dark:bg-spl-green-400 bg-spl-white border-[2px] border-[#E4E5E5] flex flex-col items-center justify-center;
+
+  .prediction-card-title {
+    @apply dark:text-spl-white text-spl-black text-[10px] md:text-[15px] md:leading-[20px] leading-[12px];
+  }
+
+  .prediction-card-subtitle {
+    @apply dark:text-spl-white text-spl-black text-[10px] md:text-[13px] md:leading-[17px] leading-[12px] mt-[9px];
+  }
+
+  .teams-scores-container {
+    @apply flex items-center justify-center gap-[35px];
+  }
+
+  .team {
+    @apply flex flex-col items-center justify-center gap-[18px];
+
+    .team-name {
+      @apply dark:text-spl-white text-spl-black md:text-[32px] text-[14px] md:leading-[38px] leading-[16px] font-[Lato] font-bold;
+    }
+  }
+
+  .scors-container {
+    @apply flex flex-col items-center justify-center gap-[10px];
+
+    .scores {
+      @apply flex items-center justify-center gap-[14px];
+    }
+
+    .score-card {
+      @apply md:min-w-[112px] min-w-[48px] md:h-[115px] h-[50px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white border border-[#0000000D] flex items-center justify-center;
+
+      .score-card-numbers {
+        @apply dark:text-spl-white text-spl-black md:text-[59px] text-[24px] text-center leading-[48px] font-black;
+      }
+    }
+
+    .your-prediction-text {
+      @apply dark:text-spl-white text-spl-black md:text-[21px] text-[10px] md:leading-[27px] leading-[12px] font-light;
+    }
+  }
+
+
+  .staking-container {
+    @apply w-full flex flex-col md:flex-row items-center justify-center gap-[16px] mt-[34px];
+
+    .stacking-number-card {
+      @apply md:min-w-[195px] w-full md:h-[91px] h-[46px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white md:border border-[0.5px] border-[#0000000D] flex items-center justify-center;
+
+      .stacking-number-card-number {
+        @apply dark:text-spl-white text-spl-black md:text-[32px] text-[20px] text-center md:leading-[38px] leading-[24px] font-bold font-[Lato];
+
+        small {
+          @apply dark:text-spl-white text-spl-black md:text-[15px] text-[10px] md:leading-[19px] leading-[12px] font-[Lato];
+        }
+      }
+    }
+
+    .prediction-stats {
+      @apply md:w-fit w-full flex flex-col items-center justify-center gap-1;
+    }
+  }
+}

@@ -1,0 +1,7 @@
+.header-container {
+ @apply w-full px-[16px] md:px-[90px] sticky top-10 z-50 mt-10;
+
+  .header-content {
+    @apply flex justify-between items-center w-full  mx-auto;
+  }
+}
