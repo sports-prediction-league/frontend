@@ -1,0 +1,27 @@
+.prediction-cards-container {
+  @apply w-full flex flex-col md:gap-[90px] gap-[18px] md:px-[90px] px-[16px] mt-[45px];
+
+  .fav-prediction-container {
+    @apply w-full flex flex-col md:gap-[71px] gap-[19px];
+  }
+
+  .fav-prediction-card {
+    @apply w-full flex justify-between items-center;
+
+    .fav-button {
+      @apply md:w-[263px] w-[152px] md:h-[98px] h-[44px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-black flex gap-5 items-center justify-center;
+
+      &-text {
+        @apply dark:text-spl-white text-spl-black md:text-[32px] text-[10px] font-[Lato] md:leading-[38px] leading-[12px] font-bold;
+      }
+
+      .fav-icon {
+        @apply md:w-[54px] w-[24px] md:h-[54px] h-[24px];
+      }
+    }
+  }
+
+  .prediction-card-container {
+    @apply w-full flex flex-col md:gap-[63px] gap-[24px] justify-center items-center;
+  }
+}

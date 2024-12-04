@@ -10,12 +10,13 @@ import RootLayout from "../layout/RootLayout";
 
 // pages
 import Home from "../pages/home/view/Home";
+import Prediction from "../pages/prediction/view/Prediction";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<RootLayout />}>
       <Route index element={<Home />} />
-
+      <Route path="/prediction" element={<Prediction />} />
       {/* <Route path="admin" element={<RootLayout />}> */}
       {/* USER MANAGEMENT PAGES */}
 

@@ -1,5 +1,5 @@
 // common components
-import Title from "../../../../common/components/tittle/Title";
+import Title from "../../../common/components/tittle/Title";
 
 // assets
 

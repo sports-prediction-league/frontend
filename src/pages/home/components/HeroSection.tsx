@@ -1,10 +1,10 @@
 // context
 import { useContext } from "react";
-import { ThemeContext } from "../../../../context/ThemeContext";
+import { ThemeContext } from "../../../context/ThemeContext";
 
 // assets
-import HERO_SECTION from "../../../../assets/home/hero_section.svg";
-import HERO_SECTION_LIGHT from "../../../../assets/home/hero_section_light.svg";
+import HERO_SECTION from "../../../assets/home/hero_section.svg";
+import HERO_SECTION_LIGHT from "../../../assets/home/hero_section_light.svg";
 
 // styles
 import "./styles.scss";

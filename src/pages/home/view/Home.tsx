@@ -1,11 +1,11 @@
 import React from "react";
 
 // components
-import HeroSection from "./components/HeroSection";
-import WhatWeDo from "./components/WhatWeDo";
-import HowItWorks from "./components/HowItWorks";
-import ScoringSystem from "./components/ScoringSystem";
-import UpcomingMatches from "./components/UpcomingMatches";
+import HeroSection from "../components/HeroSection";
+import WhatWeDo from "../components/WhatWeDo";
+import HowItWorks from "../components/HowItWorks";
+import ScoringSystem from "../components/ScoringSystem";
+import UpcomingMatches from "../components/UpcomingMatches";
 
 const Home = () => {
   return (

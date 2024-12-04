@@ -15,7 +15,7 @@
   @apply max-w-full flex flex-col items-center justify-center md:px-0 px-[16px];
 
   .how-it-works-cards-container {
-    @apply flex flex-col flex-wrap gap-[26px] md:mt-[148px] mt-[24px] relative;
+    @apply w-full md:w-fit flex flex-col flex-wrap gap-[26px] md:mt-[148px] mt-[24px] relative;
   }
 }
 
@@ -24,7 +24,7 @@
   @apply max-w-full flex flex-col md:gap-[60px] gap-[44px] items-center justify-center md:h-[694px] px-[16px] py-[34px];
 
   background: rgba(0, 100, 76, 1);
-  background-image: url("../../../../assets//scoringSystem//hashed_background.svg");
+  background-image: url("../../../assets//scoringSystem//hashed_background.svg");
 
   .scoring-system-cards-container {
     @apply flex flex-wrap gap-[44px] justify-center;

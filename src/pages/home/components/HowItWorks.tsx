@@ -1,12 +1,12 @@
 // context
 import { useContext } from "react";
-import { ThemeContext } from "../../../../context/ThemeContext";
+import { ThemeContext } from "../../../context/ThemeContext";
 
 // common
-import Title from "../../../../common/components/tittle/Title";
+import Title from "../../../common/components/tittle/Title";
 
 // assets
-import HOW_IT_WORKS_MAN from "../../../../assets/howItWorks/how_it_works_ man.svg";
+import HOW_IT_WORKS_MAN from "../../../assets/howItWorks/how_it_works_ man.svg";
 
 // styles
 import "./styles.scss";
@@ -33,7 +33,7 @@ const HowItWorks = () => {
       <img
         src={HOW_IT_WORKS_MAN}
         alt="HOW IT WORKS MAN"
-        className="h-[388px] w-[181px]"
+        className="h-[388px] w-[181px] md:hidden"
       />
 
       <Title title="How It Works" fontSize={{small: "35px"}}/>

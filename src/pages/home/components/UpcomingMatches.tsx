@@ -1,6 +1,6 @@
 // common components
-import PredictionCard from "../../../../common/components/predictionCard/PredictionCard";
-import Title from "../../../../common/components/tittle/Title";
+import PredictionCard from "../../../common/components/predictionCard/PredictionCard";
+import Title from "../../../common/components/tittle/Title";
 
 // styles
 import "./styles.scss";
