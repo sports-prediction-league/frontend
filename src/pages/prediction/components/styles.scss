@@ -9,7 +9,7 @@
   .prediction-hero-content {
     @apply w-[157px] md:w-[551px] md:text-[40px] text-[20px] font-semibold text-spl-white;
 
-    &-title {
+    .prediction-hero-content-title {
       @apply md:leading-[92px] leading-[25px] md:text-[72px] text-[20px] font-black uppercase;
     }
   }
