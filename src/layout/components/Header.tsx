@@ -8,6 +8,8 @@ import Button from "../../common/components/button/Button";
 
 // assets
 import SPL_LOGO from "../../assets/header/spl_logo.svg";
+import DARK_MODE from "../../assets/header/dark_mode.svg";
+import LIGHT_MODE from "../../assets/header/light_mode.svg";
 
 // styles
 import "./styles.scss";
@@ -37,7 +39,7 @@ const Header = () => {
           <FaBars onClick={toggleDrawer} className="text-white"/>
         </div>
 
-        <div className="connect-wallet-btn md:flex gap-[15px] hidden">
+        <div className="connect-wallet-btn md:flex items-center gap-[15px] hidden">
           <Button 
             text="Upcoming Matches" 
             onClick={() => handleNavigation('/prediction')} 
@@ -55,11 +57,15 @@ const Header = () => {
           {/* TODO: Add Theme Toggle Button  */}
           {/* <Button text={mode === 'dark' ? "Light Mode" : "Dark Mode"} onClick={toggleMode} /> */}
 
+          <div className="">
+            <img src={mode === 'dark' ? LIGHT_MODE : DARK_MODE} alt="MODE" onClick={toggleMode} className="cursor-pointer"/>
+          </div>
+
           {/* TODO: Add Connect Wallet Button  */}
           {/* <Button text="Connect Wallet" onClick={() => {}} /> */}
         </div>
       </div>
-      <SideDrawer isOpen={isDrawerOpen} onClose={toggleDrawer} handleNavigation={handleNavigation} />
+      <SideDrawer mode={mode} toggleMode={toggleMode} isOpen={isDrawerOpen} onClose={toggleDrawer} handleNavigation={handleNavigation} />
     </div>
   );
 };
