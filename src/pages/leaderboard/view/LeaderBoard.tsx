@@ -5,7 +5,7 @@ import LeaderBoardHero from "../components/LeaderBoardHero";
 const LeaderBoard = () => {
   return (
     <React.Fragment>
-      <div className="mt-[120px] mb-[35px]">
+      <div className="md:mt-[120px] mt-[20px] mb-[35px]">
         <Title title="Leaderboard" />
       </div>
       <LeaderBoardHero />
