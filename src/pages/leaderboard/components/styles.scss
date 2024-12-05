@@ -19,12 +19,12 @@
 
       box-shadow: 0px 4px 20px 0px #0000001a;
 
-      &-content{
+      &-content {
         @apply w-full h-full relative;
       }
     }
 
-    &-image{
+    &-image {
       @apply absolute md:-top-[120px] -top-[60px] left-1/2 transform -translate-x-1/2 md:w-[144px] md:h-[165px] w-[62px] h-[71px];
     }
   }
