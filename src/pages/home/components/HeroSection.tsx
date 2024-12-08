@@ -7,7 +7,7 @@ import HERO_SECTION from "../../../assets/home/hero_section.svg";
 import HERO_SECTION_LIGHT from "../../../assets/home/hero_section_light.svg";
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 
 const HeroSection = () => {
   const { mode } = useContext(ThemeContext)!; 

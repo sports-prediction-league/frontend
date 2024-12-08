@@ -3,7 +3,7 @@
 import PREDICTION_HERO_BOY from "../../../assets/prediction/prediction_hero_boy.svg";
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 
 const PredictionHero = () => {
   return (

@@ -3,7 +3,7 @@ import PredictionCard from "../../../common/components/predictionCard/Prediction
 import Title from "../../../common/components/tittle/Title";
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 
 const UpcomingMatches = () => {
   return (

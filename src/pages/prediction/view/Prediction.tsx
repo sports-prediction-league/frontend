@@ -8,7 +8,7 @@ import PredictionCard from "../../../common/components/predictionCard/Prediction
 import FAV_ICON from "../../../assets/prediction/fav_icon.svg";
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 
 const Prediction = () => {
   return (

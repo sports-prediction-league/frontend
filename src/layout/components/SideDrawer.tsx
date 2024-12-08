@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Button from "../../common/components/button/Button";
-import './styles.scss'; // Add your styles here
+import './styles.css'; // Add your styles here
 import { FaTimes } from 'react-icons/fa'; // Import the close icon
 import { useLocation } from 'react-router';
 import DARK_MODE from "../../assets/header/dark_mode.svg";

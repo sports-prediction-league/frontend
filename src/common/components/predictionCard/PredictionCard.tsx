@@ -17,7 +17,7 @@ import BX_STATS from "../../../assets/buttons/bx_stats.svg"
 import USERS_SOLID from "../../../assets/buttons/users_solid.svg"
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 
 const PredictionCard = ({
   title,

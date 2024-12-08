@@ -7,7 +7,7 @@ import THIRD_POSITION from "../../../assets/leaderboard/third_position.svg";
 import BADGE from "../../../assets/leaderboard/badge.svg";
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 
 const LeaderBoardHero = () => {
   return (

@@ -9,7 +9,7 @@ import Title from "../../../common/components/tittle/Title";
 import HOW_IT_WORKS_MAN from "../../../assets/howItWorks/how_it_works_ man.svg";
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 
 const HowItWorks = () => {
   const { mode } = useContext(ThemeContext)!;

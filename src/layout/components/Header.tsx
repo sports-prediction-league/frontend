@@ -12,7 +12,7 @@ import DARK_MODE from "../../assets/header/dark_mode.svg";
 import LIGHT_MODE from "../../assets/header/light_mode.svg";
 
 // styles
-import "./styles.scss";
+import "./styles.css";
 import { ThemeContext } from "../../context/ThemeContext";
 import SideDrawer from "./SideDrawer";
 
