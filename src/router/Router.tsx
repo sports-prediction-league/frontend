@@ -12,6 +12,7 @@ import RootLayout from "../layout/RootLayout";
 import Home from "../pages/home/view/Home";
 import Prediction from "../pages/prediction/view/Prediction";
 import LeaderBoard from "../pages/leaderboard/view/LeaderBoard";
+import Profile from "../pages/profile/view/Profile";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -19,6 +20,7 @@ const router = createBrowserRouter(
       <Route index element={<Home />} />
       <Route path="/prediction" element={<Prediction />} />
       <Route path="/leaderboard" element={<LeaderBoard />} />
+      <Route path="/profile" element={<Profile />} />
       {/* <Route path="admin" element={<RootLayout />}> */}
       {/* USER MANAGEMENT PAGES */}
 
