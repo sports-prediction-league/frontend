@@ -57,7 +57,7 @@ const Profile = () => {
         <div className="profile-points-card">
           <div className="flex-1">
             <div className="md:w-[235px] flex flex-col items-center md:justify-center">
-              <img src={STAR_ICON} alt="ICON" className="md:w-[100px] w-[50px] md:h-[100px] h-[50px]"/>
+              <img src={STAR_ICON} alt="ICON" className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"/>
               <p className="text-[#FFFFFF]/[0.5] font-[Rubik] font-medium md:text-[27px] text-[12px] md:leading-[40px] text-center mt-2">
                 POINTS
               </p>
@@ -68,7 +68,7 @@ const Profile = () => {
           </div>
           <div className="flex-1 flex flex-col items-end justify-center">
             <div className="md:w-[235px] flex flex-col items-center justify-center">
-              <img src={RANK_ICON} alt="ICON" className="md:w-[100px] w-[50px] md:h-[100px] h-[50px]"/>
+              <img src={RANK_ICON} alt="ICON" className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"/>
               <p className="text-[#FFFFFF]/[0.5] font-[Rubik] font-medium md:text-[27px] text-[12px] md:leading-[40px] text-center mt-2">
                 LOCAL RANK
               </p>
