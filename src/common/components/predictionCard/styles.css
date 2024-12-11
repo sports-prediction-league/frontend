@@ -1,5 +1,5 @@
 .prediction-card {
-  @apply md:w-[834px] w-full md:h-[390px] h-fit py-1 md:py-0 px-[30px] md:px-[69px] rounded-[20px] dark:bg-green-950 bg-spl-white border-[2px] border-[#E4E5E5] flex flex-col items-center justify-center;
+  @apply md:w-[834px] w-full md:h-[390px] h-fit py-1 md:py-0 px-[30px] md:px-[69px] rounded-[20px] dark:bg-[#042822] bg-spl-white border-[2px] border-[#E4E5E5] flex flex-col items-center justify-center;
 }
 
 .prediction-card-title {

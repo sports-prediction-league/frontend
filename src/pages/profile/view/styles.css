@@ -46,19 +46,19 @@
 
 .username {
   @apply mt-[38px] md:text-[36px] text-[20px] font-[Rubik] font-medium dark:text-spl-white;
-}
+} 
 
 .user-address {
   @apply mt-[10px] md:text-[24px] text-[15px] dark:text-spl-white;
 }
 
 .profile-points-card {
-  @apply md:w-[832px] w-[360px] h-fit p-[36px] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center;
+  @apply md:w-[832px] w-[360px] h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center;
 }
 
 
 .profile-withdraw-card {
-  @apply md:w-[832px] w-[360px] h-fit p-[36px] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center;
+  @apply md:w-[832px] w-[360px] h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center;
 }
 
 .disconnect-button {

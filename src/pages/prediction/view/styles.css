@@ -20,7 +20,7 @@
 }
 
 .fav-icon {
-  @apply md:w-[54px] w-[24px] md:h-[54px] h-[24px];
+  @apply md:w-[40px] w-[15px] md:h-[40px] h-[15px];
 }
 
 .prediction-card-container {
