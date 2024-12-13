@@ -1,5 +1,5 @@
 .prediction-card {
-  @apply md:w-[834px] w-full md:h-[390px] h-fit py-1 md:py-0 px-[30px] md:px-[69px] rounded-[20px] dark:bg-[#042822] bg-spl-white border-[2px] border-[#E4E5E5] flex flex-col items-center justify-center;
+  @apply md:w-[834px] w-full md:h-[390px] h-fit py-3 md:py-0 px-[30px] md:px-[69px] rounded-[20px] dark:bg-[#042822] bg-spl-white md:border-[2px] border-[0.5px] border-[#E4E5E5] flex flex-col items-center justify-center;
 }
 
 .prediction-card-title {
@@ -32,12 +32,12 @@
 }
 
 .score-card {
-  @apply md:min-w-[112px] min-w-[48px] md:h-[115px] h-[50px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white border border-[#0000000D] flex items-center justify-center;
+  @apply md:w-[112px] w-[48px] md:h-[115px] h-[50px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white border border-[#0000000D] flex items-center justify-center bg-transparent dark:text-spl-white text-spl-black md:text-[59px] text-[24px] text-center leading-[48px] font-black;;
 }
 
-.score-card-numbers {
+/* .score-card-numbers {
   @apply dark:text-spl-white text-spl-black md:text-[59px] text-[24px] text-center leading-[48px] font-black;
-}
+} */
 
 .your-prediction-text {
   @apply dark:text-spl-white text-spl-black md:text-[21px] text-[10px] md:leading-[27px] leading-[12px] font-light;

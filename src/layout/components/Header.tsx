@@ -11,8 +11,6 @@ import { FaBars } from "react-icons/fa";
 
 // assets
 import SPL_LOGO from "../../assets/header/spl_logo.svg";
-import DARK_MODE from "../../assets/header/dark_mode.svg";
-import LIGHT_MODE from "../../assets/header/light_mode.svg";
 
 // styles
 import "./styles.css";
@@ -34,7 +32,7 @@ const Header = () => {
   return (
     <div className="header-container">
       <div className="header-content">
-        <img src={SPL_LOGO} alt="SPL LOGO" onClick={() => handleNavigation('/')} className="cursor-pointer"/>
+        <img src={SPL_LOGO} alt="SPL LOGO" onClick={() => handleNavigation('/')} className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"/>
         
         <div className="hamburger-icon md:hidden">
           <FaBars onClick={toggleDrawer} className="text-white"/>
@@ -63,11 +61,7 @@ const Header = () => {
             fontWeight="font-medium"
           />
 
-          {/* TODO: Add Theme Toggle Button  */}
-          {/* <Button text={mode === 'dark' ? "Light Mode" : "Dark Mode"} onClick={toggleMode} /> */}
-
           <div className="">
-            {/* <img src={mode === 'dark' ? LIGHT_MODE : DARK_MODE} alt="MODE" onClick={toggleMode} className="cursor-pointer"/> */}
             <DarkmodeButton mode={mode} toggleMode={toggleMode} />
           </div>
 

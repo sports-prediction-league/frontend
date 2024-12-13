@@ -1,5 +1,4 @@
-// context
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { ThemeContext } from "../../../context/ThemeContext";
 
 // interfaces
@@ -33,6 +32,22 @@ const PredictionCard = ({
 }: IPredictionCardProps) => {
   const { mode } = useContext(ThemeContext)!;
 
+  // State to manage score input values
+  const [scores, setScores] = useState({
+    team1Score: team1Score || "",
+    team2Score: team2Score || "",
+  });
+
+  // Helper function to truncate names after 6 characters
+  const truncateName = (name: string) => (name.length > 6 ? `${name.slice(0, 6)}...` : name);
+
+  // Handle input change
+  const handleScoreChange = (team: "team1Score" | "team2Score", value: string) => {
+    if (!isNaN(Number(value))) {
+      setScores((prevScores) => ({ ...prevScores, [team]: value }));
+    }
+  };
+
   return (
     <div className="prediction-card shadow-sm">
       <p className="prediction-card-title">{title}</p>
@@ -45,22 +60,28 @@ const PredictionCard = ({
             alt="TEAM"
             className="md:w-[129px] w-[55px] md:h-[129px] h-[55px]"
           />
-          <p className="team-name">{team1Name}</p>
+          <p className="team-name">{truncateName(team1Name)}</p>
         </div>
 
         <div className="scors-container">
           <div className="scores">
-            <div className="score-card">
-              <p className="score-card-numbers">{team1Score}</p>
-            </div>
+            <input
+              className="score-card"
+              value={scores.team1Score}
+              onChange={(e) => handleScoreChange("team1Score", e.target.value)}
+              placeholder="0"
+            />
             <img
               src={mode === "dark" ? COLUN : COLUN_DARK}
               alt="COLUN"
               className="md:w-[22px] w-[10px] md:h-[76px] h-[33px]"
             />
-            <div className="score-card">
-              <p className="score-card-numbers">{team2Score}</p>
-            </div>
+            <input
+              className="score-card"
+              value={scores.team2Score}
+              onChange={(e) => handleScoreChange("team2Score", e.target.value)}
+              placeholder="0"
+            />
           </div>
 
           <p className="your-prediction-text">Your Prediction</p>
@@ -72,7 +93,7 @@ const PredictionCard = ({
             alt="TEAM"
             className="md:w-[129px] w-[55px] md:h-[129px] h-[55px]"
           />
-          <p className="team-name">{team2Name}</p>
+          <p className="team-name">{truncateName(team2Name)}</p>
         </div>
       </div>
 

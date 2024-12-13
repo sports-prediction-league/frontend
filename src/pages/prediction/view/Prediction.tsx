@@ -24,7 +24,7 @@ const Prediction = () => {
               <img src={FAV_ICON} alt="ICON" className="fav-icon" />
             </div>
 
-            <div className="md:w-[371px] w-[115px] md:h-[98px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-black flex items-center justify-center">
+            <div className="md:w-[371px] w-[115px] md:h-[64px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none md:border border-[0.5px] border-spl-black flex items-center justify-center">
               <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[10px] font-[Lato] md:leading-[38px] leading-[12px] font-bold">
                 Sat, November 23nd
               </p>
@@ -51,7 +51,7 @@ const Prediction = () => {
           <div className="fav-prediction-card">
             <div></div>
 
-            <div className="md:w-[371px] w-[115px] md:h-[98px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-black flex items-center justify-center">
+            <div className="md:w-[371px] w-[115px] md:h-[64px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none md:border border-[0.5px] border-spl-black flex items-center justify-center">
               <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[10px] font-[Lato] md:leading-[38px] leading-[12px] font-bold">
                 Sat, November 23nd
               </p>
@@ -91,7 +91,7 @@ const Prediction = () => {
           <div className="fav-prediction-card">
             <div></div>
 
-            <div className="md:w-[371px] w-[115px] md:h-[98px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-black flex items-center justify-center">
+            <div className="md:w-[371px] w-[115px] md:h-[64px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none md:border border-[0.5px] border-spl-black flex items-center justify-center">
               <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[10px] font-[Lato] md:leading-[38px] leading-[12px] font-bold">
                 Sat, November 23nd
               </p>
