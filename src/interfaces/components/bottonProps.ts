@@ -10,4 +10,5 @@ export interface IButtonProps {
   background?: string;
   hoverBackground?: string;
   textColor?: string;
+  fontWeight?: string;
 }

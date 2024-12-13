@@ -1,5 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
+
+
 .button-container {
-  @apply px-[14px] flex justify-center items-center gap-[6px] border border-transparent font-bold leading-[25.7px];
+  @apply px-[14px] flex justify-center items-center gap-[6px] border leading-[25.7px];
 
   background: var(
     --button-background,
@@ -13,7 +16,7 @@
 
   border: 1px solid transparent;
 
-  border: 2px solid #00cb59;
+  border: 1px solid #00cb59;
 
   transition: background 0.3s, transform 0.1s;
 
@@ -34,3 +37,62 @@
 .button-container:active {
   transform: scale(0.97);
 }
+
+
+/* Darkmode Button */
+
+.checkbox {
+  display: none;
+}
+
+.checkbox-label {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background-color: #ccc;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.checkbox-label .icon {
+  font-size: 18px;
+  color: #fff;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.checkbox-label .icon.active {
+  opacity: 1; /* Highlight the active icon */
+}
+
+.checkbox-label .icon:not(.active) {
+  opacity: 0.5; /* Dim the inactive icon */
+}
+
+.checkbox-label .ball {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  background-color: #042822;
+  border-radius: 50%;
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.checkbox:checked + .checkbox-label .ball {
+  transform: translateX(30px);
+}
+
+.checkbox:checked + .checkbox-label {
+  background-color: #4caf50; /* Dark mode toggle color */
+}
+
+
+

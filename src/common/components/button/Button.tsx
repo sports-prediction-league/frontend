@@ -7,8 +7,8 @@ import "./styles.css";
 const Button = ({
   text,
   width = "w-fit",
-  height = "h-[40px]",
-  fontSize = "text-[16px]",
+  height = "h-[34px]",
+  fontSize = "text-[14px]",
   onClick,
   disabled,
   leftIcon,
@@ -16,10 +16,11 @@ const Button = ({
   background,
   hoverBackground,
   textColor,
+  fontWeight = "font-bold",
 }: IButtonProps) => {
   return (
     <button
-      className={`button-container ${width} ${height} ${fontSize} ${rounded}`}
+      className={`button-container ${width} ${height} ${fontSize} ${rounded} ${fontWeight}`}
       onClick={onClick}
       disabled={disabled}
       style={{
