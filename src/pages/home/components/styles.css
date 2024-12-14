@@ -1,6 +1,6 @@
 /* // Hero Section */
 .hero-section {
-  @apply w-full flex mt-[53px] md:px-0 px-[16px];
+  @apply w-full flex md:mt-[53px] mt-[15px] md:px-0 px-[16px];
 }
 
 
@@ -16,7 +16,7 @@
 }
 
 .how-it-works-cards-container {
-  @apply w-full md:w-fit flex flex-col flex-wrap gap-[26px] md:mt-[148px] mt-[24px] relative;
+  @apply w-full md:w-fit flex flex-col flex-wrap md:gap-[26px] gap-[20px] md:mt-[148px] mt-[24px] relative;
 }
 
 /* // Scoring System */
@@ -28,7 +28,7 @@
 }
 
 .scoring-system-cards-container {
-  @apply flex flex-wrap gap-[44px] justify-center;
+  @apply flex flex-wrap md:gap-[44px] gap-[20px] justify-center;
 }
 
 

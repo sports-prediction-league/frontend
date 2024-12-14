@@ -36,13 +36,13 @@ const HowItWorks = () => {
         className="h-[388px] w-[181px] md:hidden"
       />
 
-      <Title title="How It Works" fontSizeSmall="35px" />
+      <Title title="How It Works" fontSizeSmall="text-[35px]" />
 
       <div className="how-it-works-cards-container">
         {cardData.map((card) => (
           <div
             key={card.id}
-            className="md:w-[1260px] w-full h-[148px] dark:bg-spl-green-100 bg-spl-white rounded-[20px] flex items-center justify-center shadow-[0px_4px_20px_0px_rgba(0,0,0,0.1)] px-3"
+            className="md:w-[1260px] w-full md:h-[148px] h-[100px] dark:bg-spl-green-100 bg-spl-white rounded-[20px] flex items-center justify-center shadow-[0px_4px_20px_0px_rgba(0,0,0,0.1)] px-3"
           >
             <p className="dark:text-spl-white text-spl-black md:text-[30px] text-[15px] leading-[38px]  font-light">
               {card.description}
