@@ -3,7 +3,7 @@
 }
 
 .leaderboard-hero-container {
-  @apply w-full md:h-[614px] h-[299px] p-5 bg-no-repeat bg-cover rounded-[36px] flex justify-center items-end;
+  @apply w-full md:h-[500px] h-[299px] p-5 bg-no-repeat bg-cover rounded-[36px] flex justify-center items-end;
 
   background-image: url("../../../assets/prediction/prdict_hero_bg.svg");
 }

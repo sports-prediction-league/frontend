@@ -36,7 +36,11 @@ const HowItWorks = () => {
         className="h-[388px] w-[181px] md:hidden"
       />
 
-      <Title title="How It Works" fontSizeSmall="text-[35px]" />
+      <Title
+        className="text-center"
+        title="How It Works"
+        fontSizeSmall="text-[35px]"
+      />
 
       <div className="how-it-works-cards-container">
         {cardData.map((card) => (

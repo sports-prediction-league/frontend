@@ -32,32 +32,47 @@ const Header = () => {
   return (
     <div className="header-container">
       <div className="header-content">
-        <img src={SPL_LOGO} alt="SPL LOGO" onClick={() => handleNavigation('/')} className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"/>
-        
+        <img
+          src={SPL_LOGO}
+          alt="SPL LOGO"
+          onClick={() => handleNavigation("/")}
+          className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"
+        />
+
         <div className="hamburger-icon md:hidden">
-          <FaBars onClick={toggleDrawer} className="text-white"/>
+          <FaBars onClick={toggleDrawer} className="text-white" />
         </div>
 
         <div className="connect-wallet-btn md:flex items-center gap-[15px] hidden">
-          <Button 
-            text="Upcoming Matches" 
-            onClick={() => handleNavigation('/prediction')} 
-            background={location.pathname === '/prediction' ? undefined : "#FFFFFF"} 
-            textColor={location.pathname === '/prediction' ? undefined : "#000000"} 
+          <Button
+            text="Upcoming Matches"
+            onClick={() => handleNavigation("/prediction")}
+            background={
+              location.pathname === "/prediction" ? undefined : "#FFFFFF"
+            }
+            textColor={
+              location.pathname === "/prediction" ? undefined : "#000000"
+            }
             fontWeight="font-medium"
           />
-          <Button 
-            text="Leaderboard" 
-            onClick={() => handleNavigation('/leaderboard')} 
-            background={location.pathname === '/leaderboard' ? undefined : "#FFFFFF"} 
-            textColor={location.pathname === '/leaderboard' ? undefined : "#000000"} 
+          <Button
+            text="Leaderboard"
+            onClick={() => handleNavigation("/leaderboard")}
+            background={
+              location.pathname === "/leaderboard" ? undefined : "#FFFFFF"
+            }
+            textColor={
+              location.pathname === "/leaderboard" ? undefined : "#000000"
+            }
             fontWeight="font-medium"
           />
-          <Button 
-            text="Profile" 
-            onClick={() => handleNavigation('/profile')}
-            background={location.pathname === '/profile' ? undefined : "#FFFFFF"} 
-            textColor={location.pathname === '/profile' ? undefined : "#000000"} 
+          <Button
+            text="Profile"
+            onClick={() => handleNavigation("/profile")}
+            background={
+              location.pathname === "/profile" ? undefined : "#FFFFFF"
+            }
+            textColor={location.pathname === "/profile" ? undefined : "#000000"}
             fontWeight="font-medium"
           />
 
@@ -69,7 +84,13 @@ const Header = () => {
           {/* <Button text="Connect Wallet" onClick={() => {}} /> */}
         </div>
       </div>
-      <SideDrawer mode={mode} toggleMode={toggleMode} isOpen={isDrawerOpen} onClose={toggleDrawer} handleNavigation={handleNavigation} />
+      <SideDrawer
+        mode={mode}
+        toggleMode={toggleMode}
+        isOpen={isDrawerOpen}
+        onClose={toggleDrawer}
+        handleNavigation={handleNavigation}
+      />
     </div>
   );
 };

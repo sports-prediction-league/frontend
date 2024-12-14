@@ -3,8 +3,8 @@ import Button from "../../common/components/button/Button";
 import "./styles.css"; // Add your styles here
 import { FaTimes } from "react-icons/fa"; // Import the close icon
 import { useLocation } from "react-router";
-import DARK_MODE from "../../assets/header/dark_mode.svg";
-import LIGHT_MODE from "../../assets/header/light_mode.svg";
+// import DARK_MODE from "../../assets/header/dark_mode.svg";
+// import LIGHT_MODE from "../../assets/header/light_mode.svg";
 import DarkmodeButton from "../../common/components/button/DarkmodeButton";
 
 interface SideDrawerProps {
@@ -41,7 +41,10 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
       <div className="nav-buttons mt-[20px]">
         <Button
           text="Upcoming Matches"
-          onClick={() => handleNavigation("/prediction")}
+          onClick={() => {
+            onClose();
+            handleNavigation("/prediction");
+          }}
           background={
             location.pathname === "/prediction" ? undefined : "#FFFFFF"
           }
@@ -52,7 +55,10 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
         />
         <Button
           text="Leaderboard"
-          onClick={() => handleNavigation("/leaderboard")}
+          onClick={() => {
+            onClose();
+            handleNavigation("/leaderboard");
+          }}
           background={
             location.pathname === "/leaderboard" ? undefined : "#FFFFFF"
           }
@@ -63,8 +69,12 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
         />
         <Button
           text="Profile"
-          background="#FFFFFF"
-          textColor="#000000"
+          onClick={() => {
+            onClose();
+            handleNavigation("/profile");
+          }}
+          background={location.pathname === "/profile" ? undefined : "#FFFFFF"}
+          textColor={location.pathname === "/profile" ? undefined : "#000000"}
           fontWeight="font-medium"
         />
       </div>
