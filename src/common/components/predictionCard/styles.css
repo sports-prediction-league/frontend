@@ -1,5 +1,5 @@
 .prediction-card {
-  @apply md:w-[834px] w-full md:h-[390px] h-fit py-3 md:py-0 px-[30px] md:px-[69px] rounded-[20px] dark:bg-[#042822] bg-spl-white md:border-[2px] border-[0.5px] border-[#E4E5E5] flex flex-col items-center justify-center;
+  @apply lg:w-[834px] w-full md:h-[390px] h-fit py-3 md:py-0 px-[30px] md:px-[69px] rounded-[20px] dark:bg-[#042822] bg-spl-white md:border-[2px] border-[0.5px] border-[#E4E5E5] flex flex-col items-center justify-center;
 }
 
 .prediction-card-title {
@@ -11,7 +11,7 @@
 }
 
 .teams-scores-container {
-  @apply flex items-center justify-center gap-[35px];
+  @apply flex w-full items-center justify-center lg:gap-[35px] sm:gap-[20px] gap-[10px];
 }
 
 .team {
@@ -24,11 +24,11 @@
 
 
 .scors-container {
-  @apply flex flex-col items-center justify-center gap-[10px];
+  @apply flex flex-col items-center justify-center lg:gap-[10px] gap-[5px];
 }
 
 .scores {
-  @apply flex items-center justify-center gap-[14px];
+  @apply flex w-full items-center justify-center gap-[14px];
 }
 
 .score-card {

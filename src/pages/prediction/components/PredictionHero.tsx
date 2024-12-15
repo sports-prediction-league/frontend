@@ -1,6 +1,6 @@
-
 // assets
 import PREDICTION_HERO_BOY from "../../../assets/prediction/prediction_hero_boy.svg";
+import PREDICTION_HERO_BOY_SMALL from "../../../assets/prediction/prediction_hero_boy_small.svg";
 
 // styles
 import "./styles.css";
@@ -22,10 +22,18 @@ const PredictionHero = () => {
           </p>
         </div>
 
+        {/* Small Image for Mobile and Tablet */}
+        <img
+          src={PREDICTION_HERO_BOY_SMALL}
+          alt="prediction-hero-boy-small"
+          className="block md:hidden prediction-hero-boy"
+        />
+
+        {/* Large Image for Desktop */}
         <img
           src={PREDICTION_HERO_BOY}
           alt="prediction-hero-boy"
-          className="prediction-hero-boy"
+          className="hidden md:block prediction-hero-boy"
         />
       </div>
     </div>

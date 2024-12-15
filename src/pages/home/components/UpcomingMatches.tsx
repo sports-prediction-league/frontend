@@ -8,17 +8,17 @@ import "./styles.css";
 const UpcomingMatches = () => {
   return (
     <div className="upcoming-matches">
-        <Title title="Upcoming Matches" />
+      <Title title="Upcoming Matches" />
 
-      <div className="md:flex hidden justify-end w-full mt-5">
-        <div className="w-[371px] h-[98px] rounded-[20px] dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-[#0000000D] flex items-center justify-center">
-          <p className="dark:text-spl-white text-spl-black text-[32px] font-[Lato] leading-[38px] font-bold">
+      <div className="md:flex hidden justify-end w-full mt-7">
+        <div className="md:w-[371px] w-[115px] md:h-[64px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none md:border border-[0.5px] border-spl-black flex items-center justify-center">
+          <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[10px] font-[Lato] md:leading-[38px] leading-[12px] font-bold">
             Sat, November 23nd
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col flex-wrap gap-[63px] md:mt-[63px] mt-[7px]">
+      <div className="flex w-full items-center justify-center flex-col flex-wrap gap-[63px] md:mt-[63px] mt-[7px]">
         <PredictionCard
           title="Premier League"
           subtitle="7:00pm"

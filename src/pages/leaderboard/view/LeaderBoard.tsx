@@ -11,7 +11,7 @@ const LeaderBoard = () => {
       </div>
       <LeaderBoardHero />
 
-      <div className="flex flex-col justify-center items-center gap-[14px] md:mt-[72px] mt-[24px] w-full md:px-0 px-4">
+      <div className="flex flex-col justify-center items-center gap-[14px] md:mt-[72px] mt-[24px] w-full lg:px-0 px-4">
         <PointCard active={false} />
         <PointCard active={true} />
         <PointCard active={false} />

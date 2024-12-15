@@ -1,5 +1,5 @@
 .prediction-cards-container {
-  @apply w-full flex flex-col md:gap-[90px] gap-[18px] md:px-[90px] px-[16px] mt-[45px];
+  @apply w-full flex flex-col md:gap-[90px] gap-[18px] lg:px-[90px] px-[16px] mt-[45px];
 }
 
 .fav-prediction-container {

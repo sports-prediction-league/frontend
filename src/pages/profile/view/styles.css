@@ -1,5 +1,5 @@
 .profile-container {
-  @apply md:mt-[122px] mt-[50px];
+  @apply md:mt-[122px] mt-[50px] lg:px-[90px] px-[16px];
 }
 
 .profile-container-image {
@@ -53,12 +53,12 @@
 }
 
 .profile-points-card {
-  @apply md:w-[832px] w-[360px] h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center;
+  @apply lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center;
 }
 
 
 .profile-withdraw-card {
-  @apply md:w-[832px] w-[360px] h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center;
+  @apply lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center;
 }
 
 .disconnect-button {

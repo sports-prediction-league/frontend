@@ -8,20 +8,20 @@ import WHAT_WE_DO_MOBILE from "../../../assets/whatWedo/what_we_do_mobile.svg";
 
 const WhatWeDo = () => {
   return (
-    <div className="what-we-do">
+    <div className="max-w-full flex flex-col items-center justify-center md:px-[90px] px-[16px]">
       <Title title="What We Do" />
 
       <div className="flex justify-center md:mt-[60px] mt-[24px] w-full">
         {/* Display mobile image on small screens */}
-        <div className="hidden md:flex">
+        <div className="hidden lg:flex">
           <div className="">
             <img src={EXPART_PREDICTION} alt="EXPERT PREDICTION" />
           </div>
           <div className="flex-1">
-            <img src={GROUPED_INFO} alt="GROUPED INFO" />
+            <img src={GROUPED_INFO} alt="GROUPED INFO" className="w-full h-full"/>
           </div>
         </div>
-        <div className="block md:hidden w-full">
+        <div className="block lg:hidden w-full">
           <img
             src={WHAT_WE_DO_MOBILE}
             alt="WHAT WE DO MOBILE"

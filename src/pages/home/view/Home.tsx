@@ -18,7 +18,7 @@ const Home = () => {
         <HowItWorks />
       </div>
 
-      <div className="md:mt-[222px] mt-[35px]">
+      <div className="lg:mt-[222px] mt-[35px]">
         <ScoringSystem />
       </div>
 

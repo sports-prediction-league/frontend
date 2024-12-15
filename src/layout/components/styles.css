@@ -1,5 +1,5 @@
 .header-container {
-  @apply w-full md:h-[85px] h-[50px] flex items-center px-[16px] md:px-[90px]  top-0 z-50 bg-[#042822];
+  @apply w-full md:h-[85px] h-[50px] flex items-center px-[16px] lg:px-[90px]  top-0 z-50 bg-[#042822];
 }
 
 .header-content {

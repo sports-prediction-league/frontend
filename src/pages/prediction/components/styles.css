@@ -1,24 +1,24 @@
 .prediction-hero {
-  @apply w-full md:px-[90px] px-[16px] mt-[45px];
+  @apply w-full lg:px-[90px] px-[16px] mt-[45px];
 }
 
 .prediction-hero-container {
-  @apply w-full md:h-[614px] h-fit bg-spl-green-100 rounded-[20px] bg-no-repeat bg-center bg-cover md:px-[110px] px-[31px] md:py-[51px] py-[14px] relative;
+  @apply w-full lg:h-[614px] h-fit bg-spl-green-100 rounded-[20px] bg-no-repeat bg-center bg-cover lg:px-[110px] px-[31px] md:py-[51px] py-[14px] relative;
   background-image: url("../../../assets/prediction/prdict_hero_bg.svg");
 }
 
 .prediction-hero-content {
-  @apply w-[157px] md:w-[551px] md:text-[40px] text-[20px] font-semibold text-spl-white;
+  @apply w-[157px] lg:w-[551px] md:text-[40px] text-[20px] font-semibold text-spl-white;
 }
 
 .prediction-hero-content-title {
-  @apply md:leading-[92px] leading-[25px] md:text-[72px] text-[20px] font-black uppercase;
+  @apply lg:leading-[92px] leading-[25px] lg:text-[72px] text-[20px] font-black uppercase;
 }
 
 .prediction-hero-content-subtitle {
-  @apply md:w-[615px] w-[175px] md:text-[15px] text-[10px] font-light md:leading-[19px] leading-[12px] text-spl-white uppercase;
+  @apply lg:w-[615px] md:w-[300px] w-[175px] md:text-[15px] text-[10px] font-light md:leading-[19px] leading-[12px] text-spl-white uppercase;
 }
 
 .prediction-hero-boy {
-  @apply absolute bottom-0 right-0 md:w-[418px] w-[179px] md:h-[674px] h-[288px];
+  @apply absolute lg:bottom-0 sm:bottom-[-20px] bottom-[-25px] md:bottom-[-40px] right-0 lg:w-[418px] md:w-[200px] w-[149px] lg:h-[674px] md:h-[400px] h-[288px];
 }

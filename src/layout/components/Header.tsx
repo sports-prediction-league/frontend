@@ -39,11 +39,11 @@ const Header = () => {
           className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"
         />
 
-        <div className="hamburger-icon md:hidden">
+        <div className="hamburger-icon lg:hidden">
           <FaBars onClick={toggleDrawer} className="text-white" />
         </div>
 
-        <div className="connect-wallet-btn md:flex items-center gap-[15px] hidden">
+        <div className="connect-wallet-btn lg:flex items-center gap-[15px] hidden">
           <Button
             text="Upcoming Matches"
             onClick={() => handleNavigation("/prediction")}
