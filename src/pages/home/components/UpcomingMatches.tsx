@@ -3,11 +3,11 @@ import PredictionCard from "../../../common/components/predictionCard/Prediction
 import Title from "../../../common/components/tittle/Title";
 
 // styles
-import "./styles.css";
+// import "./styles.css";
 
 const UpcomingMatches = () => {
   return (
-    <div className="upcoming-matches">
+    <div className="max-w-full flex flex-col items-center justify-center md:py-[70px] py-[24px] lg:px-[90px] px-[16px]">
       <Title title="Upcoming Matches" />
 
       <div className="md:flex hidden justify-end w-full mt-7">

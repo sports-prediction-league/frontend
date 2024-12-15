@@ -9,7 +9,7 @@ import STAR_ICON from "../../../assets/profile/star_icon.svg";
 import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 
 // styles
-import "./styles.css";
+// import "./styles.css";
 import Button from "../../../common/components/button/Button";
 
 const Profile = () => {
@@ -24,37 +24,37 @@ const Profile = () => {
   }, []);
 
   return (
-    <div className="profile-container">
+    <div className="md:mt-[122px] mt-[50px] lg:px-[90px] px-[16px]">
       <Title title="Profile" fontSizeSmall="35px" fontSizeMedium="35px" />
 
       <div className="flex flex-col items-center justify-center">
-        <div className="profile-container-image">
-          <img src={PROFILE} alt="profile" />
+        <div className="flex items-end justify-center w-[184px] h-[184px] rounded-full bg-gray-400 overflow-hidden">
+          <img src={PROFILE} alt="profile" className="object-cover rounded-full"/>
         </div>
 
-        <div className="progress-container">
-          <div className="progress-bar">
+        <div className="text-center w-[250px] h-[5px] mx-auto mt-[50px] relative">
+          <div className="relative h-[5px] bg-[#e0e0e0] rounded-[5px] m-[10px_0]">
             <img
               src={BADGE}
               alt="Badge"
-              className="badge-image"
+              className="w-[32px] h-[32px] absolute top-[-35px]"
               style={{ left: `${progress - 7}%` }}
             />
             <div className="progress" style={{ width: `${progress}%` }}></div>
           </div>
-          <p className="progress-text">Until next badge</p>
+          <p className="mt-[10px] text-[14px] text-gray-600">Until next badge</p>
         </div>
       </div>
 
       <div className="flex flex-col items-center justify-center mt-[70px]">
         <Button text="See all badges" fontSize="text-[10px]" />
 
-        <p className="username">Madelyn Dias</p>
-        <p className="user-address">xe2d3A...Ac72EBea1</p>
+        <p className="mt-[38px] md:text-[36px] text-[20px] font-[Rubik] font-medium dark:text-spl-white">Madelyn Dias</p>
+        <p className="mt-[10px] md:text-[24px] text-[15px] dark:text-spl-white">xe2d3A...Ac72EBea1</p>
       </div>
 
       <div className="flex flex-col items-center justify-center mt-[40px] gap-[34px]">
-        <div className="profile-points-card">
+        <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center">
           <div className="flex-1">
             <div className="md:w-[235px] flex flex-col items-center md:justify-center">
               <img src={STAR_ICON} alt="ICON" className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"/>
@@ -79,7 +79,7 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="profile-withdraw-card">
+        <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center">
           <p className="text-spl-white md:text-[24px] text-[15px]">Available for withdrawal</p>
           <p className="text-spl-white font-bold md:text-[30px] text-[15px] md:mt-5 mt-2">632.000</p>
 
@@ -89,7 +89,7 @@ const Profile = () => {
         </div>
 
         <div className="mt-[57px]">
-          <button className="disconnect-button">Disconnect Wallet</button>
+          <button className="bg-red-600 text-spl-white text-[15px] font-bold font-[Lato] py-[10px] px-[20px] rounded-[10px] w-[277px] h-[56px]">Disconnect Wallet</button>
         </div>
       </div>
     </div>

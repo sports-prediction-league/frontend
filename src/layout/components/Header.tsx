@@ -12,9 +12,6 @@ import { FaBars } from "react-icons/fa";
 // assets
 import SPL_LOGO from "../../assets/header/spl_logo.svg";
 
-// styles
-import "./styles.css";
-
 const Header = () => {
   const { mode, toggleMode } = useContext(ThemeContext)!;
   const navigate = useNavigate();
@@ -30,8 +27,8 @@ const Header = () => {
   };
 
   return (
-    <div className="header-container">
-      <div className="header-content">
+    <div className="w-full md:h-[85px] h-[50px] flex items-center px-[16px] lg:px-[90px]  top-0 z-50 bg-[#042822]">
+      <div className="flex justify-between items-center w-full  mx-auto">
         <img
           src={SPL_LOGO}
           alt="SPL LOGO"
@@ -43,7 +40,7 @@ const Header = () => {
           <FaBars onClick={toggleDrawer} className="text-white" />
         </div>
 
-        <div className="connect-wallet-btn lg:flex items-center gap-[15px] hidden">
+        <div className="connect-wallet-btn md:flex items-center gap-[15px] hidden">
           <Button
             text="Upcoming Matches"
             onClick={() => handleNavigation("/prediction")}

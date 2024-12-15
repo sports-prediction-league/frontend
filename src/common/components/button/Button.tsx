@@ -2,7 +2,7 @@
 import { IButtonProps } from "../../../interfaces";
 
 // styles
-import "./styles.css";
+// import "./styles.css";
 
 const Button = ({
   text,

@@ -20,10 +20,10 @@ const ScoringSystem = () => {
   ];
 
   return (
-    <div className="scoring-system">
+    <div className="scoring-system max-w-full flex flex-col md:gap-[60px] gap-[44px] items-center justify-center lg:h-[694px] px-[16px] py-[34px]">
       <Title title="Scoring System" forceWhite={true} />
 
-      <div className="scoring-system-cards-container">
+      <div className="flex flex-col lg:flex-row md:gap-[44px] gap-[20px] justify-center">
         {scoringData.map((item, index) => (
           <div
             key={index}

@@ -9,7 +9,7 @@ import Title from "../../../common/components/tittle/Title";
 import HOW_IT_WORKS_MAN from "../../../assets/howItWorks/how_it_works_ man.svg";
 
 // styles
-import "./styles.css";
+// import "./styles.css";
 
 const HowItWorks = () => {
   const { mode } = useContext(ThemeContext)!;
@@ -29,7 +29,7 @@ const HowItWorks = () => {
     },
   ];
   return (
-    <div className="how-it-works">
+    <div className="max-w-full flex flex-col items-center justify-center lg:px-0 px-[16px]">
       <img
         src={HOW_IT_WORKS_MAN}
         alt="HOW IT WORKS MAN"
@@ -42,7 +42,7 @@ const HowItWorks = () => {
         fontSizeSmall="text-[35px]"
       />
 
-      <div className="how-it-works-cards-container">
+      <div className="w-full lg:w-fit flex flex-col items-center justify-center flex-wrap md:gap-[26px] gap-[20px] md:mt-[148px] mt-[24px] relative">
         {cardData.map((card) => (
           <div
             key={card.id}
