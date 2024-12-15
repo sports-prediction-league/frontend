@@ -3,28 +3,41 @@ import badge from "../../../assets/leaderboard/badge.svg";
 
 const PointCard = ({ active }: { active: boolean }) => {
   return (
-    <div className={`${active ? "point-card-active" : "point-card"}`}>
-      <div className="point-card-left">
-        <div className="point-card-number">4</div>
-        <div className="point-card-profile">
-          <div className="point-card-profile-image">
+    <div
+      className={`${
+        active
+          ? "md:w-[831px] w-full h-[122px] bg-spl-green-500 rounded-[32px] px-[30px] border border-[#E4E5E5] flex justify-between items-center text-spl-white"
+          : "md:w-[831px] w-full h-[122px] bg-spl-white rounded-[32px] px-[30px] border border-[#E4E5E5] flex justify-between items-center"
+      }`}
+    >
+      <div className="flex gap-[20px] items-center">
+        <div className="w-[30px] h-[30px] rounded-full flex justify-center items-center text-[#858494] text-[14px] font-medium font-[Rubik] border-2 border-[#E4E5E5]">
+          4
+        </div>
+        <div className="flex items-center gap-[20px]">
+          <div className="md:w-[69px] md:h-[69px] w-[52px] h-[52px] rounded-full bg-[#C4C4C4] relative">
             <img
               src={badge}
               alt="badge"
               className="absolute -bottom-[6px] md:-bottom-2 md:-right-2 -right-1 md:w-[32px] md:h-[32px] w-[24px] h-[24px]"
             />
           </div>
-          <div className="point-card-profile-name">
-            <p className="point-card-profile-ussername">Salva</p>
-            <p className="point-card-profile-address"> 0xe2d3A...Ac72EBea1</p>
-            <p className="point-card-right-point md:hidden block">
+          <div className="flex flex-col gap-[4px]">
+            <p className="md:text-[24px] text-[20px] font-medium font-[Rubik]">
+              Salva
+            </p>
+            <p className="md:text-[20px] text-[15px] text-[#858494] font-[Rubik]">
+              {" "}
+              0xe2d3A...Ac72EBea1
+            </p>
+            <p className="text-[17px] font-[Rubik] text-[#858494] md:hidden block">
               2,569 points
             </p>
           </div>
         </div>
       </div>
-      <div className="point-card-right">
-        <p className="point-card-right-point">2,569 points</p>
+      <div className="md:flex hidden">
+        <p className="text-[17px] font-[Rubik] text-[#858494]">2,569 points</p>
       </div>
     </div>
   );

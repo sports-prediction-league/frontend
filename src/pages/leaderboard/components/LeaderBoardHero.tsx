@@ -7,18 +7,18 @@ import THIRD_POSITION from "../../../assets/leaderboard/third_position.svg";
 import BADGE from "../../../assets/leaderboard/badge.svg";
 
 // styles
-import "./styles.css";
+// import "./styles.css";
 
 const LeaderBoardHero = () => {
   return (
-    <div className="leaderboard-hero">
-      <div className="leaderboard-hero-container">
-        <div className="leaderboard-hero-content-card">
-          <div className="leaderboard-hero-content-card-item">
+    <div className="w-full px-[16px] md:px-[90px]">
+      <div className="w-full md:h-[614px] h-[299px] p-5 bg-no-repeat bg-cover rounded-[36px] flex justify-center items-end leaderboard-hero-container-bg">
+        <div className="md:w-[726px] w-full md:h-[258px] h-[142px] bg-white rounded-[36px] md:p-5 p-3 grid grid-cols-3">
+          <div className="w-full h-full bg-spl-white relative">
             <img
               src={SECOND_POSITION}
               alt=""
-              className="leaderboard-hero-content-card-item-image"
+              className="absolute md:-top-[120px] -top-[60px] left-1/2 transform -translate-x-1/2 md:w-[144px] md:h-[165px] w-[62px] h-[71px]"
             />
             <div className="w-full h-full flex flex-col justify-center items-center">
               <div className="md:w-[133px] w-[57px] break-words mt-3">
@@ -39,9 +39,9 @@ const LeaderBoardHero = () => {
             </div>
           </div>
 
-          <div className="leaderboard-hero-content-card-item">
-            <div className="leaderboard-hero-content-card-item-center">
-              <div className="leaderboard-hero-content-card-item-center-content">
+          <div className="w-full h-full bg-spl-white relative">
+            <div className="w-full md:h-[337px] h-[181px] bg-spl-white absolute md:-top-[115px] -top-[70px] left-0 md:rounded-[60px] rounded-[25px] border border-[#00000033]">
+              <div className="w-full h-full relative">
                 <img
                   src={FIRST_POSITION}
                   alt=""
@@ -69,11 +69,11 @@ const LeaderBoardHero = () => {
             </div>
           </div>
 
-          <div className="leaderboard-hero-content-card-item">
+          <div className="w-full h-full bg-spl-white relative">
             <img
               src={THIRD_POSITION}
               alt=""
-              className="leaderboard-hero-content-card-item-image"
+              className="absolute md:-top-[120px] -top-[60px] left-1/2 transform -translate-x-1/2 md:w-[144px] md:h-[165px] w-[62px] h-[71px]"
             />
 
             <div className="w-full h-full flex flex-col justify-center items-center">

@@ -11,7 +11,8 @@ const ScoringSystem = () => {
     },
     {
       title: "3 PTS",
-      description: "Correct prediction of the match winner and goal range (0-2 or 3+)",
+      description:
+        "Correct prediction of the match winner and goal range (0-2 or 3+)",
     },
     {
       title: "5 PTS",
@@ -20,10 +21,10 @@ const ScoringSystem = () => {
   ];
 
   return (
-    <div className="scoring-system">
+    <div className="max-w-full flex flex-col md:gap-[60px] gap-[44px] items-center justify-center md:h-[694px] px-[16px] py-[34px] bg-[rgba(0,100,76,1)] scoring-system-bg">
       <Title title="Scoring System" forceWhite={true} />
 
-      <div className="scoring-system-cards-container">
+      <div className="flex flex-wrap md:gap-[44px] gap-[20px] justify-center">
         {scoringData.map((item, index) => (
           <div
             key={index}
