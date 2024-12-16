@@ -22,7 +22,7 @@ const Title = ({
   return (
     <div className="w-full flex justify-center items-center">
       <p
-        className={`${smallFontSize} ${mediumFontSize} font-bold leading-[45px] ${textColor} ${className}`}
+        className={`${smallFontSize} ${mediumFontSize} text-center font-bold leading-[45px] ${textColor} ${className}`}
       >
         {title}
       </p>

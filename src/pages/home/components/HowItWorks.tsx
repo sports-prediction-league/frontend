@@ -1,6 +1,6 @@
 // context
-import { useContext } from "react";
-import { ThemeContext } from "../../../context/ThemeContext";
+// import { useContext } from "react";
+// import { ThemeContext } from "../../../context/ThemeContext";
 
 // common
 import Title from "../../../common/components/tittle/Title";
@@ -8,11 +8,8 @@ import Title from "../../../common/components/tittle/Title";
 // assets
 import HOW_IT_WORKS_MAN from "../../../assets/howItWorks/how_it_works_ man.svg";
 
-// styles
-// import "./styles.css";
-
 const HowItWorks = () => {
-  const { mode } = useContext(ThemeContext)!;
+  // const { mode } = useContext(ThemeContext)!;
 
   const cardData = [
     {
@@ -48,7 +45,7 @@ const HowItWorks = () => {
             key={card.id}
             className="lg:w-[1260px] w-full md:h-[148px] h-[100px] dark:bg-spl-green-100 bg-spl-white rounded-[20px] flex items-center justify-center shadow-[0px_4px_20px_0px_rgba(0,0,0,0.1)] px-3"
           >
-            <p className="dark:text-spl-white text-spl-black md:text-[30px] text-[15px] leading-[38px]  font-light">
+            <p className="dark:text-spl-white text-spl-black md:text-[30px] text-[15px] text-center leading-[38px]  font-light">
               {card.description}
             </p>
           </div>

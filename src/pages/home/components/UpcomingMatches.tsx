@@ -2,9 +2,6 @@
 import PredictionCard from "../../../common/components/predictionCard/PredictionCard";
 import Title from "../../../common/components/tittle/Title";
 
-// styles
-// import "./styles.css";
-
 const UpcomingMatches = () => {
   return (
     <div className="max-w-full flex flex-col items-center justify-center md:py-[70px] py-[24px] lg:px-[90px] px-[16px]">

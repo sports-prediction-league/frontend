@@ -1,5 +1,4 @@
-import { FaMoon, FaSun } from "react-icons/fa"; // Import icons
-// import "./styles.css";
+import { FaMoon, FaSun } from "react-icons/fa";
 
 const DarkmodeButton = ({
   mode,

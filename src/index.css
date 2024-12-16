@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
 
 @font-face {
   font-family: "Pilat Extended";
@@ -246,14 +247,10 @@ p {
 }
 
 .button-container:hover {
-  background: var(
-    --button-background-hover,
-    radial-gradient(
-      176.68% 982.5% at 0% 0%,
-      rgba(0, 202, 154, 0.8) 0%,
-      rgba(0, 100, 76, 0.8) 100%
-    )
-  );
+  background: var(--button-background-hover,
+      radial-gradient(176.68% 982.5% at 0% 0%,
+        rgba(0, 202, 154, 0.8) 0%,
+        rgba(0, 100, 76, 0.8) 100%));
 }
 
 .button-container:active {
@@ -288,11 +285,13 @@ p {
 }
 
 .checkbox-label .icon.active {
-  opacity: 1; /* Highlight the active icon */
+  opacity: 1;
+  /* Highlight the active icon */
 }
 
 .checkbox-label .icon:not(.active) {
-  opacity: 0.5; /* Dim the inactive icon */
+  opacity: 0.5;
+  /* Dim the inactive icon */
 }
 
 .checkbox-label .ball {
@@ -330,4 +329,53 @@ p {
     background-size: cover;
     height: 360px;
   }
+}
+.checkbox:checked+.checkbox-label .ball {
+  transform: translateX(30px);
+}
+
+.checkbox:checked+.checkbox-label {
+  background-color: #4caf50;
+  /* Dark mode toggle color */
+}
+
+
+/* // SideDrawer.scss */
+.side-drawer {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  height: 400px;
+  background: #031614;
+  border: 1px solid transparent;
+  border: 0.5px solid #00cb59;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  transition: right 0.3s ease;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.side-drawer.open {
+  right: 0;
+}
+
+.nav-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+.scoring-system-bg {
+  background-image: url("assets/scoringSystem/hashed_background.svg");
+}
+
+.leaderboard-hero-container-bg {
+  background-image: url("assets/prediction/prdict_hero_bg.svg");
+}
+
+
+.prediction-hero-container-bg {
+  background-image: url("assets/prediction/prdict_hero_bg.svg");
 }

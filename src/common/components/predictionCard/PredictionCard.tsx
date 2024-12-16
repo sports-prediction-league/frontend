@@ -15,9 +15,6 @@ import COLUN_DARK from "../../../assets/upComingMatches/colun_dark.svg";
 import BX_STATS from "../../../assets/buttons/bx_stats.svg";
 import USERS_SOLID from "../../../assets/buttons/users_solid.svg";
 
-// styles
-// import "./styles.css";
-
 const PredictionCard = ({
   title,
   subtitle,
@@ -39,10 +36,14 @@ const PredictionCard = ({
   });
 
   // Helper function to truncate names after 6 characters
-  const truncateName = (name: string) => (name.length > 6 ? `${name.slice(0, 6)}...` : name);
+  const truncateName = (name: string) =>
+    name.length > 6 ? `${name.slice(0, 6)}...` : name;
 
   // Handle input change
-  const handleScoreChange = (team: "team1Score" | "team2Score", value: string) => {
+  const handleScoreChange = (
+    team: "team1Score" | "team2Score",
+    value: string
+  ) => {
     if (!isNaN(Number(value))) {
       setScores((prevScores) => ({ ...prevScores, [team]: value }));
     }
@@ -58,7 +59,7 @@ const PredictionCard = ({
           <img
             src={FC_CHELSEA}
             alt="TEAM"
-            className="md:w-[129px] w-[55px] md:h-[129px] h-[55px]"
+            className="md:w-[129px] w-[40px] smm:w-[55px] md:h-[129px] h-[40px] smm:h-[55px]"
           />
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[14px] md:leading-[38px] leading-[16px] font-[Lato] font-bold">{truncateName(team1Name)}</p>
         </div>
@@ -74,7 +75,7 @@ const PredictionCard = ({
             <img
               src={mode === "dark" ? COLUN : COLUN_DARK}
               alt="COLUN"
-              className="md:w-[22px] w-[10px] md:h-[76px] h-[33px]"
+              className="md:w-[22px] w-[5px] smm:w-[8px] md:h-[76px] h-[23px]"
             />
             <input
               className="md:w-[112px] w-[48px] md:h-[115px] h-[50px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white border border-[#0000000D] flex items-center justify-center bg-transparent dark:text-spl-white text-spl-black md:text-[59px] text-[24px] text-center leading-[48px] font-black"
@@ -91,7 +92,7 @@ const PredictionCard = ({
           <img
             src={FC_LEICESTER}
             alt="TEAM"
-            className="md:w-[129px] w-[55px] md:h-[129px] h-[55px]"
+            className="md:w-[129px] w-[40px] smm:w-[55px] md:h-[129px] h-[40px] smm:h-[55px]"
           />
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[14px] md:leading-[38px] leading-[16px] font-[Lato] font-bold">{truncateName(team2Name)}</p>
         </div>
@@ -101,14 +102,16 @@ const PredictionCard = ({
         <div className="md:min-w-[195px] w-full md:h-[91px] h-[46px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white md:border border-[0.5px] border-[#0000000D] flex items-center justify-center">
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[20px] text-center md:leading-[38px] leading-[24px] font-bold font-[Lato]">
             {stakeAmount}
-            <small className="dark:text-spl-white text-spl-black md:text-[15px] text-[10px] md:leading-[19px] leading-[12px] font-[Lato]">eth</small>
+            <small className="dark:text-spl-white text-spl-black md:text-[15px] text-[10px] md:leading-[19px] leading-[12px] font-[Lato]">
+              STRK
+            </small>
           </p>
         </div>
 
         <Button
           text="Stake"
           height="md:h-[90px] h-[39px]"
-          width="md:min-w-[267px] w-full"
+          width="md:min-w-[267px] w-full sm:block hidden"
           fontSize="md:text-[32px] text-[12px]"
           onClick={onStakeClick}
           rounded="md:rounded-[12px] rounded-[6px]"

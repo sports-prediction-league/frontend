@@ -7,9 +7,6 @@ import PredictionCard from "../../../common/components/predictionCard/Prediction
 // assets
 import FAV_ICON from "../../../assets/prediction/fav_icon.svg";
 
-// styles
-// import "./styles.css";
-
 const Prediction = () => {
   return (
     <React.Fragment>
@@ -24,8 +21,8 @@ const Prediction = () => {
               <img src={FAV_ICON} alt="ICON" className="md:w-[40px] w-[15px] md:h-[40px] h-[15px]" />
             </div>
 
-            <div className="md:w-[371px] w-[115px] md:h-[64px] h-[30px] md:rounded-[20px] rounded-[10px] dark:bg-spl-green-100 bg-spl-white dark:border-none md:border border-[0.5px] border-spl-black flex items-center justify-center">
-              <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[10px] font-[Lato] md:leading-[38px] leading-[12px] font-bold">
+            <div className="px-3 py-1 rounded-lg dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-[#0000000D] flex items-center justify-center">
+              <p className="dark:text-spl-white text-spl-black  font-[Lato] lg:text-xl text-sm  font-bold">
                 Sat, November 23nd
               </p>
             </div>

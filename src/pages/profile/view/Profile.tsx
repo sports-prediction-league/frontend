@@ -8,8 +8,6 @@ import BADGE from "../../../assets/leaderboard/badge.svg";
 import STAR_ICON from "../../../assets/profile/star_icon.svg";
 import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 
-// styles
-// import "./styles.css";
 import Button from "../../../common/components/button/Button";
 
 const Profile = () => {
@@ -20,7 +18,7 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    updateProgress(100);
+    updateProgress(50);
   }, []);
 
   return (
@@ -40,7 +38,10 @@ const Profile = () => {
               className="w-[32px] h-[32px] absolute top-[-35px]"
               style={{ left: `${progress - 7}%` }}
             />
-            <div className="progress" style={{ width: `${progress}%` }}></div>
+            <div
+              className="bg-gradient-to-r from-[#2ec4b6] to-[#a6cee3] rounded-[5px] h-full"
+              style={{ width: `${progress}%` }}
+            ></div>
           </div>
           <p className="mt-[10px] text-[14px] text-gray-600">Until next badge</p>
         </div>
@@ -66,9 +67,13 @@ const Profile = () => {
               </p>
             </div>
           </div>
-          <div className="flex-1 flex flex-col items-end justify-center">
+          <div className="flex flex-col items-end justify-center">
             <div className="md:w-[235px] flex flex-col items-center justify-center">
-              <img src={RANK_ICON} alt="ICON" className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"/>
+              <img
+                src={RANK_ICON}
+                alt="ICON"
+                className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"
+              />
               <p className="text-[#FFFFFF]/[0.5] font-[Rubik] font-medium md:text-[27px] text-[12px] md:leading-[40px] text-center mt-2">
                 LOCAL RANK
               </p>
@@ -84,7 +89,12 @@ const Profile = () => {
           <p className="text-spl-white font-bold md:text-[30px] text-[15px] md:mt-5 mt-2">632.000</p>
 
           <div className="md:mt-[60px] mt-[20px]">
-            <Button text="Withdraw" fontSize="md:text-[24px] text-[15px] rounded-[5px]" height="md:h-[76px] h-[33px]" width="md:w-[484px] w-[209px]"/>
+            <Button
+              text="Withdraw"
+              fontSize="md:text-[24px] text-[15px] rounded-[5px]"
+              height="md:h-[76px] h-[33px]"
+              width="md:w-[484px] w-[209px]"
+            />
           </div>
         </div>
 

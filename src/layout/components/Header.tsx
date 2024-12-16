@@ -27,7 +27,7 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full md:h-[85px] h-[50px] flex items-center px-[16px] lg:px-[90px]  top-0 z-50 bg-[#042822]">
+    <div className="w-full py-5 flex items-center px-[16px]  lg:px-[90px] sticky top-0 z-50 dark:bg-[#042822] bg-white dark:shadow-none shadow-sm">
       <div className="flex justify-between items-center w-full  mx-auto">
         <img
           src={SPL_LOGO}
@@ -36,11 +36,11 @@ const Header = () => {
           className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"
         />
 
-        <div className="hamburger-icon lg:hidden">
+        <div className="rounded-full bg-spl-green-300 p-[5px] md:hidden">
           <FaBars onClick={toggleDrawer} className="text-white" />
         </div>
 
-        <div className="connect-wallet-btn md:flex items-center gap-[15px] hidden">
+        <div className=" md:flex items-center gap-[15px] hidden">
           <Button
             text="Upcoming Matches"
             onClick={() => handleNavigation("/prediction")}

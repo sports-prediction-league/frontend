@@ -2,9 +2,6 @@
 import PREDICTION_HERO_BOY from "../../../assets/prediction/prediction_hero_boy.svg";
 import PREDICTION_HERO_BOY_SMALL from "../../../assets/prediction/prediction_hero_boy_small.svg";
 
-// styles
-// import "./styles.css";
-
 const PredictionHero = () => {
   return (
     <div className="w-full lg:px-[90px] px-[16px] mt-[45px]">

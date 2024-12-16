@@ -11,7 +11,7 @@ const PointCard = ({ active }: { active: boolean }) => {
             <img
               src={badge}
               alt="badge"
-              className="absolute -bottom-[6px] md:-bottom-2 md:-right-2 -right-1 md:w-[32px] md:h-[32px] w-[24px] h-[24px]"
+              className="absolute -bottom-[3px] md:bottom-1 md:-right-1 -right-0.5 md:w-[22px] md:h-[22px] w-[14px] h-[14px]"
             />
           </div>
           <div className="flex flex-col gap-[4px]">
