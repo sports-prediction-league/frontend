@@ -13,7 +13,7 @@ const WhatWeDo = () => {
 
       <div className="flex justify-center md:mt-[60px] mt-[24px] w-full">
         {/* Display mobile image on small screens */}
-        <div className="hidden md:flex">
+        <div className="hidden lg:flex items-center">
           <div className="">
             <img src={EXPART_PREDICTION} alt="EXPERT PREDICTION" />
           </div>
@@ -21,7 +21,7 @@ const WhatWeDo = () => {
             <img src={GROUPED_INFO} alt="GROUPED INFO" />
           </div>
         </div>
-        <div className="block md:hidden w-full">
+        <div className="block lg:hidden w-full">
           <img
             src={WHAT_WE_DO_MOBILE}
             alt="WHAT WE DO MOBILE"

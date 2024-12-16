@@ -12,7 +12,7 @@ const HeroSection = () => {
 
   return (
     <div className="w-full flex md:mt-[53px] mt-[15px] md:px-0 px-[16px]">
-      <img src={imageSrc} alt="HERO SECTION" className="w-[98%]" />
+      <img src={imageSrc} alt="HERO SECTION" className="w-full" />
     </div>
   );
 };

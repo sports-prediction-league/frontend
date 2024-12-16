@@ -24,20 +24,23 @@ module.exports = {
       },
     },
 
-    // screens: {
-    //   // xxs: "300px",
-    //   xs: "320px",
-    //   sm: "576px",
-    //   // => @media (min-width: 576px) { ... }
+    screens: {
+      // xxs: "300px",
+      xs: "320px",
+      smm: "375px",
+      smmm: "425px",
+      sm: "576px",
+      // => @media (min-width: 576px) { ... }
 
-    //   md: "768px",
-    //   // => @media (min-width: 768px) { ... }
+      md: "768px",
+      // => @media (min-width: 768px) { ... }
 
-    //   lg: "992px",
-    //   // => @media (min-width: 992px) { ... }
+      lg: "992px",
+      // => @media (min-width: 992px) { ... }
 
-    //   xl: "1200px",
-    // },
+      xl: "1200px",
+      xxl: "2560px",
+    },
   },
   plugins: [],
 };

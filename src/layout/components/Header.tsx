@@ -30,7 +30,7 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full md:h-[85px] h-[50px] flex items-center px-[16px] md:px-[90px] sticky top-0 z-50 bg-[#042822]">
+    <div className="w-full py-5 flex items-center px-[16px]  lg:px-[90px] sticky top-0 z-50 dark:bg-[#042822] bg-white dark:shadow-none shadow-sm">
       <div className="flex justify-between items-center w-full  mx-auto">
         <img
           src={SPL_LOGO}

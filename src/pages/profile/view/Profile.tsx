@@ -18,12 +18,14 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    updateProgress(100);
+    updateProgress(50);
   }, []);
 
   return (
-    <div className="md:mt-[122px] mt-[50px]">
-      <Title title="Profile" fontSizeSmall="35px" fontSizeMedium="35px" />
+    <div className="">
+      <div className="md:my-10 my-5">
+        <Title title="Profile" />
+      </div>
 
       <div className="flex flex-col items-center justify-center">
         <div className="flex items-end justify-center w-[184px] h-[184px] rounded-full bg-gray-400 overflow-hidden">
@@ -35,8 +37,8 @@ const Profile = () => {
             <img
               src={BADGE}
               alt="Badge"
-              className="w-[32px] h-[32px] absolute top-[-35px]"
-              style={{ left: `${progress - 7}%` }}
+              className="w-[22px] h-[22px] absolute top-[-25px]"
+              style={{ left: `${progress - 5}%` }}
             />
             <div
               className="bg-gradient-to-r from-[#2ec4b6] to-[#a6cee3] rounded-[5px] h-full"
@@ -60,10 +62,10 @@ const Profile = () => {
         </p>
       </div>
 
-      <div className="flex flex-col items-center justify-center mt-[40px] gap-[34px]">
-        <div className="md:w-[832px] w-[360px] h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center">
-          <div className="flex-1">
-            <div className="md:w-[235px] flex flex-col items-center md:justify-center">
+      <div className="flex flex-col items-center justify-center mt-[40px] lg:px-0 md:px-16 px-3 gap-[34px]">
+        <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center">
+          <div className="">
+            <div className="md:w-[235px] flex flex-col items-center justify-center">
               <img
                 src={STAR_ICON}
                 alt="ICON"
@@ -77,7 +79,7 @@ const Profile = () => {
               </p>
             </div>
           </div>
-          <div className="flex-1 flex flex-col items-end justify-center">
+          <div className="flex flex-col items-end justify-center">
             <div className="md:w-[235px] flex flex-col items-center justify-center">
               <img
                 src={RANK_ICON}
@@ -94,7 +96,7 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="md:w-[832px] w-[360px] h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center">
+        <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center">
           <p className="text-spl-white md:text-[24px] text-[15px]">
             Available for withdrawal
           </p>

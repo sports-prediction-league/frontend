@@ -3,8 +3,8 @@ import PREDICTION_HERO_BOY from "../../../assets/prediction/prediction_hero_boy.
 
 const PredictionHero = () => {
   return (
-    <div className="w-full md:px-[90px] px-[16px] mt-[45px]">
-      <div className="w-full md:h-[614px] h-fit bg-spl-green-100 rounded-[20px] bg-no-repeat bg-center bg-cover md:px-[110px] px-[31px] md:py-[51px] py-[14px] relative prediction-hero-container-bg">
+    <div className="w-full lg:px-[90px] px-[16px] mt-[45px]">
+      <div className="w-full md:h-[614px] h-fit bg-spl-green-100 rounded-[20px] bg-no-repeat bg-center bg-cover lg:px-[110px] px-[31px] md:py-[51px] py-[14px] relative prediction-hero-container-bg">
         <div className="w-[157px] md:w-[551px] md:text-[40px] text-[20px] font-semibold text-spl-white">
           <p className="md:leading-[92px] leading-[25px] md:text-[72px] text-[20px] font-black uppercase">
             Your Winning Picks, One Step Ahead

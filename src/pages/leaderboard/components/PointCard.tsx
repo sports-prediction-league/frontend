@@ -6,31 +6,29 @@ const PointCard = ({ active }: { active: boolean }) => {
     <div
       className={`${
         active
-          ? "md:w-[831px] w-full h-[122px] bg-spl-green-500 rounded-[32px] px-[30px] border border-[#E4E5E5] flex justify-between items-center text-spl-white"
-          : "md:w-[831px] w-full h-[122px] bg-spl-white rounded-[32px] px-[30px] border border-[#E4E5E5] flex justify-between items-center"
+          ? "lg:w-[831px] md:w-[590px] w-full bg-spl-green-500 rounded-2xl md:rounded-[32px] px-2 py-1 md:py-7 md:px-[30px] border border-[#E4E5E5] flex justify-between items-center text-spl-white"
+          : "lg:w-[831px] w-full md:w-[590px]  bg-spl-white rounded-2xl md:rounded-[32px] px-2 py-1 md:px-[30px] md:py-7 border border-[#E4E5E5] flex justify-between items-center"
       }`}
     >
       <div className="flex gap-[20px] items-center">
-        <div className="w-[30px] h-[30px] rounded-full flex justify-center items-center text-[#858494] text-[14px] font-medium font-[Rubik] border-2 border-[#E4E5E5]">
+        <div className="md:w-[30px] w-[20px] md:h-[30px] h-[20px] rounded-full flex justify-center items-center text-[#858494] md:text-[14px] text-xs font-medium font-[Rubik] md:border-2 border-[1px] border-[#E4E5E5]">
           4
         </div>
         <div className="flex items-center gap-[20px]">
-          <div className="md:w-[69px] md:h-[69px] w-[52px] h-[52px] rounded-full bg-[#C4C4C4] relative">
+          <div className="md:w-[69px] md:h-[69px] w-[42px] h-[42px] rounded-full bg-[#C4C4C4] relative">
             <img
               src={badge}
               alt="badge"
-              className="absolute -bottom-[6px] md:-bottom-2 md:-right-2 -right-1 md:w-[32px] md:h-[32px] w-[24px] h-[24px]"
+              className="absolute -bottom-[3px] md:bottom-1 md:-right-1 -right-0.5 md:w-[22px] md:h-[22px] w-[14px] h-[14px]"
             />
           </div>
-          <div className="flex flex-col gap-[4px]">
-            <p className="md:text-[24px] text-[20px] font-medium font-[Rubik]">
-              Salva
-            </p>
-            <p className="md:text-[20px] text-[15px] text-[#858494] font-[Rubik]">
+          <div className="flex flex-col gap-0.5">
+            <p className="md:text-[24px]  font-medium font-[Rubik]">Salva</p>
+            <p className="md:text-[20px] text-sm text-[#858494] font-[Rubik]">
               {" "}
               0xe2d3A...Ac72EBea1
             </p>
-            <p className="text-[17px] font-[Rubik] text-[#858494] md:hidden block">
+            <p className="text-sm font-[Rubik] text-[#858494] md:hidden block">
               2,569 points
             </p>
           </div>
