@@ -6,42 +6,39 @@ import SECOND_POSITION from "../../../assets/leaderboard/second_position.svg";
 import THIRD_POSITION from "../../../assets/leaderboard/third_position.svg";
 import BADGE from "../../../assets/leaderboard/badge.svg";
 
-// styles
-import "./styles.css";
-
 const LeaderBoardHero = () => {
   return (
-    <div className="leaderboard-hero">
-      <div className="leaderboard-hero-container">
-        <div className="leaderboard-hero-content-card">
-          <div className="leaderboard-hero-content-card-item">
+    <div className="w-full px-3 md:px-[90px]">
+      <div className="w-full md:h-[500px] h-[299px] p-5 bg-no-repeat bg-cover md:rounded-[36px] rounded-xl flex justify-center items-end leaderboard-hero-container-bg">
+        <div className="md:w-[726px] w-full md:h-[258px] h-[142px] bg-white md:rounded-[36px] rounded-xl md:p-5 p-3 grid grid-cols-3">
+          <div className="w-full h-full bg-spl-white relative">
             <img
               src={SECOND_POSITION}
               alt=""
-              className="leaderboard-hero-content-card-item-image"
+              className="absolute md:-top-[120px] -top-[60px] left-1/2 transform -translate-x-1/2 md:w-[144px] md:h-[165px] w-[62px] h-[71px]"
             />
             <div className="w-full h-full flex flex-col justify-center items-center">
-              <div className="md:w-[133px] w-[57px] break-words mt-3">
-                <p className="text-spl-black md:text-[15px] text-[10px] md:leading-6 font-medium text-center">
+              <div className="lg:w-[133px] md:w-[100px] w-[57px] break-words mt-3">
+                <p className="text-spl-black lg:text-[15px] md:text-[12px] text-[10px] md:leading-6 font-medium text-center">
                   0xe2d3A...Ac72EBea1
                 </p>
 
-                <p className="text-[#009BD6] md:text-[31px] text-[12px] font-bold text-center">
+                <p className="text-[#009BD6] lg:text-[31px] md:text-[14px] text-[12px] font-bold text-center">
                   1847
                 </p>
 
                 <img
                   src={BADGE}
                   alt="ICON"
-                  className="mx-auto mt-3 md:w-[25px] w-[11px] md:h-[25px] h-[11px]"
+                  className="mx-auto mt-3 lg:w-[25px] w-[11px] md:w-[18px] md:h-[18px] lg:h-[25px] h-[11px]"
                 />
               </div>
             </div>
           </div>
 
-          <div className="leaderboard-hero-content-card-item">
-            <div className="leaderboard-hero-content-card-item-center">
-              <div className="leaderboard-hero-content-card-item-center-content">
+          <div className="w-full h-full bg-spl-white relative">
+            <div className="w-full md:h-[337px] h-[181px] bg-spl-white absolute md:-top-[115px] -top-[70px] left-0 md:rounded-[60px] rounded-[25px] border border-[#00000033]">
+              <div className="w-full h-full relative">
                 <img
                   src={FIRST_POSITION}
                   alt=""
@@ -49,19 +46,19 @@ const LeaderBoardHero = () => {
                 />
 
                 <div className="w-full h-full flex flex-col justify-center items-center">
-                  <div className="md:w-[210px] w-[57px] break-words mt-3">
-                    <p className="text-spl-black md:text-[25px] text-[10px] md:leading-[36px] font-medium text-center">
+                  <div className="lg:w-[210px] md:w-[150px] w-[57px] break-words mt-3">
+                    <p className="text-spl-black lg:text-[25px] md:text-[15px]  text-[10px] md:leading-[36px] font-medium text-center">
                       0xe2d3A...Ac72EBea1
                     </p>
 
-                    <p className="text-[#FFAA00] md:text-[31px] text-[12px] font-bold text-center">
+                    <p className="text-[#FFAA00] lg:text-[31px] md:text-[20px] text-[12px] font-bold text-center">
                       1847
                     </p>
 
                     <img
                       src={BADGE}
                       alt="ICON"
-                      className="mx-auto mt-3 md:w-[35px] w-[15px] md:h-[35px] h-[15px]"
+                      className="mx-auto mt-3 lg:w-[35px] w-[15px] md:w-[22px] md:h-[22px] lg:h-[35px] h-[15px]"
                     />
                   </div>
                 </div>
@@ -69,27 +66,27 @@ const LeaderBoardHero = () => {
             </div>
           </div>
 
-          <div className="leaderboard-hero-content-card-item">
+          <div className="w-full h-full bg-spl-white relative">
             <img
               src={THIRD_POSITION}
               alt=""
-              className="leaderboard-hero-content-card-item-image"
+              className="absolute md:-top-[120px] -top-[60px] left-1/2 transform -translate-x-1/2 md:w-[144px] md:h-[165px] w-[62px] h-[71px]"
             />
 
             <div className="w-full h-full flex flex-col justify-center items-center">
-              <div className="md:w-[133px] w-[57px] break-words mt-3">
-                <p className="text-spl-black md:text-[15px] text-[10px] md:leading-6 font-medium text-center">
+              <div className="lg:w-[133px] md:w-[100px] w-[57px] break-words mt-3">
+                <p className="text-spl-black lg:text-[15px] md:text-[12px] text-[10px] md:leading-6 font-medium text-center">
                   0xe2d3A...Ac72EBea1
                 </p>
 
-                <p className="text-[#00D95F] md:text-[31px] text-[12px] font-bold text-center">
+                <p className="text-[#00D95F] lg:text-[31px] md:text-[14px] text-[12px] font-bold text-center">
                   1847
                 </p>
 
                 <img
                   src={BADGE}
                   alt="ICON"
-                  className="mx-auto mt-3 md:w-[25px] w-[11px] md:h-[25px] h-[11px]"
+                  className="mx-auto mt-3 lg:w-[25px] w-[11px] md:w-[18px] md:h-[18px] lg:h-[25px] h-[11px]"
                 />
               </div>
             </div>

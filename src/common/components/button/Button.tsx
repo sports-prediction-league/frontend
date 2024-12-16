@@ -1,9 +1,6 @@
 // interfaces
 import { IButtonProps } from "../../../interfaces";
 
-// styles
-import "./styles.css";
-
 const Button = ({
   text,
   width = "w-fit",
@@ -20,16 +17,20 @@ const Button = ({
 }: IButtonProps) => {
   return (
     <button
-      className={`button-container ${width} ${height} ${fontSize} ${rounded} ${fontWeight}`}
+      className={`button-container px-[14px] flex justify-center items-center gap-[6px] border leading-[25.7px] ${width} ${height} ${fontSize} ${rounded} ${fontWeight}`}
       onClick={onClick}
       disabled={disabled}
-      style={{
-        '--button-background': background,
-        '--button-background-hover': hoverBackground,
-        '--text-color': textColor,
-      } as React.CSSProperties}
+      style={
+        {
+          "--button-background": background,
+          "--button-background-hover": hoverBackground,
+          "--text-color": textColor,
+        } as React.CSSProperties
+      }
     >
-      {leftIcon && <img src={leftIcon} alt="ICON" className="w-[16px] h-[16px]" />}
+      {leftIcon && (
+        <img src={leftIcon} alt="ICON" className="w-[16px] h-[16px]" />
+      )}
       {text}
     </button>
   );
