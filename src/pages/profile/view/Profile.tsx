@@ -33,6 +33,7 @@ const Profile = () => {
       <div className="flex flex-col items-center justify-center">
         <div className="flex items-end justify-center w-[184px] h-[184px] rounded-full bg-gray-400 overflow-hidden">
           <img
+            className="w-full h-full rounded-full"
             src={profile?.profile_picture || PROFILE}
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
@@ -128,7 +129,7 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="mt-[57px] w-full">
+        <div className="mt-[57px] flex justify-center items-center w-full">
           {connected_address ? (
             <button
               onClick={handleDisconnect}
@@ -137,15 +138,13 @@ const Profile = () => {
               Disconnect Wallet
             </button>
           ) : (
-            <div className="flex justify-center">
-              <Button
-                onClick={handleConnect}
-                text="Connect wallet"
-                fontSize="md:text-[24px] text-[15px] w-full rounded-[5px]"
-                height="md:h-[76px] h-[33px]"
-                width="md:w-[484px] w-[209px]"
-              />
-            </div>
+            <Button
+              onClick={handleConnect}
+              text="Connect wallet"
+              fontSize="md:text-[24px] text-[15px] w-full rounded-[5px]"
+              height="md:h-[76px] h-[33px]"
+              width="md:w-[484px] w-[209px]"
+            />
           )}
         </div>
       </div>
