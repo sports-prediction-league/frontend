@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../../../context/ThemeContext";
 
 // interfaces
@@ -14,69 +14,75 @@ import COLUN from "../../../assets/upComingMatches/colun.svg";
 import COLUN_DARK from "../../../assets/upComingMatches/colun_dark.svg";
 import BX_STATS from "../../../assets/buttons/bx_stats.svg";
 import USERS_SOLID from "../../../assets/buttons/users_solid.svg";
+import { formatTimeNative, TEN_MINUTES_IN_MS } from "src/lib/utils";
 
 const PredictionCard = ({
-  title,
-  subtitle,
-  team1Name,
-  team1Score,
-  team2Name,
-  team2Score,
-  stakeAmount,
+  match,
+  keyIndex,
   onStakeClick,
+  predicting,
   onSeeStatsClick,
   onExplorePredictionsClick,
+  onChangePrediction,
 }: IPredictionCardProps) => {
   const { mode } = useContext(ThemeContext)!;
-
-  // State to manage score input values
-  const [scores, setScores] = useState({
-    team1Score: team1Score || "",
-    team2Score: team2Score || "",
-  });
 
   // Helper function to truncate names after 6 characters
   const truncateName = (name: string) =>
     name.length > 6 ? `${name.slice(0, 6)}...` : name;
 
-  // Handle input change
-  const handleScoreChange = (
-    team: "team1Score" | "team2Score",
-    value: string
-  ) => {
-    if (!isNaN(Number(value))) {
-      setScores((prevScores) => ({ ...prevScores, [team]: value }));
-    }
-  };
+  const currentTime = new Date(); // Get the current time
+  const targetDate = new Date(match.details.fixture.date);
+
+  const [closed_prediction, set_closed_prediction] = useState(false);
+  useEffect(() => {
+    set_closed_prediction(
+      targetDate.getTime() - currentTime.getTime() <= TEN_MINUTES_IN_MS
+    );
+  }, [match]);
 
   return (
     <div className="lg:w-[834px] w-[calc(100vw-5vw)] md:h-[390px] h-fit py-3 md:py-0 px-3  lg:px-[69px] rounded-xl md:rounded-[20px] dark:bg-[#042822] bg-spl-white lg:border-[2px] border-[0.5px] md:border-[#E4E5E5] border-[#E4E5E5] dark:border-[rgba(255,255,255,.5)] flex flex-col items-center justify-center shadow-sm">
       <p className="dark:text-spl-white text-spl-black text-[10px] lg:text-[15px] lg:leading-[20px] leading-[12px]">
-        {title}
+        {match.details.league.name}
       </p>
       <p className="dark:text-spl-white md:my-0 my-5 text-spl-black text-[10px] lg:text-[13px] lg:leading-[17px] leading-[12px] mt-[9px]">
-        {subtitle}
+        {formatTimeNative(match.details.fixture.date)}
       </p>
 
       <div className="flex items-center justify-center gap-[35px]">
         <div className="flex flex-col items-center justify-center gap-[18px]">
           <img
-            src={FC_CHELSEA}
+            src={match.details.teams.home.logo}
             alt="TEAM"
             className="md:w-[129px] w-[40px] smm:w-[55px] md:h-[129px] h-[40px] smm:h-[55px]"
           />
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-sm md:leading-[38px] leading-[0px] font-[Lato] font-bold">
-            {truncateName(team1Name)}
+            {truncateName(match.details.teams.home.name)}
           </p>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-[10px]">
           <div className="flex items-center justify-center gap-[14px]">
             <input
-              className="md:w-[112px] w-[38px] outline-none smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white border border-[#0000000D] flex items-center justify-center bg-transparent dark:text-spl-white text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black"
-              value={scores.team1Score}
-              onChange={(e) => handleScoreChange("team1Score", e.target.value)}
-              placeholder="0"
+              className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${
+                closed_prediction || match.predicted || predicting
+                  ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
+                  : "dark:border-spl-white border dark:text-spl-white"
+              } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
+              onChange={(e) => {
+                onChangePrediction(match.details.fixture.id.toString(), {
+                  home: e.target.value.trim(),
+                  keyIndex,
+                });
+              }}
+              defaultValue={
+                match.predictions?.length
+                  ? match.predictions[0].prediction.split(":")[0].trim()
+                  : ""
+              }
+              placeholder=""
+              disabled={closed_prediction || match.predicted || predicting}
             />
             <img
               src={mode === "dark" ? COLUN : COLUN_DARK}
@@ -84,10 +90,24 @@ const PredictionCard = ({
               className="md:w-[22px] w-[5px] smm:w-[8px] md:h-[76px] h-[23px]"
             />
             <input
-              className="md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white border border-[#0000000D] flex items-center justify-center bg-transparent dark:text-spl-white text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black"
-              value={scores.team2Score}
-              onChange={(e) => handleScoreChange("team2Score", e.target.value)}
-              placeholder="0"
+              className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${
+                closed_prediction || match.predicted || predicting
+                  ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
+                  : "dark:border-spl-white border dark:text-spl-white"
+              } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
+              onChange={(e) => {
+                onChangePrediction(match.details.fixture.id.toString(), {
+                  away: e.target.value.trim(),
+                  keyIndex,
+                });
+              }}
+              defaultValue={
+                match.predictions?.length
+                  ? match.predictions[0].prediction.split(":")[1].trim()
+                  : ""
+              }
+              disabled={closed_prediction || match.predicted || predicting}
+              placeholder=""
             />
           </div>
 
@@ -98,12 +118,12 @@ const PredictionCard = ({
 
         <div className="flex flex-col items-center justify-center gap-[18px]">
           <img
-            src={FC_LEICESTER}
+            src={match.details.teams.away.logo}
             alt="TEAM"
             className="md:w-[129px] w-[40px] smm:w-[55px] md:h-[129px] h-[40px] smm:h-[55px]"
           />
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-sm md:leading-[38px] leading-[0px] font-[Lato] font-bold">
-            {truncateName(team2Name)}
+            {truncateName(match.details.teams.away.name)}
           </p>
         </div>
       </div>
@@ -111,7 +131,7 @@ const PredictionCard = ({
       <div className="w-full flex flex-col md:flex-row items-center justify-center gap-[16px] mt-[34px]">
         <div className="md:min-w-[195px] w-full md:h-[91px] h-[46px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white md:border border-[0.5px] border-[#0000000D] flex items-center justify-center">
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[20px] text-center md:leading-[38px] leading-[24px] font-bold font-[Lato]">
-            {stakeAmount}
+            10
             <small className="dark:text-spl-white text-spl-black md:text-[15px] text-[10px] md:leading-[19px] leading-[12px] font-[Lato]">
               STRK
             </small>
@@ -120,6 +140,7 @@ const PredictionCard = ({
 
         <Button
           text="Stake"
+          disabled={closed_prediction || match.predicted || predicting}
           height="md:h-[90px] h-[39px]"
           width="md:min-w-[267px] w-full sm:block hidden"
           fontSize="md:text-[32px] text-[12px]"
@@ -153,6 +174,7 @@ const PredictionCard = ({
           <div className="col-span-6 w-full">
             <Button
               text="Stake"
+              disabled={closed_prediction || match.predicted || predicting}
               width="w-full"
               fontSize="md:text-[32px] text-[12px]"
               onClick={onStakeClick}

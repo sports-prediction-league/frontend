@@ -1,5 +1,6 @@
 // CONTEXT
 import {
+  addLeaderboard,
   bulkAddLeaderboard,
   bulkSetMatches,
   InitDataUnsafe,
@@ -26,8 +27,14 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
 import useContractInstance from "src/lib/useContractInstance";
-import { apiClient, feltToString, groupMatchesByDate } from "src/lib/utils";
+import {
+  apiClient,
+  feltToString,
+  groupMatchesByDate,
+  parse_error,
+} from "src/lib/utils";
 import toast from "react-hot-toast";
+import RegisterModal from "src/common/components/modal/RegisterModal";
 declare global {
   interface Window {
     Telegram?: {
@@ -51,9 +58,13 @@ declare global {
 }
 function App() {
   const dispatch = useAppDispatch();
-  const { current_round, is_mini_app, show_register_modal } = useAppSelector(
-    (state) => state.app
-  );
+  const {
+    current_round,
+    is_mini_app,
+    profile,
+    connected_address,
+    show_register_modal,
+  } = useAppSelector((state) => state.app);
   const { getArgentTMA } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
     useContractInstance();
@@ -76,7 +87,7 @@ function App() {
       }
       dispatch(setLoadingState(false));
 
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || error.message || "An error occurred"
@@ -108,7 +119,6 @@ function App() {
         }
       }
 
-      console.log({ structured });
       dispatch(setPredictions(structured));
     } catch (error: any) {
       console.log(error);
@@ -149,10 +159,6 @@ function App() {
       }
     })();
   }, []);
-
-  const connected_address = useAppSelector(
-    (state) => state.app.connected_address
-  );
 
   const check_if_registered = async (address: string) => {
     try {
@@ -315,7 +321,7 @@ function App() {
           window.dispatchEvent(event);
 
           // Custom data passed to the requestConnection() method is available here
-          console.log("callback data:", res.callbackData);
+          // console.log("callback data:", res.callbackData);
         })
         .catch((err: any) => {
           toast.error("failed to connect");
@@ -324,8 +330,55 @@ function App() {
     }
   }, [is_mini_app]);
 
+  const [registering, set_registering] = useState(false);
+
+  const register_user = async (username: string) => {
+    try {
+      if (!username.trim()) return;
+      set_registering(true);
+      const contract = getWalletProviderContract();
+      const random = Math.floor(10000000 + Math.random() * 90000000).toString();
+
+      await contract!.register_user(
+        is_mini_app && profile?.id
+          ? cairo.felt(profile.id.toString().trim())
+          : cairo.felt(random),
+        cairo.felt(username.trim().toLowerCase()),
+        {
+          // version: 3,
+          maxFee: 10 ** 15,
+        }
+      );
+
+      dispatch(
+        addLeaderboard({
+          totalPoints: 0,
+          user: {
+            id: Number(random),
+            username: username,
+          },
+        })
+      );
+      set_registering(false);
+      dispatch(setShowRegisterModal(false));
+      toast.success("Username set!");
+    } catch (error: any) {
+      toast.error(parse_error(error?.message));
+      set_registering(false);
+    }
+  };
+
   return (
     <ThemeProvider>
+      <RegisterModal
+        t_username={profile?.username}
+        loading={registering}
+        onOpenChange={() => {
+          dispatch(setShowRegisterModal(false));
+        }}
+        onSubmit={register_user}
+        open={show_register_modal}
+      />
       <Router />
     </ThemeProvider>
   );

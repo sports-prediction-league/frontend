@@ -72,13 +72,14 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
         />
         <Button
           text={connected_address ? "Profile" : "Connect Wallet"}
-          onClick={() => {
+          onClick={async () => {
             if (connected_address) {
               onClose();
               handleNavigation("/profile");
               return;
             }
-            handleConnect();
+            await handleConnect();
+            onClose();
           }}
           background={
             location.pathname === "/profile" || !connected_address
