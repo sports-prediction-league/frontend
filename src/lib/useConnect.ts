@@ -5,7 +5,6 @@ import { WalletAccount } from "starknet";
 import { connect, disconnect } from "starknetkit";
 import { setConnectedAddress } from "src/state/slices/appSlice";
 import { CONTRACT_ADDRESS } from "./utils";
-import toast from "react-hot-toast";
 
 const useConnect = () => {
   const getArgentTMA = () => {
@@ -15,11 +14,11 @@ const useConnect = () => {
       appTelegramUrl: "https://t.me/SPLBot/SPL", // Your Telegram app URL
       sessionParams: {
         allowedMethods: [
-          // // List of contracts/methods allowed to be called by the session key
-          // {
-          //   contract: CONTRACT_ADDRESS,
-          //   selector: "register_user",
-          // },
+          // List of contracts/methods allowed to be called by the session key
+          {
+            contract: CONTRACT_ADDRESS,
+            selector: "register_user",
+          },
           {
             contract: CONTRACT_ADDRESS,
             selector: "make_bulk_prediction",
@@ -52,8 +51,6 @@ const useConnect = () => {
               Account: undefined,
               IsConnected: false,
             };
-
-            toast.error("not connected");
 
             const event = new Event("windowWalletClassChange");
             window.dispatchEvent(event);
@@ -89,8 +86,6 @@ const useConnect = () => {
             IsConnected: true,
           };
 
-          toast.success("connected");
-
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
 
@@ -98,7 +93,6 @@ const useConnect = () => {
           console.log("callback data:", res.callbackData);
         })
         .catch((err) => {
-          toast.error("error here");
           console.error("Failed to connect", err);
         });
     }
@@ -133,7 +127,6 @@ const useConnect = () => {
         }
       }
     } catch (error) {
-      toast.error("connection err");
       console.log(error);
     }
   };
