@@ -22,7 +22,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 import Router from "../router/Router";
 import { cairo, WalletAccount } from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
 import useContractInstance from "src/lib/useContractInstance";
@@ -262,11 +262,12 @@ function App() {
     }
   }, []);
 
-  const argentTMA = getArgentTMA();
-
+  const [test, setTest] = useState("");
   useEffect(() => {
     // Call connect() as soon as the app is loaded
     if (is_mini_app) {
+      const argentTMA = getArgentTMA();
+
       argentTMA
         .connect()
         .then((res) => {
@@ -299,7 +300,10 @@ function App() {
               Account: res.account,
               IsConnected: false,
             };
-            toast.error("invalid session");
+
+            setTest(JSON.stringify(window.Wallet?.Account));
+            // connection.handleDisconnect();
+            toast.error(`invalid: ${window.Wallet?.Account}`);
 
             const event = new Event("windowWalletClassChange");
             window.dispatchEvent(event);
@@ -331,6 +335,7 @@ function App() {
 
   return (
     <ThemeProvider>
+      {test}
       <Router />
     </ThemeProvider>
   );
