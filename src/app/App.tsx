@@ -289,20 +289,19 @@ function App() {
 
           setTest(
             `${(
-              window.Wallet?.Account as SessionAccountInterface | undefined
+              res.account as SessionAccountInterface | undefined
             )?.getSessionStatus()}`
           );
           if (
-            (
-              window.Wallet?.Account as SessionAccountInterface | undefined
-            )?.getSessionStatus() !== "VALID"
+            (res.account as SessionAccountInterface).getSessionStatus() !==
+            "VALID"
           ) {
             // Session has expired or scope (allowed methods) has changed
             // A new connection request should be triggered
 
             setTest2(
               `${(
-                window.Wallet?.Account as SessionAccountInterface | undefined
+                res.account as SessionAccountInterface | undefined
               )?.getSessionStatus()}`
             );
             // The account object is still available to get access to user's address
