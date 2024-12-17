@@ -286,47 +286,51 @@ function App() {
             return;
           }
 
-          setTest(
-            `${(
-              window.Wallet?.Account as SessionAccountInterface | undefined
-            )?.getSessionStatus()}`
-          );
-          if (
-            (
-              window.Wallet?.Account as SessionAccountInterface | undefined
-            )?.getSessionStatus() !== "VALID"
-          ) {
-            // Session has expired or scope (allowed methods) has changed
-            // A new connection request should be triggered
+          // setTest(
+          //   `${(
+          //     window.Wallet?.Account as SessionAccountInterface | undefined
+          //   )?.getSessionStatus()}`
+          // );
+          // if (
+          //   (
+          //     window.Wallet?.Account as SessionAccountInterface | undefined
+          //   )?.getSessionStatus() !== "VALID"
+          // ) {
+          //   // Session has expired or scope (allowed methods) has changed
+          //   // A new connection request should be triggered
 
-            // The account object is still available to get access to user's address
-            // but transactions can't be executed
-            window.Wallet = {
-              Account: res.account,
-              IsConnected: false,
-            };
+          //   // The account object is still available to get access to user's address
+          //   // but transactions can't be executed
+          //   window.Wallet = {
+          //     Account: res.account,
+          //     IsConnected: false,
+          //   };
 
-            // connection.handleDisconnect();
-            // toast.error(`invalid: ${window.Wallet?.Account}`);
-            toast.error(
-              `${(
-                window.Wallet?.Account as SessionAccountInterface | undefined
-              )?.getSessionStatus()}`
-            );
+          //   // connection.handleDisconnect();
+          //   // toast.error(`invalid: ${window.Wallet?.Account}`);
+          //   toast.error(
+          //     `${(
+          //       window.Wallet?.Account as SessionAccountInterface | undefined
+          //     )?.getSessionStatus()}`
+          //   );
 
-            const event = new Event("windowWalletClassChange");
-            window.dispatchEvent(event);
+          //   const event = new Event("windowWalletClassChange");
+          //   window.dispatchEvent(event);
 
-            return;
-          }
+          //   return;
+          // }
 
           // Connected
           // The session account is returned and can be used to submit transactions
           window.Wallet = {
             Account: res.account,
-            IsConnected: true,
+            IsConnected:
+              (
+                window.Wallet?.Account as SessionAccountInterface | undefined
+              )?.getSessionStatus() === "VALID",
           };
 
+          setTest(JSON.stringify(window.Wallet));
           toast.success("connected");
 
           const event = new Event("windowWalletClassChange");
