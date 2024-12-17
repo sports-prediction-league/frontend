@@ -1,7 +1,16 @@
 // assets
+import { LeaderboardProp } from "src/state/slices/appSlice";
 import badge from "../../../assets/leaderboard/badge.svg";
 
-const PointCard = ({ active }: { active: boolean }) => {
+const PointCard = ({
+  active,
+  data,
+  index,
+}: {
+  active: boolean;
+  data: LeaderboardProp;
+  index: number;
+}) => {
   return (
     <div
       className={`${
@@ -12,7 +21,7 @@ const PointCard = ({ active }: { active: boolean }) => {
     >
       <div className="flex gap-[20px] items-center">
         <div className="md:w-[30px] w-[20px] md:h-[30px] h-[20px] rounded-full flex justify-center items-center text-[#858494] md:text-[14px] text-xs font-medium font-[Rubik] md:border-2 border-[1px] border-[#E4E5E5]">
-          4
+          {index + 1}
         </div>
         <div className="flex items-center gap-[20px]">
           <div className="md:w-[69px] md:h-[69px] w-[42px] h-[42px] rounded-full bg-[#C4C4C4] relative">
@@ -23,13 +32,15 @@ const PointCard = ({ active }: { active: boolean }) => {
             />
           </div>
           <div className="flex flex-col gap-0.5">
-            <p className="md:text-[24px]  font-medium font-[Rubik]">Salva</p>
+            <p className="md:text-[24px] capitalize  font-medium font-[Rubik]">
+              {data.user?.username}
+            </p>
             <p className="md:text-[20px] text-sm text-[#858494] font-[Rubik]">
               {" "}
               0xe2d3A...Ac72EBea1
             </p>
             <p className="text-sm font-[Rubik] text-[#858494] md:hidden block">
-              2,569 points
+              {data.totalPoints?.toLocaleString()} points
             </p>
           </div>
         </div>

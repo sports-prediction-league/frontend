@@ -1,12 +1,11 @@
+import { MatchData } from "src/state/slices/appSlice";
+
 export interface IPredictionCardProps {
-    title: string;
-    subtitle: string;
-    team1Name: string;
-    team1Score: number;
-    team2Name: string;
-    team2Score: number;
-    stakeAmount: string;
-    onStakeClick: () => void;
-    onSeeStatsClick: () => void;
-    onExplorePredictionsClick: () => void;
+  match: MatchData;
+  keyIndex: number;
+  predicting: boolean;
+  onChangePrediction: (matchId: string, value: any) => void;
+  onStakeClick: () => void;
+  onSeeStatsClick: () => void;
+  onExplorePredictionsClick: () => void;
 }

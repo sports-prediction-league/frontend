@@ -14,7 +14,7 @@ const UpcomingMatches = () => {
           </p>
         </div>
       </div>
-
+      {/* 
       <div className="flex flex-col flex-wrap gap-[63px] md:mt-[63px] mt-[7px]">
         <PredictionCard
           title="Premier League"
@@ -40,7 +40,7 @@ const UpcomingMatches = () => {
           onSeeStatsClick={() => {}}
           onExplorePredictionsClick={() => {}}
         />
-      </div>
+      </div> */}
     </div>
   );
 };

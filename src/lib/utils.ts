@@ -45,7 +45,7 @@ export function formatDateNative(dateString: string): string {
 
   const options: Intl.DateTimeFormatOptions = {
     weekday: "short", // e.g., 'Sat'
-    month: "long", // e.g., 'June'
+    month: "short", // e.g., 'June'
     day: "numeric", // e.g., '13'
   };
 
@@ -159,5 +159,7 @@ export function parse_error(error?: string): string {
     return error;
   }
 }
+
+export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
