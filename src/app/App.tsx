@@ -262,6 +262,7 @@ function App() {
     }
   }, []);
 
+  const connection = useConnect();
   const argentTMA = getArgentTMA();
 
   useEffect(() => {
@@ -299,7 +300,9 @@ function App() {
               Account: res.account,
               IsConnected: false,
             };
-            toast.error("invalid session");
+
+            // connection.handleDisconnect();
+            toast.error(`invalid: ${window.Wallet?.Account}`);
 
             const event = new Event("windowWalletClassChange");
             window.dispatchEvent(event);

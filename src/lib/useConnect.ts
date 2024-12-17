@@ -109,7 +109,7 @@ const useConnect = () => {
           callbackData: "custom_callback_data",
         });
       } else {
-        const { wallet } = await connect({});
+        const { wallet } = await connect();
 
         if (wallet && wallet.isConnected) {
           const myFrontendProviderUrl =
