@@ -286,6 +286,11 @@ function App() {
             return;
           }
 
+          setTest(
+            `${(
+              window.Wallet?.Account as SessionAccountInterface | undefined
+            )?.getSessionStatus()}`
+          );
           if (
             (
               window.Wallet?.Account as SessionAccountInterface | undefined
@@ -301,11 +306,6 @@ function App() {
               IsConnected: false,
             };
 
-            setTest(
-              `${(
-                window.Wallet?.Account as SessionAccountInterface | undefined
-              )?.getSessionStatus()}`
-            );
             // connection.handleDisconnect();
             // toast.error(`invalid: ${window.Wallet?.Account}`);
             toast.error(
