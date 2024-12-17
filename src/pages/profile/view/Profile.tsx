@@ -9,10 +9,13 @@ import STAR_ICON from "../../../assets/profile/star_icon.svg";
 import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 
 import Button from "../../../common/components/button/Button";
+import { useAppSelector } from "src/state/store";
+import useConnect from "src/lib/useConnect";
 
 const Profile = () => {
   const [progress, setProgress] = useState(10);
-
+  const { handleDisconnect, handleConnect } = useConnect();
+  const { profile, connected_address } = useAppSelector((state) => state.app);
   const updateProgress = (newProgress: number) => {
     setProgress(newProgress);
   };
@@ -29,7 +32,14 @@ const Profile = () => {
 
       <div className="flex flex-col items-center justify-center">
         <div className="flex items-end justify-center w-[184px] h-[184px] rounded-full bg-gray-400 overflow-hidden">
-          <img src={PROFILE} alt="profile" />
+          <img
+            src={profile?.profile_picture || PROFILE}
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
+              (e.target as HTMLImageElement).src = PROFILE;
+            }}
+            alt="profile"
+          />
         </div>
 
         <div className="text-center w-[250px] h-[5px] mx-auto mt-[50px] relative">
@@ -55,10 +65,14 @@ const Profile = () => {
         <Button text="See all badges" fontSize="text-[10px]" />
 
         <p className="mt-[38px] md:text-[36px] text-[20px] font-[Rubik] font-medium dark:text-spl-white">
-          Madelyn Dias
+          {profile?.username}
         </p>
         <p className="mt-[10px] md:text-[24px] text-[15px] dark:text-spl-white">
-          xe2d3A...Ac72EBea1
+          {connected_address
+            ? `${connected_address.slice(0, 6)}... ${connected_address.slice(
+                -4
+              )}`
+            : ""}
         </p>
       </div>
 
@@ -114,10 +128,25 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="mt-[57px]">
-          <button className="bg-red-600 text-spl-white text-[15px] font-bold font-[Lato] py-[10px] px-[20px] rounded-[10px] w-[277px] h-[56px]">
-            Disconnect Wallet
-          </button>
+        <div className="mt-[57px] w-full">
+          {connected_address ? (
+            <button
+              onClick={handleDisconnect}
+              className="bg-red-600 text-spl-white text-[15px] font-bold font-[Lato] py-[10px] px-[20px] rounded-[10px] w-[277px] h-[56px]"
+            >
+              Disconnect Wallet
+            </button>
+          ) : (
+            <div className="flex justify-center">
+              <Button
+                onClick={handleConnect}
+                text="Connect wallet"
+                fontSize="md:text-[24px] text-[15px] w-full rounded-[5px]"
+                height="md:h-[76px] h-[33px]"
+                width="md:w-[484px] w-[209px]"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

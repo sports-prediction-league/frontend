@@ -289,6 +289,8 @@ function App() {
                 IsConnected: false,
               };
 
+              toast.error("did not connect");
+
               const event = new Event("windowWalletClassChange");
               window.dispatchEvent(event);
 
@@ -309,6 +311,7 @@ function App() {
                 Account: res.account,
                 IsConnected: false,
               };
+              toast.error("invalid session");
 
               const event = new Event("windowWalletClassChange");
               window.dispatchEvent(event);
@@ -323,6 +326,8 @@ function App() {
               IsConnected: true,
             };
 
+            toast.success("connected");
+
             const event = new Event("windowWalletClassChange");
             window.dispatchEvent(event);
 
@@ -330,6 +335,7 @@ function App() {
             console.log("callback data:", res.callbackData);
           })
           .catch((err: any) => {
+            toast.error("failed to connect");
             console.error("Failed to connect", err);
           });
       }

@@ -1,11 +1,10 @@
 import React from "react";
 import Button from "../../common/components/button/Button";
-// import "./styles.css"; // Add your styles here
 import { FaTimes } from "react-icons/fa"; // Import the close icon
 import { useLocation } from "react-router";
-import DARK_MODE from "../../assets/header/dark_mode.svg";
-import LIGHT_MODE from "../../assets/header/light_mode.svg";
 import DarkmodeButton from "../../common/components/button/DarkmodeButton";
+import { useAppSelector } from "src/state/store";
+import useConnect from "src/lib/useConnect";
 
 interface SideDrawerProps {
   isOpen: boolean;
@@ -23,6 +22,10 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
   toggleMode,
 }) => {
   const location = useLocation();
+  const connected_address = useAppSelector(
+    (state) => state.app.connected_address
+  );
+  const { handleConnect } = useConnect();
 
   return (
     <div className={`side-drawer ${isOpen ? "open" : ""}`}>
@@ -68,13 +71,25 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
           fontWeight="font-medium"
         />
         <Button
-          text="Profile"
+          text={connected_address ? "Profile" : "Connect Wallet"}
           onClick={() => {
-            onClose();
-            handleNavigation("/profile");
+            if (connected_address) {
+              onClose();
+              handleNavigation("/profile");
+              return;
+            }
+            handleConnect();
           }}
-          background={location.pathname === "/profile" ? undefined : "#FFFFFF"}
-          textColor={location.pathname === "/profile" ? undefined : "#000000"}
+          background={
+            location.pathname === "/profile" || !connected_address
+              ? undefined
+              : "#FFFFFF"
+          }
+          textColor={
+            location.pathname === "/profile" || !connected_address
+              ? undefined
+              : "#000000"
+          }
           fontWeight="font-medium"
         />
       </div>
