@@ -29,6 +29,7 @@ import useConnect from "src/lib/useConnect";
 import useContractInstance from "src/lib/useContractInstance";
 import {
   apiClient,
+  CONTRACT_ADDRESS,
   feltToString,
   groupMatchesByDate,
   parse_error,
@@ -338,13 +339,22 @@ function App() {
       set_registering(true);
       const contract = getWalletProviderContract();
       const random = Math.floor(10000000 + Math.random() * 90000000).toString();
-      const estimatedFee = await contract?.estimate("register_user", [
-        is_mini_app && profile?.id
-          ? cairo.felt(profile.id.toString().trim())
-          : cairo.felt(random),
-        cairo.felt(username.trim().toLowerCase()),
-      ]);
-
+      // const estimatedFee = await contract?.estimate("register_user", [
+      //   is_mini_app && profile?.id
+      //     ? cairo.felt(profile.id.toString().trim())
+      //     : cairo.felt(random),
+      //   cairo.felt(username.trim().toLowerCase()),
+      // ]);
+      const estimatedFee = await window.Wallet.Account?.estimateInvokeFee({
+        contractAddress: CONTRACT_ADDRESS,
+        entrypoint: "register_user",
+        calldata: [
+          is_mini_app && profile?.id
+            ? cairo.felt(profile.id.toString().trim())
+            : cairo.felt(random),
+          cairo.felt(username.trim().toLowerCase()),
+        ],
+      });
       const maxFee =
         (BigInt(estimatedFee?.suggestedMaxFee ?? 1) * BigInt(11)) / BigInt(10);
 
