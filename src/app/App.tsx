@@ -293,9 +293,8 @@ function App() {
             )?.getSessionStatus()}`
           );
           if (
-            (
-              window.Wallet?.Account as SessionAccountInterface | undefined
-            )?.getSessionStatus() !== "VALID"
+            (res.account as SessionAccountInterface).getSessionStatus() !==
+            "VALID"
           ) {
             // Session has expired or scope (allowed methods) has changed
             // A new connection request should be triggered
