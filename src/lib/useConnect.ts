@@ -37,11 +37,12 @@ const useConnect = () => {
 
   const is_mini_app = useAppSelector((state) => state.app.is_mini_app);
   const dispatch = useAppDispatch();
-  const argentTMA = getArgentTMA();
 
   useEffect(() => {
     // Call connect() as soon as the app is loaded
     if (is_mini_app) {
+      const argentTMA = getArgentTMA();
+
       argentTMA
         .connect()
         .then((res) => {
@@ -101,6 +102,8 @@ const useConnect = () => {
   const handleConnect = async () => {
     try {
       if (is_mini_app) {
+        const argentTMA = getArgentTMA();
+
         // If not connected, trigger a connection request
         // It will open the wallet and ask the user to approve the connection
         // The wallet will redirect back to the app and the account will be available
@@ -135,6 +138,8 @@ const useConnect = () => {
 
   const handleDisconnect = async () => {
     if (is_mini_app) {
+      const argentTMA = getArgentTMA();
+
       await argentTMA.clearSession();
     } else {
       await disconnect();
