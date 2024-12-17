@@ -300,7 +300,7 @@ function App() {
             // A new connection request should be triggered
 
             setTest2(
-              `${(
+              `2${(
                 res.account as SessionAccountInterface | undefined
               )?.getSessionStatus()}`
             );
