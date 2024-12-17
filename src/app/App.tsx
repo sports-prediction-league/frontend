@@ -51,8 +51,9 @@ declare global {
 }
 function App() {
   const dispatch = useAppDispatch();
-  const { current_round, is_mini_app, loaded, show_register_modal } =
-    useAppSelector((state) => state.app);
+  const { current_round, is_mini_app, show_register_modal } = useAppSelector(
+    (state) => state.app
+  );
   const { getArgentTMA } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
     useContractInstance();
@@ -115,41 +116,39 @@ function App() {
   };
 
   useEffect(() => {
-    if (loaded) {
-      (async function () {
-        try {
-          const contract = connected_address
-            ? getWalletProviderContract()
-            : getRPCProviderContract();
-          const tx = await contract!.get_leaderboard(
-            cairo.uint256(0),
-            cairo.uint256(1000)
-          );
+    (async function () {
+      try {
+        const contract = connected_address
+          ? getWalletProviderContract()
+          : getRPCProviderContract();
+        const tx = await contract!.get_leaderboard(
+          cairo.uint256(0),
+          cairo.uint256(1000)
+        );
 
-          let structured_data: LeaderboardProp[] = [];
+        let structured_data: LeaderboardProp[] = [];
 
-          for (let i = 0; i < tx.length; i++) {
-            const element = tx[i];
-            structured_data.push({
-              user: {
-                username: feltToString(element.user),
-              },
-              totalPoints: Number(element.total_score),
-            });
-          }
-          dispatch(bulkAddLeaderboard(structured_data));
-
-          const response = await apiClient.get("/leaderboard_images");
-
-          if (response.data.success) {
-            dispatch(updateLeaderboardImages(response.data.data));
-          }
-        } catch (error) {
-          console.log({ error });
+        for (let i = 0; i < tx.length; i++) {
+          const element = tx[i];
+          structured_data.push({
+            user: {
+              username: feltToString(element.user),
+            },
+            totalPoints: Number(element.total_score),
+          });
         }
-      })();
-    }
-  }, [loaded]);
+        dispatch(bulkAddLeaderboard(structured_data));
+
+        const response = await apiClient.get("/leaderboard_images");
+
+        if (response.data.success) {
+          dispatch(updateLeaderboardImages(response.data.data));
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    })();
+  }, []);
 
   const connected_address = useAppSelector(
     (state) => state.app.connected_address
@@ -174,179 +173,162 @@ function App() {
   };
 
   useEffect(() => {
-    if (loaded) {
-      if (connected_address) {
-        check_if_registered(connected_address);
+    if (connected_address) {
+      check_if_registered(connected_address);
+    }
+  }, [connected_address]);
+
+  useEffect(() => {
+    if (connected_address) {
+      if (current_round !== 0) {
+        get_user_predictions(connected_address);
       }
     }
-  }, [connected_address, loaded]);
+  }, [connected_address, current_round]);
 
   useEffect(() => {
-    if (loaded) {
-      if (connected_address) {
-        if (current_round !== 0) {
-          get_user_predictions(connected_address);
-        }
+    fetch_matches();
+  }, []);
+
+  useEffect(() => {
+    let interval: any;
+    const handle_wallet_change = () => {
+      if (!window.Wallet?.IsConnected) {
+        dispatch(setConnectedAddress(null));
+        return;
       }
-    }
-  }, [loaded, connected_address, current_round]);
-
-  useEffect(() => {
-    if (loaded) {
-      fetch_matches();
-    }
-  }, [loaded]);
-
-  useEffect(() => {
-    if (loaded) {
-      let interval: any;
-      const handle_wallet_change = () => {
-        if (!window.Wallet?.IsConnected) {
-          dispatch(setConnectedAddress(null));
-          return;
+      interval = setInterval(() => {
+        if (connected_address) {
+          clearInterval(interval);
         }
-        interval = setInterval(() => {
-          if (connected_address) {
-            clearInterval(interval);
-          }
-          if (window.Wallet) {
-            if ((window.Wallet.Account as any)?.address) {
-              if (!connected_address) {
-                dispatch(
-                  setConnectedAddress(
-                    (window.Wallet?.Account as any)?.address ?? null
-                  )
-                );
-              }
-
-              clearInterval(interval);
+        if (window.Wallet) {
+          if ((window.Wallet.Account as any)?.address) {
+            if (!connected_address) {
+              dispatch(
+                setConnectedAddress(
+                  (window.Wallet?.Account as any)?.address ?? null
+                )
+              );
             }
-          } else {
+
             clearInterval(interval);
-          }
-        }, 500);
-      };
-
-      handle_wallet_change();
-
-      window.addEventListener("windowWalletClassChange", handle_wallet_change);
-      return () => {
-        clearInterval(interval);
-        window.removeEventListener(
-          "windowWalletClassChange",
-          handle_wallet_change
-        );
-      };
-    }
-  }, [loaded]);
-
-  useEffect(() => {
-    if (loaded) {
-      const fetchProfilePhoto = async (userId: string) => {
-        try {
-          const response = await apiClient.get(`/profile_pic`, {
-            params: { userId },
-            responseType: "blob",
-          });
-
-          const photoUrl = URL.createObjectURL(new Blob([response.data]));
-          dispatch(update_profile({ profile_picture: photoUrl }));
-        } catch (error) {}
-      };
-
-      const telegram = window.Telegram;
-
-      if (telegram && telegram.WebApp && telegram.WebApp.initDataUnsafe) {
-        const initDataUnsafe = telegram.WebApp.initDataUnsafe;
-
-        if (initDataUnsafe.user) {
-          dispatch(setIsMiniApp(true));
-          dispatch(update_profile(initDataUnsafe.user));
-          if (initDataUnsafe?.user?.id) {
-            fetchProfilePhoto(initDataUnsafe.user.id.toString());
           }
         } else {
+          clearInterval(interval);
+        }
+      }, 500);
+    };
+
+    handle_wallet_change();
+
+    window.addEventListener("windowWalletClassChange", handle_wallet_change);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener(
+        "windowWalletClassChange",
+        handle_wallet_change
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchProfilePhoto = async (userId: string) => {
+      try {
+        const response = await apiClient.get(`/profile_pic`, {
+          params: { userId },
+          responseType: "blob",
+        });
+
+        const photoUrl = URL.createObjectURL(new Blob([response.data]));
+        dispatch(update_profile({ profile_picture: photoUrl }));
+      } catch (error) {}
+    };
+
+    const telegram = window.Telegram;
+
+    if (telegram && telegram.WebApp && telegram.WebApp.initDataUnsafe) {
+      const initDataUnsafe = telegram.WebApp.initDataUnsafe;
+
+      if (initDataUnsafe.user) {
+        dispatch(setIsMiniApp(true));
+        dispatch(update_profile(initDataUnsafe.user));
+        if (initDataUnsafe?.user?.id) {
+          fetchProfilePhoto(initDataUnsafe.user.id.toString());
         }
       } else {
-        telegram?.WebApp?.close();
       }
+    } else {
+      telegram?.WebApp?.close();
     }
-  }, [loaded]);
+  }, []);
 
   const argentTMA = getArgentTMA();
 
   useEffect(() => {
     // Call connect() as soon as the app is loaded
-    if (loaded) {
-      if (is_mini_app) {
-        argentTMA
-          .connect()
-          .then((res) => {
-            if (!res) {
-              // Not connected
-              window.Wallet = {
-                Account: undefined,
-                IsConnected: false,
-              };
-
-              toast.error("did not connect");
-
-              const event = new Event("windowWalletClassChange");
-              window.dispatchEvent(event);
-
-              return;
-            }
-
-            if (
-              (
-                window.Wallet?.Account as SessionAccountInterface | undefined
-              )?.getSessionStatus() !== "VALID"
-            ) {
-              // Session has expired or scope (allowed methods) has changed
-              // A new connection request should be triggered
-
-              // The account object is still available to get access to user's address
-              // but transactions can't be executed
-              window.Wallet = {
-                Account: res.account,
-                IsConnected: false,
-              };
-              toast.error("invalid session");
-
-              const event = new Event("windowWalletClassChange");
-              window.dispatchEvent(event);
-
-              return;
-            }
-
-            // Connected
-            // The session account is returned and can be used to submit transactions
+    if (is_mini_app) {
+      argentTMA
+        .connect()
+        .then((res) => {
+          if (!res) {
+            // Not connected
             window.Wallet = {
-              Account: res.account,
-              IsConnected: true,
+              Account: undefined,
+              IsConnected: false,
             };
 
-            toast.success("connected");
+            toast.error("did not connect");
 
             const event = new Event("windowWalletClassChange");
             window.dispatchEvent(event);
 
-            // Custom data passed to the requestConnection() method is available here
-            console.log("callback data:", res.callbackData);
-          })
-          .catch((err: any) => {
-            toast.error("failed to connect");
-            console.error("Failed to connect", err);
-          });
-      }
-    }
-  }, [is_mini_app, loaded]);
+            return;
+          }
 
-  useEffect(() => {
-    if (!loaded) {
-      dispatch(setLoaded(true));
+          if (
+            (
+              window.Wallet?.Account as SessionAccountInterface | undefined
+            )?.getSessionStatus() !== "VALID"
+          ) {
+            // Session has expired or scope (allowed methods) has changed
+            // A new connection request should be triggered
+
+            // The account object is still available to get access to user's address
+            // but transactions can't be executed
+            window.Wallet = {
+              Account: res.account,
+              IsConnected: false,
+            };
+            toast.error("invalid session");
+
+            const event = new Event("windowWalletClassChange");
+            window.dispatchEvent(event);
+
+            return;
+          }
+
+          // Connected
+          // The session account is returned and can be used to submit transactions
+          window.Wallet = {
+            Account: res.account,
+            IsConnected: true,
+          };
+
+          toast.success("connected");
+
+          const event = new Event("windowWalletClassChange");
+          window.dispatchEvent(event);
+
+          // Custom data passed to the requestConnection() method is available here
+          console.log("callback data:", res.callbackData);
+        })
+        .catch((err: any) => {
+          toast.error("failed to connect");
+          console.error("Failed to connect", err);
+        });
     }
-  }, []);
+  }, [is_mini_app]);
+
   return (
     <ThemeProvider>
       <Router />
