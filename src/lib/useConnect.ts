@@ -38,66 +38,66 @@ const useConnect = () => {
   const is_mini_app = useAppSelector((state) => state.app.is_mini_app);
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    // Call connect() as soon as the app is loaded
-    if (is_mini_app) {
-      const argentTMA = getArgentTMA();
+  // useEffect(() => {
+  //   // Call connect() as soon as the app is loaded
+  //   if (is_mini_app) {
+  //     const argentTMA = getArgentTMA();
 
-      argentTMA
-        .connect()
-        .then((res) => {
-          if (!res) {
-            // Not connected
-            window.Wallet = {
-              Account: undefined,
-              IsConnected: false,
-            };
+  //     argentTMA
+  //       .connect()
+  //       .then((res) => {
+  //         if (!res) {
+  //           // Not connected
+  //           window.Wallet = {
+  //             Account: undefined,
+  //             IsConnected: false,
+  //           };
 
-            const event = new Event("windowWalletClassChange");
-            window.dispatchEvent(event);
+  //           const event = new Event("windowWalletClassChange");
+  //           window.dispatchEvent(event);
 
-            return;
-          }
+  //           return;
+  //         }
 
-          if (
-            (
-              window.Wallet?.Account as SessionAccountInterface | undefined
-            )?.getSessionStatus() !== "VALID"
-          ) {
-            // Session has expired or scope (allowed methods) has changed
-            // A new connection request should be triggered
+  //         if (
+  //           (
+  //             window.Wallet?.Account as SessionAccountInterface | undefined
+  //           )?.getSessionStatus() !== "VALID"
+  //         ) {
+  //           // Session has expired or scope (allowed methods) has changed
+  //           // A new connection request should be triggered
 
-            // The account object is still available to get access to user's address
-            // but transactions can't be executed
-            window.Wallet = {
-              Account: res.account,
-              IsConnected: false,
-            };
+  //           // The account object is still available to get access to user's address
+  //           // but transactions can't be executed
+  //           window.Wallet = {
+  //             Account: res.account,
+  //             IsConnected: false,
+  //           };
 
-            const event = new Event("windowWalletClassChange");
-            window.dispatchEvent(event);
+  //           const event = new Event("windowWalletClassChange");
+  //           window.dispatchEvent(event);
 
-            return;
-          }
+  //           return;
+  //         }
 
-          // Connected
-          // The session account is returned and can be used to submit transactions
-          window.Wallet = {
-            Account: res.account,
-            IsConnected: true,
-          };
+  //         // Connected
+  //         // The session account is returned and can be used to submit transactions
+  //         window.Wallet = {
+  //           Account: res.account,
+  //           IsConnected: true,
+  //         };
 
-          const event = new Event("windowWalletClassChange");
-          window.dispatchEvent(event);
+  //         const event = new Event("windowWalletClassChange");
+  //         window.dispatchEvent(event);
 
-          // Custom data passed to the requestConnection() method is available here
-          console.log("callback data:", res.callbackData);
-        })
-        .catch((err) => {
-          console.error("Failed to connect", err);
-        });
-    }
-  }, []);
+  //         // Custom data passed to the requestConnection() method is available here
+  //         console.log("callback data:", res.callbackData);
+  //       })
+  //       .catch((err) => {
+  //         console.error("Failed to connect", err);
+  //       });
+  //   }
+  // }, []);
 
   const handleConnect = async () => {
     try {
