@@ -289,7 +289,7 @@ function App() {
 
           setTest(
             `${(
-              window.Wallet?.Account as SessionAccountInterface | undefined
+              res.account as SessionAccountInterface | undefined
             )?.getSessionStatus()}`
           );
           if (
@@ -301,7 +301,7 @@ function App() {
 
             setTest2(
               `${(
-                window.Wallet?.Account as SessionAccountInterface | undefined
+                res.account as SessionAccountInterface | undefined
               )?.getSessionStatus()}`
             );
             // The account object is still available to get access to user's address
