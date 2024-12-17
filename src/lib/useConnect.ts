@@ -105,7 +105,9 @@ const useConnect = () => {
         // It will open the wallet and ask the user to approve the connection
         // The wallet will redirect back to the app and the account will be available
         // from the connect() method -- see above
-        await argentTMA.requestConnection("custom_callback_data");
+        await argentTMA.requestConnection({
+          callbackData: "custom_callback_data",
+        });
       } else {
         const { wallet } = await connect({});
 
