@@ -343,11 +343,11 @@ function App() {
         is_mini_app && profile?.id
           ? cairo.felt(profile.id.toString().trim())
           : cairo.felt(random),
-        cairo.felt(username.trim().toLowerCase()),
-        {
-          // version: 3,
-          maxFee: 100 ** 15,
-        }
+        cairo.felt(username.trim().toLowerCase())
+        // {
+        //   // version: 3,
+        //   maxFee: 100 ** 15,
+        // }
       );
 
       dispatch(
