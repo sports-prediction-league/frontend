@@ -301,7 +301,11 @@ function App() {
               IsConnected: false,
             };
 
-            setTest(JSON.stringify(window.Wallet?.Account));
+            setTest(
+              `${(
+                window.Wallet?.Account as SessionAccountInterface | undefined
+              )?.getSessionStatus()}`
+            );
             // connection.handleDisconnect();
             // toast.error(`invalid: ${window.Wallet?.Account}`);
             toast.error(
