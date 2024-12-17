@@ -345,8 +345,8 @@ function App() {
           : cairo.felt(random),
         cairo.felt(username.trim().toLowerCase()),
         {
-          version: 3,
-          maxFee: 10 ** 18,
+          // version: 3,
+          maxFee: 100 ** 15,
         }
       );
 
