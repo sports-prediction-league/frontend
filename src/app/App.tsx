@@ -262,8 +262,6 @@ function App() {
     }
   }, []);
 
-  const [test, setTest] = useState("");
-  const [test2, setTest2] = useState("");
   useEffect(() => {
     // Call connect() as soon as the app is loaded
     if (is_mini_app) {
@@ -279,45 +277,24 @@ function App() {
               IsConnected: false,
             };
 
-            toast.error("did not connect");
-
             const event = new Event("windowWalletClassChange");
             window.dispatchEvent(event);
 
             return;
           }
 
-          setTest(
-            `${(
-              res.account as SessionAccountInterface | undefined
-            )?.getSessionStatus()}`
-          );
           if (
             (res.account as SessionAccountInterface).getSessionStatus() !==
             "VALID"
           ) {
             // Session has expired or scope (allowed methods) has changed
             // A new connection request should be triggered
-
-            setTest2(
-              `2${(
-                res.account as SessionAccountInterface | undefined
-              )?.getSessionStatus()}`
-            );
             // The account object is still available to get access to user's address
             // but transactions can't be executed
             window.Wallet = {
               Account: res.account,
               IsConnected: false,
             };
-
-            // connection.handleDisconnect();
-            // toast.error(`invalid: ${window.Wallet?.Account}`);
-            toast.error(
-              `${(
-                window.Wallet?.Account as SessionAccountInterface | undefined
-              )?.getSessionStatus()}`
-            );
 
             const event = new Event("windowWalletClassChange");
             window.dispatchEvent(event);
@@ -329,10 +306,7 @@ function App() {
           // The session account is returned and can be used to submit transactions
           window.Wallet = {
             Account: res.account,
-            IsConnected:
-              (
-                window.Wallet?.Account as SessionAccountInterface | undefined
-              )?.getSessionStatus() === "VALID",
+            IsConnected: true,
           };
 
           toast.success("connected");
@@ -352,8 +326,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      {test}
-      {test2}
       <Router />
     </ThemeProvider>
   );
