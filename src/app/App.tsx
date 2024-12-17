@@ -338,16 +338,25 @@ function App() {
       set_registering(true);
       const contract = getWalletProviderContract();
       const random = Math.floor(10000000 + Math.random() * 90000000).toString();
+      const estimatedFee = await contract?.estimate("register_user", [
+        is_mini_app && profile?.id
+          ? cairo.felt(profile.id.toString().trim())
+          : cairo.felt(random),
+        cairo.felt(username.trim().toLowerCase()),
+      ]);
+
+      const maxFee =
+        (BigInt(estimatedFee?.suggestedMaxFee ?? 1) * BigInt(11)) / BigInt(10);
 
       await contract!.register_user(
         is_mini_app && profile?.id
           ? cairo.felt(profile.id.toString().trim())
           : cairo.felt(random),
-        cairo.felt(username.trim().toLowerCase())
-        // {
-        //   // version: 3,
-        //   maxFee: 100 ** 15,
-        // }
+        cairo.felt(username.trim().toLowerCase()),
+        {
+          // version: 3,
+          maxFee,
+        }
       );
 
       dispatch(
