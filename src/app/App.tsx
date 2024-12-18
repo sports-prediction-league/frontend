@@ -21,7 +21,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { cairo, num, provider, RPC, WalletAccount } from "starknet";
+import { cairo, WalletAccount } from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
@@ -268,6 +268,7 @@ function App() {
       telegram?.WebApp?.close();
     }
   }, []);
+  const [test, setTest] = useState("");
 
   useEffect(() => {
     // Call connect() as soon as the app is loaded
@@ -321,6 +322,20 @@ function App() {
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
 
+          (async function () {
+            const yo =
+              await argentTMA.sessionAccount?.getOutsideExecutionPayload({
+                calls: [
+                  {
+                    contractAddress: CONTRACT_ADDRESS,
+                    entrypoint: "register_user",
+                    calldata: ["id", "username"],
+                  },
+                ],
+              });
+            setTest(JSON.stringify(yo));
+          })();
+
           // Custom data passed to the requestConnection() method is available here
           // console.log("callback data:", res.callbackData);
         })
@@ -339,67 +354,17 @@ function App() {
       set_registering(true);
       const contract = getWalletProviderContract();
       const random = Math.floor(10000000 + Math.random() * 90000000).toString();
-      // const estimatedFee = await contract?.estimate("register_user", [
-      //   is_mini_app && profile?.id
-      //     ? cairo.felt(profile.id.toString().trim())
-      //     : cairo.felt(random),
-      //   cairo.felt(username.trim().toLowerCase()),
-      // ]);
-      // const estimatedFee = await window.Wallet.Account?.estimateInvokeFee({
-      //   contractAddress: CONTRACT_ADDRESS,
-      //   entrypoint: "register_user",
-      //   calldata: [
-      //     is_mini_app && profile?.id
-      //       ? cairo.felt(profile.id.toString().trim())
-      //       : cairo.felt(random),
-      //     cairo.felt(username.trim().toLowerCase()),
-      //   ],
-      // });
 
-      const myCall = contract!.populate("register_user", [
+      await contract!.register_user(
         is_mini_app && profile?.id
           ? cairo.felt(profile.id.toString().trim())
           : cairo.felt(random),
         cairo.felt(username.trim().toLowerCase()),
-      ]);
-      const maxQtyGasAuthorized = BigInt(1800); // max quantity of gas authorized
-      const maxPriceAuthorizeForOneGas = BigInt(12000000000); // max FRI authorized to pay 1 gas (1 FRI=10**-18 STRK)
-      console.log(
-        "max authorized cost =",
-        maxQtyGasAuthorized * maxPriceAuthorizeForOneGas,
-        "FRI"
+        {
+          // version: 3,
+          maxFee: 10 ** 15,
+        }
       );
-      const tx = await window.Wallet?.Account?.execute(myCall, {
-        version: 3,
-        maxFee: 10 ** 15,
-        feeDataAvailabilityMode: RPC.EDataAvailabilityMode.L1,
-        tip: 10 ** 13,
-        paymasterData: [],
-        resourceBounds: {
-          l1_gas: {
-            max_amount: num.toHex(maxQtyGasAuthorized),
-            max_price_per_unit: num.toHex(maxPriceAuthorizeForOneGas),
-          },
-          l2_gas: {
-            max_amount: num.toHex(0),
-            max_price_per_unit: num.toHex(0),
-          },
-        },
-      });
-
-      // const maxFee =
-      //   (BigInt(estimatedFee?.suggestedMaxFee ?? 1) * BigInt(11)) / BigInt(10);
-
-      // await contract!.register_user(
-      //   is_mini_app && profile?.id
-      //     ? cairo.felt(profile.id.toString().trim())
-      //     : cairo.felt(random),
-      //   cairo.felt(username.trim().toLowerCase()),
-      //   {
-      //     // version: 3,
-      //     maxFee,
-      //   }
-      // );
 
       dispatch(
         addLeaderboard({
@@ -421,6 +386,7 @@ function App() {
 
   return (
     <ThemeProvider>
+      {test}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
