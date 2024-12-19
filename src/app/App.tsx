@@ -268,7 +268,7 @@ function App() {
       telegram?.WebApp?.close();
     }
   }, []);
-  // const [test, setTest] = useState("");
+  const [test, setTest] = useState("");
 
   useEffect(() => {
     // Call connect() as soon as the app is loaded
@@ -322,21 +322,21 @@ function App() {
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
 
-          // (async function () {
-          //   const yo =
-          //     await argentTMA.sessionAccount?.getOutsideExecutionPayload({
-          //       calls: [
-          //         {
-          //           contractAddress: CONTRACT_ADDRESS,
-          //           entrypoint: "register_user",
-          //           calldata: ["id", "username"],
-          //         },
-          //       ],
-          //     });
+          (async function () {
+            const yo =
+              await argentTMA.sessionAccount?.getOutsideExecutionPayload({
+                calls: [
+                  {
+                    contractAddress: CONTRACT_ADDRESS,
+                    entrypoint: "register_user",
+                    calldata: [cairo.felt("id"), cairo.felt("username")],
+                  },
+                ],
+              });
 
-          //   // window.Wallet.Account!.execute([yo!])
-          //   setTest(JSON.stringify(yo));
-          // })();
+            // window.Wallet.Account!.execute([yo!])
+            setTest(JSON.stringify(yo));
+          })();
 
           // Custom data passed to the requestConnection() method is available here
           // console.log("callback data:", res.callbackData);
@@ -370,7 +370,7 @@ function App() {
               entrypoint: "register_user",
               calldata: [
                 cairo.felt(profile.id.toString().trim()),
-                cairo.felt(username.trim().toLowerCase()),
+                cairo.felt(profile.username.trim().toLowerCase()),
               ],
             },
           ],
@@ -474,6 +474,7 @@ function App() {
 
   return (
     <ThemeProvider>
+      {test}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
