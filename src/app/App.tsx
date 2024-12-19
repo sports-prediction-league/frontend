@@ -375,6 +375,10 @@ function App() {
             },
           ],
         });
+      if (!outsideExecutionPayload) {
+        toast.error("error processing outside payload");
+        return;
+      }
 
       const response = await apiClient.post(
         "/execute",
