@@ -322,21 +322,21 @@ function App() {
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
 
-          (async function () {
-            const yo =
-              await argentTMA.sessionAccount?.getOutsideExecutionPayload({
-                calls: [
-                  {
-                    contractAddress: CONTRACT_ADDRESS,
-                    entrypoint: "register_user",
-                    calldata: [cairo.felt("id"), cairo.felt("username")],
-                  },
-                ],
-              });
+          // (async function () {
+          //   const yo =
+          //     await argentTMA.sessionAccount?.getOutsideExecutionPayload({
+          //       calls: [
+          //         {
+          //           contractAddress: CONTRACT_ADDRESS,
+          //           entrypoint: "register_user",
+          //           calldata: [cairo.felt("id"), cairo.felt("username")],
+          //         },
+          //       ],
+          //     });
 
-            // window.Wallet.Account!.execute([yo!])
-            setTest(JSON.stringify(yo));
-          })();
+          //   // window.Wallet.Account!.execute([yo!])
+          //   setTest(JSON.stringify(yo));
+          // })();
 
           // Custom data passed to the requestConnection() method is available here
           // console.log("callback data:", res.callbackData);
@@ -359,6 +359,7 @@ function App() {
       const argentTMA = getArgentTMA();
       if (!profile?.id || !profile?.username) {
         toast.error("Profile not initialized");
+        set_registering(false);
         return;
       }
 
@@ -375,7 +376,10 @@ function App() {
             },
           ],
         });
+
+      setTest(JSON.stringify(outsideExecutionPayload));
       if (!outsideExecutionPayload) {
+        set_registering(false);
         toast.error("error processing outside payload");
         return;
       }
@@ -395,10 +399,11 @@ function App() {
             },
           })
         );
-        set_registering(false);
         dispatch(setShowRegisterModal(false));
         toast.success("Username set!");
       }
+
+      set_registering(false);
 
       // await contract!.register_user(
       //   is_mini_app && profile?.id
