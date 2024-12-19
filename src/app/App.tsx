@@ -376,8 +376,11 @@ function App() {
             contractAddress: CONTRACT_ADDRESS,
             entrypoint: "register_user",
             calldata: [
-              cairo.felt(profile.id.toString().trim()),
-              cairo.felt(profile.username.trim().toLowerCase()),
+              {
+                id: cairo.felt(profile.id.toString().trim()),
+                username: cairo.felt(profile.username.trim().toLowerCase()),
+                address: connected_address,
+              },
             ],
           },
         ],
