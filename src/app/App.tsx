@@ -356,26 +356,33 @@ function App() {
       set_registering(true);
       // const contract = getWalletProviderContract();
       const random = Math.floor(10000000 + Math.random() * 90000000).toString();
-      const argentTMA = getArgentTMA();
+      // const argentTMA = getArgentTMA();
       if (!profile?.id || !profile?.username) {
         toast.error("Profile not initialized");
         set_registering(false);
         return;
       }
 
-      const outsideExecutionPayload =
-        await argentTMA.sessionAccount?.getOutsideExecutionPayload({
-          calls: [
-            {
-              contractAddress: CONTRACT_ADDRESS,
-              entrypoint: "register_user",
-              calldata: [
-                cairo.felt(profile.id.toString().trim()),
-                cairo.felt(profile.username.trim().toLowerCase()),
-              ],
-            },
-          ],
-        });
+      if (!window?.Wallet?.IsConnected || !window?.Wallet?.Account) {
+        toast.error("Wallet not connected");
+        set_registering(false);
+        return;
+      }
+
+      const outsideExecutionPayload = await (
+        window.Wallet.Account as SessionAccountInterface
+      ).getOutsideExecutionPayload({
+        calls: [
+          {
+            contractAddress: CONTRACT_ADDRESS,
+            entrypoint: "register_user",
+            calldata: [
+              cairo.felt(profile.id.toString().trim()),
+              cairo.felt(profile.username.trim().toLowerCase()),
+            ],
+          },
+        ],
+      });
 
       setTest(JSON.stringify(outsideExecutionPayload));
       if (!outsideExecutionPayload) {
