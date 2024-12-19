@@ -268,7 +268,6 @@ function App() {
       telegram?.WebApp?.close();
     }
   }, []);
-  const [test, setTest] = useState("");
 
   useEffect(() => {
     // Call connect() as soon as the app is loaded
@@ -384,7 +383,6 @@ function App() {
         ],
       });
 
-      setTest(JSON.stringify(outsideExecutionPayload));
       if (!outsideExecutionPayload) {
         set_registering(false);
         toast.error("error processing outside payload");
@@ -486,7 +484,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      {test}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
