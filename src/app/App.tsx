@@ -268,7 +268,7 @@ function App() {
       telegram?.WebApp?.close();
     }
   }, []);
-  const [test, setTest] = useState("");
+  // const [test, setTest] = useState("");
 
   useEffect(() => {
     // Call connect() as soon as the app is loaded
@@ -322,19 +322,21 @@ function App() {
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
 
-          (async function () {
-            const yo =
-              await argentTMA.sessionAccount?.getOutsideExecutionPayload({
-                calls: [
-                  {
-                    contractAddress: CONTRACT_ADDRESS,
-                    entrypoint: "register_user",
-                    calldata: ["id", "username"],
-                  },
-                ],
-              });
-            setTest(JSON.stringify(yo));
-          })();
+          // (async function () {
+          //   const yo =
+          //     await argentTMA.sessionAccount?.getOutsideExecutionPayload({
+          //       calls: [
+          //         {
+          //           contractAddress: CONTRACT_ADDRESS,
+          //           entrypoint: "register_user",
+          //           calldata: ["id", "username"],
+          //         },
+          //       ],
+          //     });
+
+          //   // window.Wallet.Account!.execute([yo!])
+          //   setTest(JSON.stringify(yo));
+          // })();
 
           // Custom data passed to the requestConnection() method is available here
           // console.log("callback data:", res.callbackData);
@@ -352,41 +354,122 @@ function App() {
     try {
       if (!username.trim()) return;
       set_registering(true);
-      const contract = getWalletProviderContract();
+      // const contract = getWalletProviderContract();
       const random = Math.floor(10000000 + Math.random() * 90000000).toString();
+      const argentTMA = getArgentTMA();
+      if (!profile?.id || !profile?.username) {
+        toast.error("Profile not initialized");
+        return;
+      }
 
-      await contract!.register_user(
-        is_mini_app && profile?.id
-          ? cairo.felt(profile.id.toString().trim())
-          : cairo.felt(random),
-        cairo.felt(username.trim().toLowerCase()),
-        {
-          // version: 3,
-          maxFee: 10 ** 15,
-        }
+      const outsideExecutionPayload =
+        await argentTMA.sessionAccount?.getOutsideExecutionPayload({
+          calls: [
+            {
+              contractAddress: CONTRACT_ADDRESS,
+              entrypoint: "register_user",
+              calldata: [
+                cairo.felt(profile.id.toString().trim()),
+                cairo.felt(username.trim().toLowerCase()),
+              ],
+            },
+          ],
+        });
+
+      const response = await apiClient.post(
+        "/execute",
+        outsideExecutionPayload
       );
 
-      dispatch(
-        addLeaderboard({
-          totalPoints: 0,
-          user: {
-            id: Number(random),
-            username: username,
-          },
-        })
-      );
-      set_registering(false);
-      dispatch(setShowRegisterModal(false));
-      toast.success("Username set!");
+      if (response.data.success) {
+        dispatch(
+          addLeaderboard({
+            totalPoints: 0,
+            user: {
+              id: Number(random),
+              username: username,
+            },
+          })
+        );
+        set_registering(false);
+        dispatch(setShowRegisterModal(false));
+        toast.success("Username set!");
+      }
+
+      // await contract!.register_user(
+      //   is_mini_app && profile?.id
+      //     ? cairo.felt(profile.id.toString().trim())
+      //     : cairo.felt(random),
+      //   cairo.felt(profile.username.trim().toLowerCase()),
+      //   {
+      //     // version: 3,
+      //     maxFee: 10 ** 15,
+      //   }
+      // );
     } catch (error: any) {
-      toast.error(parse_error(error?.message));
+      toast.error(
+        error.response?.data?.message
+          ? parse_error(error.response?.data?.message)
+          : error.message || "An error occurred"
+      );
       set_registering(false);
     }
   };
 
+  // const [testd, setTestd] = useState(false);
+
+  // useEffect(() => {
+  //   if (connected_address) {
+  //     (async function () {
+  //       await window.Wallet.Account?.execute([
+  //         {
+  //           contractAddress:
+  //             "0x0312ae428d2bd7d3189145b5a77e890bd6934c2fae2f5ca0b9c00ea68f143a63",
+  //           entrypoint: "execute_from_outside_v2",
+  //           calldata: [
+  //             "308399107364216179017042",
+  //             "3258267720451575460428181927699975360353359431469919622971274011841998923090",
+  //             "1734530373",
+  //             "1734532173",
+  //             "1",
+  //             "2708871637889328628919633594961942651887943703197911270471008712371699076313",
+  //             "788248422000618795624366131393946861382421888932606816146358898928769280003",
+  //             "2",
+  //             "26980",
+  //             "8463219666911849829",
+  //             "23",
+  //             "9142636246618693420466307818862",
+  //             "1742207096",
+  //             "301175588207150932574619659849973936519750810921574580910507009209792844691",
+  //             "2672753365883206378698679805485679183703031288173355537802237409055646475584",
+  //             "514814658466192803892720164893035815131910130124773560938284951518295534107",
+  //             "0",
+  //             "4",
+  //             "2704043122819034630116494705472635939246658013305935731385118357628015198455",
+  //             "2948003945521239041628072963242093060265353022512657982255127931144915954110",
+  //             "305984204278346962444520091859764854298813308165966380743859645954962374895",
+  //             "2862219257745499425593749407537866707311290637117612145816912628300268306256",
+  //             "0",
+  //             "2737713616391275179064841841820402046452869309546474037877016076923474397620",
+  //             "1020206577877772876254536804863777508907712444662128452025933372978916129178",
+  //             "2349241557560757849934426741723382979282308810373686522426805399193321807785",
+  //             "0",
+  //             "2559290508917437267591693896947607533319957648296592750815769382542571223320",
+  //             "1947022775308390580638052037477061093741138796851735432704945917593682406099",
+  //             "1576079175545723834060026240930674782929693316445489001295039815336395539797",
+  //             "1",
+  //             "2",
+  //             "3066716779780876096051617787079584002277458849863086276597434881853346356341",
+  //             "188962232406527721010498065320463235005976224643820932025576116665396835416",
+  //           ],
+  //         },
+  //       ]);
+  //     })();
+  //   }
+  // }, [connected_address]);
+
   return (
     <ThemeProvider>
-      {test}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
