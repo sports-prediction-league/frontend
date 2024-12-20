@@ -390,7 +390,7 @@ function App() {
           {
             contractAddress: CONTRACT_ADDRESS,
             entrypoint: "register_user",
-            calldata: [{ user: call.calldata }],
+            calldata: { user: call.calldata },
             // calldata: {
             //   user: {
             //     id: cairo.felt(profile.id.toString().trim()),
