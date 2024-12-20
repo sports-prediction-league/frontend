@@ -143,7 +143,8 @@ function App() {
           const element = tx[i];
           structured_data.push({
             user: {
-              username: feltToString(element.user),
+              username: feltToString(element.user.username),
+              address: `0x${element.user?.address?.toString(16)}`,
             },
             totalPoints: Number(element.total_score),
           });
@@ -386,25 +387,7 @@ function App() {
       const outsideExecutionPayload = await (
         window.Wallet.Account as SessionAccountInterface
       ).getOutsideExecutionPayload({
-        calls: [
-          {
-            contractAddress: CONTRACT_ADDRESS,
-            entrypoint: "register_user",
-            calldata: call.calldata,
-            // calldata: {
-            //   user: {
-            //     id: cairo.felt(profile.id.toString().trim()),
-            //     username: cairo.felt(profile.username.trim().toLowerCase()),
-            //     address: connected_address!,
-            //   },
-            // },
-            // calldata: [
-
-            //   cairo.felt(profile.id.toString().trim()),
-            //   cairo.felt(profile.username.trim().toLowerCase()),
-            // ],
-          },
-        ],
+        calls: [call],
       });
 
       if (!outsideExecutionPayload) {
