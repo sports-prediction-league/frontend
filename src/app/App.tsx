@@ -353,7 +353,8 @@ function App() {
     try {
       if (!username.trim()) return;
       set_registering(true);
-      // const contract = getWalletProviderContract();
+      const contract = getWalletProviderContract();
+
       const random = Math.floor(10000000 + Math.random() * 90000000).toString();
       // const argentTMA = getArgentTMA();
       if (!profile?.id || !profile?.username) {
@@ -368,6 +369,20 @@ function App() {
         return;
       }
 
+      const call = contract?.populate("register_user", [
+        {
+          id: cairo.felt(profile.id.toString().trim()),
+          username: cairo.felt(profile.username.trim().toLowerCase()),
+          address: connected_address!,
+        },
+      ]);
+
+      if (!call?.calldata) {
+        toast.error("Invalid call");
+        set_registering(false);
+        return;
+      }
+
       const outsideExecutionPayload = await (
         window.Wallet.Account as SessionAccountInterface
       ).getOutsideExecutionPayload({
@@ -375,11 +390,7 @@ function App() {
           {
             contractAddress: CONTRACT_ADDRESS,
             entrypoint: "register_user",
-            calldata: {
-              id: cairo.felt(profile.id.toString().trim()),
-              username: cairo.felt(profile.username.trim().toLowerCase()),
-              address: connected_address!,
-            },
+            calldata: [call.calldata],
             // calldata: [
 
             //   cairo.felt(profile.id.toString().trim()),
