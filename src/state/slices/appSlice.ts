@@ -71,6 +71,7 @@ interface User {
   last_name?: string;
   username?: string;
   profile_picture?: string;
+  address?: string;
 }
 
 export interface Prediction {

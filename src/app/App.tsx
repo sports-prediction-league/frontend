@@ -21,7 +21,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { cairo, num, provider, RPC, WalletAccount } from "starknet";
+import { cairo, WalletAccount } from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
@@ -99,6 +99,7 @@ function App() {
 
   const get_user_predictions = async (address: string) => {
     try {
+      if (current_round === 0) return;
       const contract = getWalletProviderContract();
       const predictions = await contract!.get_user_predictions(
         cairo.uint256(current_round),
@@ -143,7 +144,8 @@ function App() {
           const element = tx[i];
           structured_data.push({
             user: {
-              username: feltToString(element.user),
+              username: feltToString(element.user.username),
+              address: `0x${element.user?.address?.toString(16)}`,
             },
             totalPoints: Number(element.total_score),
           });
@@ -320,9 +322,6 @@ function App() {
 
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
-
-          // Custom data passed to the requestConnection() method is available here
-          // console.log("callback data:", res.callbackData);
         })
         .catch((err: any) => {
           toast.error("failed to connect");
@@ -338,86 +337,102 @@ function App() {
       if (!username.trim()) return;
       set_registering(true);
       const contract = getWalletProviderContract();
-      const random = Math.floor(10000000 + Math.random() * 90000000).toString();
-      // const estimatedFee = await contract?.estimate("register_user", [
-      //   is_mini_app && profile?.id
-      //     ? cairo.felt(profile.id.toString().trim())
-      //     : cairo.felt(random),
-      //   cairo.felt(username.trim().toLowerCase()),
-      // ]);
-      // const estimatedFee = await window.Wallet.Account?.estimateInvokeFee({
-      //   contractAddress: CONTRACT_ADDRESS,
-      //   entrypoint: "register_user",
-      //   calldata: [
-      //     is_mini_app && profile?.id
-      //       ? cairo.felt(profile.id.toString().trim())
-      //       : cairo.felt(random),
-      //     cairo.felt(username.trim().toLowerCase()),
-      //   ],
-      // });
 
-      const myCall = contract!.populate("register_user", [
-        is_mini_app && profile?.id
-          ? cairo.felt(profile.id.toString().trim())
-          : cairo.felt(random),
-        cairo.felt(username.trim().toLowerCase()),
-      ]);
-      const maxQtyGasAuthorized = BigInt(1800); // max quantity of gas authorized
-      const maxPriceAuthorizeForOneGas = BigInt(12000000000); // max FRI authorized to pay 1 gas (1 FRI=10**-18 STRK)
-      console.log(
-        "max authorized cost =",
-        maxQtyGasAuthorized * maxPriceAuthorizeForOneGas,
-        "FRI"
-      );
-      const tx = await window.Wallet?.Account?.execute(myCall, {
-        version: 3,
-        maxFee: 10 ** 15,
-        feeDataAvailabilityMode: RPC.EDataAvailabilityMode.L1,
-        tip: 10 ** 13,
-        paymasterData: [],
-        resourceBounds: {
-          l1_gas: {
-            max_amount: num.toHex(maxQtyGasAuthorized),
-            max_price_per_unit: num.toHex(maxPriceAuthorizeForOneGas),
-          },
-          l2_gas: {
-            max_amount: num.toHex(0),
-            max_price_per_unit: num.toHex(0),
-          },
+      const random = Math.floor(10000000 + Math.random() * 90000000).toString();
+      if (!profile?.id || !profile?.username) {
+        toast.error("Profile not initialized");
+        set_registering(false);
+        return;
+      }
+
+      if (!window?.Wallet?.IsConnected || !window?.Wallet?.Account) {
+        toast.error("Wallet not connected");
+        set_registering(false);
+        return;
+      }
+
+      const call = contract?.populate("register_user", [
+        {
+          id: cairo.felt(profile.id.toString().trim()),
+          username: cairo.felt(profile.username.trim().toLowerCase()),
+          address: connected_address!,
         },
+      ]);
+
+      if (!call?.calldata) {
+        toast.error("Invalid call");
+        set_registering(false);
+        return;
+      }
+
+      const outsideExecutionPayload = await (
+        window.Wallet.Account as SessionAccountInterface
+      ).getOutsideExecutionPayload({
+        calls: [call],
       });
 
-      // const maxFee =
-      //   (BigInt(estimatedFee?.suggestedMaxFee ?? 1) * BigInt(11)) / BigInt(10);
+      if (!outsideExecutionPayload) {
+        set_registering(false);
+        toast.error("error processing outside payload");
+        return;
+      }
 
-      // await contract!.register_user(
-      //   is_mini_app && profile?.id
-      //     ? cairo.felt(profile.id.toString().trim())
-      //     : cairo.felt(random),
-      //   cairo.felt(username.trim().toLowerCase()),
-      //   {
-      //     // version: 3,
-      //     maxFee,
-      //   }
-      // );
-
-      dispatch(
-        addLeaderboard({
-          totalPoints: 0,
-          user: {
-            id: Number(random),
-            username: username,
-          },
-        })
+      const response = await apiClient.post(
+        "/execute",
+        outsideExecutionPayload
       );
+
+      if (response.data.success) {
+        dispatch(
+          addLeaderboard({
+            totalPoints: 0,
+            user: {
+              id: Number(random),
+              username: username,
+            },
+          })
+        );
+        dispatch(setShowRegisterModal(false));
+        toast.success("Username set!");
+      }
+
       set_registering(false);
-      dispatch(setShowRegisterModal(false));
-      toast.success("Username set!");
     } catch (error: any) {
-      toast.error(parse_error(error?.message));
+      toast.error(
+        error.response?.data?.message
+          ? parse_error(error.response?.data?.message)
+          : error.message || "An error occurred"
+      );
       set_registering(false);
     }
   };
+
+  // useEffect(() => {
+  //   if (connected_address) {
+  //     (async function () {
+  //       const contract = getWalletProviderContract();
+
+  //       const call = contract?.populate("make_bulk_prediction", [
+  //         [
+  //           {
+  //             inputed: true,
+  //             match_id: cairo.felt("123"),
+  //             home: cairo.uint256(4),
+  //             away: cairo.uint256(3),
+  //           },
+  //           {
+  //             inputed: true,
+  //             match_id: cairo.felt("123"),
+  //             home: cairo.uint256(4),
+  //             away: cairo.uint256(3),
+  //           },
+  //         ],
+  //       ]);
+
+  //       console.log({ call });
+  //     })();
+  //   }
+  // }, [connected_address]);
 
   return (
     <ThemeProvider>

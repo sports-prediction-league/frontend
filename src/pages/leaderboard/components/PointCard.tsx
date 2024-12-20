@@ -24,7 +24,18 @@ const PointCard = ({
           {index + 1}
         </div>
         <div className="flex items-center gap-[20px]">
-          <div className="md:w-[69px] md:h-[69px] w-[42px] h-[42px] rounded-full bg-[#C4C4C4] relative">
+          <div
+            style={
+              data?.user?.profile_picture
+                ? {
+                    background: `url(data:image/jpeg;base64,${data?.user?.profile_picture})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }
+                : undefined
+            }
+            className="md:w-[69px] md:h-[69px] w-[42px] h-[42px] rounded-full bg-[#C4C4C4] relative"
+          >
             <img
               src={badge}
               alt="badge"
@@ -37,7 +48,10 @@ const PointCard = ({
             </p>
             <p className="md:text-[20px] text-sm text-[#858494] font-[Rubik]">
               {" "}
-              0xe2d3A...Ac72EBea1
+              {`${data.user?.address?.slice(
+                0,
+                7
+              )}...${data?.user?.address?.slice(-10)}`}
             </p>
             <p className="text-sm font-[Rubik] text-[#858494] md:hidden block">
               {data.totalPoints?.toLocaleString()} points
