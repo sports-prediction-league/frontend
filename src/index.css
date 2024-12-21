@@ -246,3 +246,8 @@ p {
 .prediction-hero-container-bg {
   background-image: url("assets/prediction/prdict_hero_bg.svg");
 }
+
+/* Clip path */
+.clip-path-triangle{
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
