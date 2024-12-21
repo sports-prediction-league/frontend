@@ -129,9 +129,11 @@ const LeaderBoard = () => {
                 data={_data}
                 key={_key}
                 active={
-                  connected_address &&
-                  _data?.user?.address?.toLowerCase() ===
-                    connected_address.toLowerCase()
+                  _data.user?.username?.toLowerCase() ===
+                    profile?.username?.toLowerCase() ||
+                  (connected_address &&
+                    _data?.user?.address?.toLowerCase() ===
+                      connected_address.toLowerCase())
                     ? true
                     : false
                 }
