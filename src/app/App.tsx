@@ -173,8 +173,15 @@ function App() {
         }
       } else {
         dispatch(setIsRegistered(true));
-        const username = await contract!.get_user_by_address(address);
-        dispatch(update_profile({ username: feltToString(username) }));
+        if (!is_mini_app) {
+          const user = await contract!.get_user_by_address(address);
+          dispatch(
+            update_profile({
+              username: feltToString(user.username),
+              address: `0x${user.address.toString(16)}`,
+            })
+          );
+        }
       }
     } catch (error) {
       console.log(error);
@@ -332,20 +339,22 @@ function App() {
 
   const [registering, set_registering] = useState(false);
 
-  const register_user = async (username: string) => {
+  const register_user = async () => {
     try {
-      if (!username.trim()) return;
       set_registering(true);
       const contract = getWalletProviderContract();
 
-      const random = Math.floor(10000000 + Math.random() * 90000000).toString();
       if (!profile?.id || !profile?.username) {
         toast.error("Profile not initialized");
         set_registering(false);
         return;
       }
 
-      if (!window?.Wallet?.IsConnected || !window?.Wallet?.Account) {
+      if (
+        !window?.Wallet?.IsConnected ||
+        !window?.Wallet?.Account ||
+        !connected_address
+      ) {
         toast.error("Wallet not connected");
         set_registering(false);
         return;
@@ -355,7 +364,7 @@ function App() {
         {
           id: cairo.felt(profile.id.toString().trim()),
           username: cairo.felt(profile.username.trim().toLowerCase()),
-          address: connected_address!,
+          address: connected_address,
         },
       ]);
 
@@ -387,8 +396,9 @@ function App() {
           addLeaderboard({
             totalPoints: 0,
             user: {
-              id: Number(random),
-              username: username,
+              id: Number(profile.id),
+              username: profile.username,
+              address: connected_address,
             },
           })
         );

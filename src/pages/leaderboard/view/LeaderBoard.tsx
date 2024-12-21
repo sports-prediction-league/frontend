@@ -124,11 +124,20 @@ const LeaderBoard = () => {
           .slice(0)
           .map((_data: LeaderboardProp, _key: number) => {
             return (
-              <PointCard index={_key} data={_data} key={_key} active={false} />
+              <PointCard
+                index={_key}
+                data={_data}
+                key={_key}
+                active={
+                  connected_address &&
+                  _data?.user?.address?.toLowerCase() ===
+                    connected_address.toLowerCase()
+                    ? true
+                    : false
+                }
+              />
             );
           })}
-
-        {/* <PointCard active={true} /> */}
       </div>
     </React.Fragment>
   );
