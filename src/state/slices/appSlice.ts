@@ -242,7 +242,7 @@ export const appSlice = createSlice({
       }
     },
 
-    update_profile: (state, action: PayloadAction<any>) => {
+    update_profile: (state, action: PayloadAction<User>) => {
       state.profile = {
         ...state.profile,
         ...action.payload,
