@@ -5,6 +5,7 @@ import { WalletAccount } from "starknet";
 import { connect, disconnect } from "starknetkit";
 import { setConnectedAddress } from "src/state/slices/appSlice";
 import { CONTRACT_ADDRESS, TOKEN_ADDRESS } from "./utils";
+import toast from "react-hot-toast";
 
 const useConnect = () => {
   const getArgentTMA = () => {
@@ -85,7 +86,8 @@ const useConnect = () => {
           window.dispatchEvent(event);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error.message || "error here");
       console.log(error);
     }
   };
