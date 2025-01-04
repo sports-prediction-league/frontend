@@ -338,7 +338,8 @@ function App() {
   }, [is_mini_app]);
 
   const [registering, set_registering] = useState(false);
-
+  const [res, setRes] = useState("");
+  const [call, setCall] = useState("");
   const register_user = async () => {
     try {
       set_registering(true);
@@ -374,11 +375,14 @@ function App() {
         return;
       }
 
+      setRes("this is res before");
       const outsideExecutionPayload = await (
         window.Wallet.Account as SessionAccountInterface
       ).getOutsideExecutionPayload({
         calls: [call],
       });
+
+      setCall(JSON.stringify(outsideExecutionPayload));
 
       if (!outsideExecutionPayload) {
         set_registering(false);
@@ -446,6 +450,8 @@ function App() {
 
   return (
     <ThemeProvider>
+      {res}
+      {call}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
