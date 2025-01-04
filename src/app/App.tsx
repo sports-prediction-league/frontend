@@ -376,6 +376,14 @@ function App() {
       //   },
       // ]);
 
+      setSess(
+        JSON.stringify({
+          id: cairo.felt(profile.id.toString().trim()),
+          username: cairo.felt(profile.username.trim().toLowerCase()),
+          address: connected_address,
+        })
+      );
+
       const respod = await contract.register_user({
         id: cairo.felt(profile.id.toString().trim()),
         username: cairo.felt(profile.username.trim().toLowerCase()),
