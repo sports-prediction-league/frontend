@@ -362,57 +362,72 @@ function App() {
         return;
       }
 
-      const call = contract?.populate("register_user", [
-        {
-          id: cairo.felt(profile.id.toString().trim()),
-          username: cairo.felt(profile.username.trim().toLowerCase()),
-          address: connected_address,
-        },
-      ]);
-
-      if (!call?.calldata) {
-        toast.error("Invalid call");
+      if (!contract) {
+        toast.error("Contract not initialized");
         set_registering(false);
         return;
       }
 
-      setRes("this is res before");
-      setSess(
-        (window.Wallet.Account as SessionAccountInterface).getSessionStatus()
-      );
-      const outsideExecutionPayload = await (
-        window.Wallet.Account as SessionAccountInterface
-      ).getOutsideExecutionPayload({
-        calls: [call],
+      // const call = contract.populate("register_user", [
+      //   {
+      //     id: cairo.felt(profile.id.toString().trim()),
+      //     username: cairo.felt(profile.username.trim().toLowerCase()),
+      //     address: connected_address,
+      //   },
+      // ]);
+
+      const respod = await contract.register_user({
+        id: cairo.felt(profile.id.toString().trim()),
+        username: cairo.felt(profile.username.trim().toLowerCase()),
+        address: connected_address,
       });
+      set_registering(false);
+      setCall(JSON.stringify(respod));
+      return;
 
-      setCall(JSON.stringify(outsideExecutionPayload));
+      // if (!call?.calldata) {
+      //   toast.error("Invalid call");
+      //   set_registering(false);
+      //   return;
+      // }
 
-      if (!outsideExecutionPayload) {
-        set_registering(false);
-        toast.error("error processing outside payload");
-        return;
-      }
+      // setRes("this is res before");
+      // setSess(
+      //   (window.Wallet.Account as SessionAccountInterface).getSessionStatus()
+      // );
+      // const outsideExecutionPayload = await (
+      //   window.Wallet.Account as SessionAccountInterface
+      // ).getOutsideExecutionPayload({
+      //   calls: [call],
+      // });
 
-      const response = await apiClient.post(
-        "/execute",
-        outsideExecutionPayload
-      );
+      // setCall(JSON.stringify(outsideExecutionPayload));
 
-      if (response.data.success) {
-        dispatch(
-          addLeaderboard({
-            totalPoints: 0,
-            user: {
-              id: Number(profile.id),
-              username: profile.username,
-              address: connected_address,
-            },
-          })
-        );
-        dispatch(setShowRegisterModal(false));
-        toast.success("Username set!");
-      }
+      // if (!outsideExecutionPayload) {
+      //   set_registering(false);
+      //   toast.error("error processing outside payload");
+      //   return;
+      // }
+
+      // const response = await apiClient.post(
+      //   "/execute",
+      //   outsideExecutionPayload
+      // );
+
+      // if (response.data.success) {
+      //   dispatch(
+      //     addLeaderboard({
+      //       totalPoints: 0,
+      //       user: {
+      //         id: Number(profile.id),
+      //         username: profile.username,
+      //         address: connected_address,
+      //       },
+      //     })
+      //   );
+      //   dispatch(setShowRegisterModal(false));
+      //   toast.success("Username set!");
+      // }
 
       set_registering(false);
     } catch (error: any) {
