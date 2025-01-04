@@ -50,13 +50,13 @@ const useConnect = () => {
         // from the connect() method -- see above
         await argentTMA.requestConnection({
           callbackData: "custom_callback_data",
-          // approvalRequests: [
-          //   {
-          //     tokenAddress: TOKEN_ADDRESS,
-          //     amount: "10000000000000000000",
-          //     spender: CONTRACT_ADDRESS,
-          //   },
-          // ],
+          approvalRequests: [
+            {
+              tokenAddress: TOKEN_ADDRESS,
+              amount: "10000000000000000000",
+              spender: CONTRACT_ADDRESS,
+            },
+          ],
         });
       } else {
         const { wallet } = await connect();
