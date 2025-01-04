@@ -163,3 +163,4 @@ export function parse_error(error?: string): string {
 export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
+export const TOKEN_ADDRESS = process.env.REACT_APP_TOKEN_ADDRESS!;
