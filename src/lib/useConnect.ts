@@ -58,7 +58,7 @@ const useConnect = () => {
                 symbol: "SPL",
                 decimals: 18,
               },
-              amount: BigInt(100000).toString(),
+              amount: "10000000000000000000",
               // Your dapp contract
               spender: CONTRACT_ADDRESS,
             },
