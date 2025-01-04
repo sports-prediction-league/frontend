@@ -53,7 +53,8 @@ const useConnect = () => {
             {
               token: {
                 // Token address that you need approved
-                address: TOKEN_ADDRESS,
+                address:
+                  "0x27e8c086957e83043f9740274779ad8052451512b2fcd86646c77a5f4d30f42",
                 name: "SPL",
                 symbol: "SPL",
                 decimals: 18,
