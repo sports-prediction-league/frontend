@@ -376,6 +376,7 @@ function App() {
       }
 
       setRes("this is res before");
+      setCall(JSON.stringify(window.Wallet.Account));
       const outsideExecutionPayload = await (
         window.Wallet.Account as SessionAccountInterface
       ).getOutsideExecutionPayload({
