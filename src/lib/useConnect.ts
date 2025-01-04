@@ -52,16 +52,8 @@ const useConnect = () => {
           callbackData: "custom_callback_data",
           approvalRequests: [
             {
-              token: {
-                // Token address that you need approved
-                address:
-                  "0x27e8c086957e83043f9740274779ad8052451512b2fcd86646c77a5f4d30f42",
-                name: "SPL",
-                symbol: "SPL",
-                decimals: 18,
-              },
+              tokenAddress: TOKEN_ADDRESS,
               amount: "10000000000000000000",
-              // Your dapp contract
               spender: CONTRACT_ADDRESS,
             },
           ],
