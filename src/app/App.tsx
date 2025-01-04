@@ -339,7 +339,8 @@ function App() {
 
   const [registering, set_registering] = useState(false);
   const [res, setRes] = useState("");
-  const [call, setCall] = useState("");
+  const [_call, setCall] = useState("");
+  const [sess, setSess] = useState("");
   const register_user = async () => {
     try {
       set_registering(true);
@@ -376,7 +377,9 @@ function App() {
       }
 
       setRes("this is res before");
-      setCall(JSON.stringify(window.Wallet.Account));
+      setSess(
+        (window.Wallet.Account as SessionAccountInterface).getSessionStatus()
+      );
       const outsideExecutionPayload = await (
         window.Wallet.Account as SessionAccountInterface
       ).getOutsideExecutionPayload({
@@ -452,7 +455,8 @@ function App() {
   return (
     <ThemeProvider>
       {res}
-      {call}
+      {sess}
+      {_call}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
