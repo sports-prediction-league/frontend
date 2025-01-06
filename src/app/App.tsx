@@ -338,8 +338,6 @@ function App() {
   }, [is_mini_app]);
 
   const [registering, set_registering] = useState(false);
-  const [res, setRes] = useState("");
-  const [resp, setResp] = useState("");
   const register_user = async () => {
     try {
       set_registering(true);
@@ -427,62 +425,60 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    if (connected_address) {
-      (async function () {
-        try {
-          const contract = getWalletProviderContract();
+  // useEffect(() => {
+  //   if (connected_address) {
+  //     (async function () {
+  //       try {
+  //         const contract = getWalletProviderContract();
 
-          // const call = contract!.populate("make_bulk_prediction", [
-          //   [
-          //     {
-          //       inputed: true,
-          //       match_id: cairo.felt("123"),
-          //       home: cairo.uint256(4),
-          //       away: cairo.uint256(3),
-          //       stake: cairo.uint256(1),
-          //     },
-          //     {
-          //       inputed: true,
-          //       match_id: cairo.felt("123"),
-          //       home: cairo.uint256(4),
-          //       away: cairo.uint256(3),
-          //       stake: cairo.uint256(1),
-          //     },
-          //   ],
-          // ]);
+  //         // const call = contract!.populate("make_bulk_prediction", [
+  //         //   [
+  //         //     {
+  //         //       inputed: true,
+  //         //       match_id: cairo.felt("123"),
+  //         //       home: cairo.uint256(4),
+  //         //       away: cairo.uint256(3),
+  //         //       stake: cairo.uint256(1),
+  //         //     },
+  //         //     {
+  //         //       inputed: true,
+  //         //       match_id: cairo.felt("123"),
+  //         //       home: cairo.uint256(4),
+  //         //       away: cairo.uint256(3),
+  //         //       stake: cairo.uint256(1),
+  //         //     },
+  //         //   ],
+  //         // ]);
 
-          const call = contract!.populate("register_user", [
-            {
-              id: cairo.felt(profile!.id!.toString().trim()),
-              username: cairo.felt(profile!.username!.trim().toLowerCase()),
-              address: connected_address,
-            },
-          ]);
+  //         const call = contract!.populate("register_user", [
+  //           {
+  //             id: cairo.felt(profile!.id!.toString().trim()),
+  //             username: cairo.felt(profile!.username!.trim().toLowerCase()),
+  //             address: connected_address,
+  //           },
+  //         ]);
 
-          setResp(JSON.stringify(CallData.compile([CONTRACT_ADDRESS])));
+  //         setResp(JSON.stringify(CallData.compile([CONTRACT_ADDRESS])));
 
-          const account = window.Wallet.Account as SessionAccountInterface;
+  //         const account = window.Wallet.Account as SessionAccountInterface;
 
-          const outsideExecutionPayload =
-            await account.getOutsideExecutionPayload({
-              calls: [call],
-            });
+  //         const outsideExecutionPayload =
+  //           await account.getOutsideExecutionPayload({
+  //             calls: [call],
+  //           });
 
-          // setRes(JSON.stringify(outsideExecutionPayload));
-        } catch (error: any) {
-          toast.error(error.message);
-        }
+  //         // setRes(JSON.stringify(outsideExecutionPayload));
+  //       } catch (error: any) {
+  //         toast.error(error.message);
+  //       }
 
-        // console.log({ call });
-      })();
-    }
-  }, [connected_address]);
+  //       // console.log({ call });
+  //     })();
+  //   }
+  // }, [connected_address]);
 
   return (
     <ThemeProvider>
-      {res}
-      {resp}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
