@@ -339,86 +339,83 @@ function App() {
 
   const [registering, set_registering] = useState(false);
   const [res, setRes] = useState("");
-  const [pl, setPl] = useState("");
   const register_user = async () => {
     try {
-      setRes(JSON.stringify(CallData.compile([CONTRACT_ADDRESS])));
-      return;
-      // set_registering(true);
-      // const contract = getWalletProviderContract();
+      set_registering(true);
+      const contract = getWalletProviderContract();
 
-      // if (!profile?.id || !profile?.username) {
-      //   toast.error("Profile not initialized");
-      //   set_registering(false);
-      //   return;
-      // }
+      if (!profile?.id || !profile?.username) {
+        toast.error("Profile not initialized");
+        set_registering(false);
+        return;
+      }
 
-      // if (
-      //   !window?.Wallet?.IsConnected ||
-      //   !window?.Wallet?.Account ||
-      //   !connected_address
-      // ) {
-      //   toast.error("Wallet not connected");
-      //   set_registering(false);
-      //   return;
-      // }
+      if (
+        !window?.Wallet?.IsConnected ||
+        !window?.Wallet?.Account ||
+        !connected_address
+      ) {
+        toast.error("Wallet not connected");
+        set_registering(false);
+        return;
+      }
 
-      // if (!contract) {
-      //   toast.error("Contract not initialized");
-      //   set_registering(false);
-      //   return;
-      // }
+      if (!contract) {
+        toast.error("Contract not initialized");
+        set_registering(false);
+        return;
+      }
 
-      // const call = contract?.populate("register_user", [
-      //   {
-      //     id: cairo.felt(profile.id.toString().trim()),
-      //     username: cairo.felt(profile.username.trim().toLowerCase()),
-      //     address: connected_address,
-      //   },
-      // ]);
+      const call = contract?.populate("register_user", [
+        {
+          id: cairo.felt(profile.id.toString().trim()),
+          username: cairo.felt(profile.username.trim().toLowerCase()),
+          address: connected_address,
+        },
+      ]);
 
-      // if (!call?.calldata) {
-      //   toast.error("Invalid call");
-      //   set_registering(false);
-      //   return;
-      // }
+      if (!call?.calldata) {
+        toast.error("Invalid call");
+        set_registering(false);
+        return;
+      }
 
-      // const account = window.Wallet.Account as SessionAccountInterface;
-      // // const oi = await account.getDeploymentPayload();
-      // // setRes(JSON.stringify(oi));
+      const account = window.Wallet.Account as SessionAccountInterface;
+      // const oi = await account.getDeploymentPayload();
+      // setRes(JSON.stringify(oi));
 
-      // const outsideExecutionPayload = await account.getOutsideExecutionPayload({
-      //   calls: [call],
-      // });
+      const outsideExecutionPayload = await account.getOutsideExecutionPayload({
+        calls: [call],
+      });
 
-      // // setPl(JSON.stringify(outsideExecutionPayload));
-      // if (!outsideExecutionPayload) {
-      //   set_registering(false);
-      //   toast.error("error processing outside payload");
-      //   return;
-      // }
+      // setPl(JSON.stringify(outsideExecutionPayload));
+      if (!outsideExecutionPayload) {
+        set_registering(false);
+        toast.error("error processing outside payload");
+        return;
+      }
 
-      // const response = await apiClient.post(
-      //   "/execute",
-      //   outsideExecutionPayload
-      // );
+      const response = await apiClient.post(
+        "/execute",
+        outsideExecutionPayload
+      );
 
-      // if (response.data.success) {
-      //   dispatch(
-      //     addLeaderboard({
-      //       totalPoints: 0,
-      //       user: {
-      //         id: Number(profile.id),
-      //         username: profile.username,
-      //         address: connected_address,
-      //       },
-      //     })
-      //   );
-      //   dispatch(setShowRegisterModal(false));
-      //   toast.success("Username set!");
-      // }
+      if (response.data.success) {
+        dispatch(
+          addLeaderboard({
+            totalPoints: 0,
+            user: {
+              id: Number(profile.id),
+              username: profile.username,
+              address: connected_address,
+            },
+          })
+        );
+        dispatch(setShowRegisterModal(false));
+        toast.success("Username set!");
+      }
 
-      // set_registering(false);
+      set_registering(false);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message
@@ -429,37 +426,45 @@ function App() {
     }
   };
 
-  // useEffect(() => {
-  //   if (connected_address) {
-  //     (async function () {
-  //       const contract = getWalletProviderContract();
+  useEffect(() => {
+    if (connected_address) {
+      (async function () {
+        const contract = getWalletProviderContract();
 
-  //       const call = contract?.populate("make_bulk_prediction", [
-  //         [
-  //           {
-  //             inputed: true,
-  //             match_id: cairo.felt("123"),
-  //             home: cairo.uint256(4),
-  //             away: cairo.uint256(3),
-  //           },
-  //           {
-  //             inputed: true,
-  //             match_id: cairo.felt("123"),
-  //             home: cairo.uint256(4),
-  //             away: cairo.uint256(3),
-  //           },
-  //         ],
-  //       ]);
+        const call = contract!.populate("make_bulk_prediction", [
+          [
+            {
+              inputed: true,
+              match_id: cairo.felt("123"),
+              home: cairo.uint256(4),
+              away: cairo.uint256(3),
+            },
+            {
+              inputed: true,
+              match_id: cairo.felt("123"),
+              home: cairo.uint256(4),
+              away: cairo.uint256(3),
+            },
+          ],
+        ]);
 
-  //       console.log({ call });
-  //     })();
-  //   }
-  // }, [connected_address]);
+        const account = window.Wallet.Account as SessionAccountInterface;
+
+        const outsideExecutionPayload =
+          await account.getOutsideExecutionPayload({
+            calls: [call],
+          });
+
+        setRes(JSON.stringify(outsideExecutionPayload));
+
+        // console.log({ call });
+      })();
+    }
+  }, [connected_address]);
 
   return (
     <ThemeProvider>
       {res}
-      {pl}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
@@ -467,7 +472,7 @@ function App() {
           dispatch(setShowRegisterModal(false));
         }}
         onSubmit={register_user}
-        open={true}
+        open={show_register_modal}
       />
       <Router />
     </ThemeProvider>
