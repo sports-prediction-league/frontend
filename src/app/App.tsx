@@ -339,6 +339,7 @@ function App() {
 
   const [registering, set_registering] = useState(false);
   const [res, setRes] = useState("");
+  const [resp, setResp] = useState("");
   const register_user = async () => {
     try {
       set_registering(true);
@@ -432,24 +433,34 @@ function App() {
         try {
           const contract = getWalletProviderContract();
 
-          const call = contract!.populate("make_bulk_prediction", [
-            [
-              {
-                inputed: true,
-                match_id: cairo.felt("123"),
-                home: cairo.uint256(4),
-                away: cairo.uint256(3),
-                stake: cairo.uint256(1),
-              },
-              {
-                inputed: true,
-                match_id: cairo.felt("123"),
-                home: cairo.uint256(4),
-                away: cairo.uint256(3),
-                stake: cairo.uint256(1),
-              },
-            ],
+          // const call = contract!.populate("make_bulk_prediction", [
+          //   [
+          //     {
+          //       inputed: true,
+          //       match_id: cairo.felt("123"),
+          //       home: cairo.uint256(4),
+          //       away: cairo.uint256(3),
+          //       stake: cairo.uint256(1),
+          //     },
+          //     {
+          //       inputed: true,
+          //       match_id: cairo.felt("123"),
+          //       home: cairo.uint256(4),
+          //       away: cairo.uint256(3),
+          //       stake: cairo.uint256(1),
+          //     },
+          //   ],
+          // ]);
+
+          const call = contract!.populate("register_user", [
+            {
+              id: cairo.felt(profile!.id!.toString().trim()),
+              username: cairo.felt(profile!.username!.trim().toLowerCase()),
+              address: connected_address,
+            },
           ]);
+
+          setResp(JSON.stringify(CallData.compile(["register_user"])));
 
           const account = window.Wallet.Account as SessionAccountInterface;
 
@@ -471,6 +482,7 @@ function App() {
   return (
     <ThemeProvider>
       {res}
+      {resp}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
