@@ -439,12 +439,14 @@ function App() {
                 match_id: cairo.felt("123"),
                 home: cairo.uint256(4),
                 away: cairo.uint256(3),
+                stake: cairo.uint256(1),
               },
               {
                 inputed: true,
                 match_id: cairo.felt("123"),
                 home: cairo.uint256(4),
                 away: cairo.uint256(3),
+                stake: cairo.uint256(1),
               },
             ],
           ]);
