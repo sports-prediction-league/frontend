@@ -460,7 +460,7 @@ function App() {
             },
           ]);
 
-          setResp(JSON.stringify(CallData.compile(["register_user"])));
+          setResp(JSON.stringify(CallData.compile([CONTRACT_ADDRESS])));
 
           const account = window.Wallet.Account as SessionAccountInterface;
 
@@ -469,7 +469,7 @@ function App() {
               calls: [call],
             });
 
-          setRes(JSON.stringify(outsideExecutionPayload));
+          // setRes(JSON.stringify(outsideExecutionPayload));
         } catch (error: any) {
           toast.error(error.message);
         }
