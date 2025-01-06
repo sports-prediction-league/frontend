@@ -339,8 +339,7 @@ function App() {
 
   const [registering, set_registering] = useState(false);
   const [res, setRes] = useState("");
-  const [_call, setCall] = useState("");
-  const [sess, setSess] = useState("");
+  const [pl, setPl] = useState("");
   const register_user = async () => {
     try {
       set_registering(true);
@@ -368,74 +367,54 @@ function App() {
         return;
       }
 
-      // const call = contract.populate("register_user", [
-      //   {
-      //     id: cairo.felt(profile.id.toString().trim()),
-      //     username: cairo.felt(profile.username.trim().toLowerCase()),
-      //     address: connected_address,
-      //   },
-      // ]);
-
-      setSess(
-        JSON.stringify({
+      const call = contract?.populate("register_user", [
+        {
           id: cairo.felt(profile.id.toString().trim()),
           username: cairo.felt(profile.username.trim().toLowerCase()),
           address: connected_address,
-        })
+        },
+      ]);
+
+      if (!call?.calldata) {
+        toast.error("Invalid call");
+        set_registering(false);
+        return;
+      }
+
+      const account = window.Wallet.Account as SessionAccountInterface;
+      const oi = await account.getDeploymentPayload();
+      setRes(JSON.stringify(oi));
+
+      const outsideExecutionPayload = await account.getOutsideExecutionPayload({
+        calls: [call],
+      });
+
+      setPl(JSON.stringify(outsideExecutionPayload));
+      if (!outsideExecutionPayload) {
+        set_registering(false);
+        toast.error("error processing outside payload");
+        return;
+      }
+
+      const response = await apiClient.post(
+        "/execute",
+        outsideExecutionPayload
       );
 
-      const respod = await contract.register_user({
-        id: cairo.felt(profile.id.toString().trim()),
-        username: cairo.felt(profile.username.trim().toLowerCase()),
-        address: connected_address,
-      });
-      set_registering(false);
-      setCall(JSON.stringify(respod));
-      return;
-
-      // if (!call?.calldata) {
-      //   toast.error("Invalid call");
-      //   set_registering(false);
-      //   return;
-      // }
-
-      // setRes("this is res before");
-      // setSess(
-      //   (window.Wallet.Account as SessionAccountInterface).getSessionStatus()
-      // );
-      // const outsideExecutionPayload = await (
-      //   window.Wallet.Account as SessionAccountInterface
-      // ).getOutsideExecutionPayload({
-      //   calls: [call],
-      // });
-
-      // setCall(JSON.stringify(outsideExecutionPayload));
-
-      // if (!outsideExecutionPayload) {
-      //   set_registering(false);
-      //   toast.error("error processing outside payload");
-      //   return;
-      // }
-
-      // const response = await apiClient.post(
-      //   "/execute",
-      //   outsideExecutionPayload
-      // );
-
-      // if (response.data.success) {
-      //   dispatch(
-      //     addLeaderboard({
-      //       totalPoints: 0,
-      //       user: {
-      //         id: Number(profile.id),
-      //         username: profile.username,
-      //         address: connected_address,
-      //       },
-      //     })
-      //   );
-      //   dispatch(setShowRegisterModal(false));
-      //   toast.success("Username set!");
-      // }
+      if (response.data.success) {
+        dispatch(
+          addLeaderboard({
+            totalPoints: 0,
+            user: {
+              id: Number(profile.id),
+              username: profile.username,
+              address: connected_address,
+            },
+          })
+        );
+        dispatch(setShowRegisterModal(false));
+        toast.success("Username set!");
+      }
 
       set_registering(false);
     } catch (error: any) {
@@ -478,8 +457,7 @@ function App() {
   return (
     <ThemeProvider>
       {res}
-      {sess}
-      {_call}
+      {pl}
       <RegisterModal
         t_username={profile?.username}
         loading={registering}
