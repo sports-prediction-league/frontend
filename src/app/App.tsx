@@ -429,33 +429,37 @@ function App() {
   useEffect(() => {
     if (connected_address) {
       (async function () {
-        const contract = getWalletProviderContract();
+        try {
+          const contract = getWalletProviderContract();
 
-        const call = contract!.populate("make_bulk_prediction", [
-          [
-            {
-              inputed: true,
-              match_id: cairo.felt("123"),
-              home: cairo.uint256(4),
-              away: cairo.uint256(3),
-            },
-            {
-              inputed: true,
-              match_id: cairo.felt("123"),
-              home: cairo.uint256(4),
-              away: cairo.uint256(3),
-            },
-          ],
-        ]);
+          const call = contract!.populate("make_bulk_prediction", [
+            [
+              {
+                inputed: true,
+                match_id: cairo.felt("123"),
+                home: cairo.uint256(4),
+                away: cairo.uint256(3),
+              },
+              {
+                inputed: true,
+                match_id: cairo.felt("123"),
+                home: cairo.uint256(4),
+                away: cairo.uint256(3),
+              },
+            ],
+          ]);
 
-        const account = window.Wallet.Account as SessionAccountInterface;
+          const account = window.Wallet.Account as SessionAccountInterface;
 
-        const outsideExecutionPayload =
-          await account.getOutsideExecutionPayload({
-            calls: [call],
-          });
+          const outsideExecutionPayload =
+            await account.getOutsideExecutionPayload({
+              calls: [call],
+            });
 
-        setRes(JSON.stringify(outsideExecutionPayload));
+          setRes(JSON.stringify(outsideExecutionPayload));
+        } catch (error: any) {
+          toast.error(error.message);
+        }
 
         // console.log({ call });
       })();
