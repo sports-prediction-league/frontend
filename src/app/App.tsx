@@ -21,7 +21,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { cairo, WalletAccount } from "starknet";
+import { cairo, CallData, WalletAccount } from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
@@ -342,81 +342,83 @@ function App() {
   const [pl, setPl] = useState("");
   const register_user = async () => {
     try {
-      set_registering(true);
-      const contract = getWalletProviderContract();
+      setRes(JSON.stringify(CallData.compile([CONTRACT_ADDRESS])));
+      return;
+      // set_registering(true);
+      // const contract = getWalletProviderContract();
 
-      if (!profile?.id || !profile?.username) {
-        toast.error("Profile not initialized");
-        set_registering(false);
-        return;
-      }
+      // if (!profile?.id || !profile?.username) {
+      //   toast.error("Profile not initialized");
+      //   set_registering(false);
+      //   return;
+      // }
 
-      if (
-        !window?.Wallet?.IsConnected ||
-        !window?.Wallet?.Account ||
-        !connected_address
-      ) {
-        toast.error("Wallet not connected");
-        set_registering(false);
-        return;
-      }
+      // if (
+      //   !window?.Wallet?.IsConnected ||
+      //   !window?.Wallet?.Account ||
+      //   !connected_address
+      // ) {
+      //   toast.error("Wallet not connected");
+      //   set_registering(false);
+      //   return;
+      // }
 
-      if (!contract) {
-        toast.error("Contract not initialized");
-        set_registering(false);
-        return;
-      }
+      // if (!contract) {
+      //   toast.error("Contract not initialized");
+      //   set_registering(false);
+      //   return;
+      // }
 
-      const call = contract?.populate("register_user", [
-        {
-          id: cairo.felt(profile.id.toString().trim()),
-          username: cairo.felt(profile.username.trim().toLowerCase()),
-          address: connected_address,
-        },
-      ]);
+      // const call = contract?.populate("register_user", [
+      //   {
+      //     id: cairo.felt(profile.id.toString().trim()),
+      //     username: cairo.felt(profile.username.trim().toLowerCase()),
+      //     address: connected_address,
+      //   },
+      // ]);
 
-      if (!call?.calldata) {
-        toast.error("Invalid call");
-        set_registering(false);
-        return;
-      }
+      // if (!call?.calldata) {
+      //   toast.error("Invalid call");
+      //   set_registering(false);
+      //   return;
+      // }
 
-      const account = window.Wallet.Account as SessionAccountInterface;
-      const oi = await account.getDeploymentPayload();
-      setRes(JSON.stringify(oi));
+      // const account = window.Wallet.Account as SessionAccountInterface;
+      // // const oi = await account.getDeploymentPayload();
+      // // setRes(JSON.stringify(oi));
 
-      const outsideExecutionPayload = await account.getOutsideExecutionPayload({
-        calls: [call],
-      });
+      // const outsideExecutionPayload = await account.getOutsideExecutionPayload({
+      //   calls: [call],
+      // });
 
-      setPl(JSON.stringify(outsideExecutionPayload));
-      if (!outsideExecutionPayload) {
-        set_registering(false);
-        toast.error("error processing outside payload");
-        return;
-      }
+      // // setPl(JSON.stringify(outsideExecutionPayload));
+      // if (!outsideExecutionPayload) {
+      //   set_registering(false);
+      //   toast.error("error processing outside payload");
+      //   return;
+      // }
 
-      const response = await apiClient.post(
-        "/execute",
-        outsideExecutionPayload
-      );
+      // const response = await apiClient.post(
+      //   "/execute",
+      //   outsideExecutionPayload
+      // );
 
-      if (response.data.success) {
-        dispatch(
-          addLeaderboard({
-            totalPoints: 0,
-            user: {
-              id: Number(profile.id),
-              username: profile.username,
-              address: connected_address,
-            },
-          })
-        );
-        dispatch(setShowRegisterModal(false));
-        toast.success("Username set!");
-      }
+      // if (response.data.success) {
+      //   dispatch(
+      //     addLeaderboard({
+      //       totalPoints: 0,
+      //       user: {
+      //         id: Number(profile.id),
+      //         username: profile.username,
+      //         address: connected_address,
+      //       },
+      //     })
+      //   );
+      //   dispatch(setShowRegisterModal(false));
+      //   toast.success("Username set!");
+      // }
 
-      set_registering(false);
+      // set_registering(false);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message
@@ -465,7 +467,7 @@ function App() {
           dispatch(setShowRegisterModal(false));
         }}
         onSubmit={register_user}
-        open={show_register_modal}
+        open={true}
       />
       <Router />
     </ThemeProvider>
