@@ -17,9 +17,8 @@ interface Fixture {
     city: string;
   };
   status: {
-    long: string;
-    short: string;
-    elapsed: number;
+    long: "Not started" | "In progress" | "Finished";
+    short: "NS" | "IP" | "F";
   };
 }
 
