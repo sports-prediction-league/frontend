@@ -208,6 +208,7 @@ const Prediction = () => {
               match_id: cairo.felt(key),
               home: cairo.uint256(Number(predictions[key].home.trim())),
               away: cairo.uint256(Number(predictions[key].away.trim())),
+              stake: cairo.uint256(0),
             });
           }
         }

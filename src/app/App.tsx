@@ -412,6 +412,7 @@ function App() {
           })
         );
         dispatch(setShowRegisterModal(false));
+        dispatch(setIsRegistered(true));
         toast.success("Username set!");
       }
 
