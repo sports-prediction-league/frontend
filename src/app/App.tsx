@@ -272,6 +272,7 @@ function App() {
           fetchProfilePhoto(initDataUnsafe.user.id.toString());
         }
       } else {
+        telegram?.WebApp?.close();
       }
     } else {
       telegram?.WebApp?.close();
@@ -424,6 +425,41 @@ function App() {
       set_registering(false);
     }
   };
+
+  useEffect(() => {
+    (async function () {
+      try {
+        if (is_mini_app) {
+          if (window?.Wallet?.Account) {
+            if (!profile?.id) return;
+            const get_account_deployed_status =
+              localStorage.getItem("accountDeployed");
+            if (!get_account_deployed_status) {
+              const account = window.Wallet.Account as SessionAccountInterface;
+              const is_account_deployed = await account.isDeployed();
+              if (!is_account_deployed) {
+                const account_payload = await account.getDeploymentPayload();
+                const response = await apiClient.post("/deploy-account", {
+                  account_payload,
+                  user_id: profile.id,
+                });
+
+                if (response.data.success) {
+                  localStorage.setItem("accountDeployed", "true");
+                }
+              }
+            }
+          }
+        }
+      } catch (error: any) {
+        toast.error(
+          error.response?.data?.message
+            ? parse_error(error.response?.data?.message)
+            : error.message || "An error occurred"
+        );
+      }
+    })();
+  }, [connected_address]);
 
   // useEffect(() => {
   //   if (connected_address) {
