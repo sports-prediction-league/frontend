@@ -414,6 +414,8 @@ function App() {
         dispatch(setShowRegisterModal(false));
         dispatch(setIsRegistered(true));
         toast.success("Username set!");
+      } else {
+        toast.error("OOPPS!!! Something went wrong");
       }
 
       set_registering(false);
