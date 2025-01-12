@@ -57,7 +57,7 @@ const PredictionCard = ({
       <div className="flex items-center justify-center gap-[35px]">
         <div className="flex flex-col items-center justify-center gap-[18px]">
           <img
-            src={match.details.teams.home.logo}
+            src={`https://img.sportradar.com/ls/crest/big/${match.details.teams.home.id}.png`}
             alt="TEAM"
             className="md:w-[129px] w-[40px] smm:w-[55px] md:h-[129px] h-[40px] smm:h-[55px]"
           />
@@ -138,7 +138,7 @@ const PredictionCard = ({
 
         <div className="flex flex-col items-center justify-center gap-[18px]">
           <img
-            src={match.details.teams.away.logo}
+            src={`https://img.sportradar.com/ls/crest/big/${match.details.teams.away.id}.png`}
             alt="TEAM"
             className="md:w-[129px] w-[40px] smm:w-[55px] md:h-[129px] h-[40px] smm:h-[55px]"
           />
