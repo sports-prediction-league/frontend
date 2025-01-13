@@ -59,6 +59,19 @@ const PredictionCard = ({
           <img
             src={`https://img.sportradar.com/ls/crest/big/${match.details.teams.home.id}.png`}
             alt="TEAM"
+            // onError={(e) => {
+            //   (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
+            //   (e.target as HTMLImageElement).src = JERSEY;
+            // }}
+            onLoad={(event) => {
+              const img = event.currentTarget;
+              const { naturalWidth, naturalHeight } = img;
+
+              if (naturalHeight === 1 && naturalWidth == 1) {
+                (img as HTMLImageElement).src =
+                  "https://widgets.sir.sportradar.com/assets/media/highlight.b1ac6c3e.png";
+              }
+            }}
             className="md:w-[129px] w-[40px] smm:w-[55px] md:h-[129px] h-[40px] smm:h-[55px]"
           />
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-sm md:leading-[38px] leading-[0px] font-[Lato] font-bold">

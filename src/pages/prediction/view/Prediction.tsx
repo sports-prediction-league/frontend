@@ -23,6 +23,8 @@ import {
 import { cairo } from "starknet";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { IoClose } from "react-icons/io5";
+import { Modal } from "antd";
 
 const Prediction = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -258,6 +260,76 @@ const Prediction = () => {
     }
   };
 
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
+  const [isWidgetActive, setWidgetActive] = useState(false);
+  const [matchId, setMatchId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isWidgetActive) {
+      // const loadedScript = document.querySelector(
+      //   'script[src="https://widgets.sir.sportradar.com/sportradar/widgetloader"]'
+      // );
+      // if (loadedScript) {
+      //   document.body.removeChild(loadedScript);
+      // }
+      return;
+    }
+
+    const scriptId = "sportradar-widget-loader";
+
+    // Check if the script is already added
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://widgets.sir.sportradar.com/sportradar/widgetloader";
+      script.async = true;
+      script.setAttribute("n", "SIR");
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        initializeWidget();
+      };
+    } else {
+      initializeWidget();
+    }
+
+    function initializeWidget() {
+      if (window.SIR && widgetContainerRef.current && matchId) {
+        console.log("whhi");
+        window.SIR(
+          "addWidget",
+          `.widget-container-${matchId}`,
+          "match.lmtPlus",
+          {
+            matchId: matchId,
+            scoreboard: "extended",
+          }
+        );
+      }
+    }
+
+    return () => {
+      // Cleanup: Clear widget container
+      if (widgetContainerRef.current) {
+        widgetContainerRef.current.innerHTML = "";
+      }
+      const loadedScript = document.querySelector(
+        'script[src="https://widgets.sir.sportradar.com/sportradar/widgetloader"]'
+      );
+      if (loadedScript) {
+        document.body.removeChild(loadedScript);
+      }
+    };
+  }, [isWidgetActive]);
+  const toggleWidget = () => {
+    // let status;
+    setWidgetActive((prev) => !prev);
+
+    // if (status) {
+    //   setMatchId(null);
+    // }
+  };
+
   return (
     <React.Fragment>
       <PredictionHero />
@@ -276,6 +348,62 @@ const Prediction = () => {
           )}
         </button>
       ) : null} */}
+
+      <Modal
+        className="text-white"
+        open={isWidgetActive}
+        onCancel={toggleWidget}
+        destroyOnClose
+        styles={{
+          content: {
+            background: "#042822",
+            paddingLeft: "0",
+            paddingRight: "0",
+          },
+          header: { background: "#042822", color: "white" },
+        }}
+        // width={"100%"}
+        // closeIcon={<IoClose color="white" />}
+        okButtonProps={{ hidden: true }}
+        cancelButtonProps={{ hidden: true }}
+      >
+        <div
+          ref={widgetContainerRef}
+          className={`sr-widget widget-container-${matchId}`}
+          style={{
+            // maxWidth: "620px",
+            width: "100%",
+            border: "1px solid rgba(0, 0, 0, 0.12)",
+          }}
+        ></div>
+      </Modal>
+
+      {/* <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "16px",
+        }}
+      >
+        <button
+          onClick={toggleWidget}
+          style={{ padding: "8px 16px", fontSize: "16px" }}
+        >
+          {isWidgetActive ? "Remove Widget" : "Load Widget"}
+        </button>
+        {isWidgetActive && (
+          <div
+            ref={widgetContainerRef}
+            className="sr-widget sr-widget-1"
+            style={{
+              maxWidth: "620px",
+              width: "100%",
+              border: "1px solid rgba(0, 0, 0, 0.12)",
+            }}
+          ></div>
+        )}
+      </div> */}
       {isOpen && (
         <div className="absolute z-50 right-0 w-48 mt-2 h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
           {Array.from({ length: total_rounds }).map((_, index) => {
@@ -355,7 +483,10 @@ const Prediction = () => {
                           onChangePrediction={onChangePrediction}
                           match={match}
                           onStakeClick={handleBulkPredict}
-                          onSeeStatsClick={() => {}}
+                          onSeeStatsClick={() => {
+                            setMatchId(Number(match.details.fixture.id));
+                            setWidgetActive(true);
+                          }}
                           onExplorePredictionsClick={() => {}}
                         />
                       </div>

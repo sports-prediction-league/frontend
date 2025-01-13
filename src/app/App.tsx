@@ -44,6 +44,7 @@ declare global {
         close: () => void;
       };
     };
+    SIR: any;
   }
 }
 
