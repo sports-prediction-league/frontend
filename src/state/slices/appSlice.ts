@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { groupMatchesByDate } from "src/lib/utils";
 
 interface Fixture {
   id: number;
@@ -17,8 +18,8 @@ interface Fixture {
     city: string;
   };
   status: {
-    long: "Not started" | "In progress" | "Finished";
-    short: "NS" | "IP" | "F";
+    match_status: "not_started" | "ended" | "live";
+    status: "not_started" | "closed" | "live";
   };
 }
 
@@ -55,8 +56,14 @@ export interface MatchData {
     last_games?: { home?: string[]; away?: string[] };
   };
 
+  scored: boolean;
   predicted: boolean;
-  predictions: { prediction: string }[];
+  predictions: {
+    prediction: {
+      prediction: string;
+      stake: string;
+    };
+  }[];
 }
 
 export interface LeaderboardProp {
@@ -78,6 +85,7 @@ export interface Prediction {
   match_id: string;
   home: Number;
   away: Number;
+  stake: string;
 }
 
 export interface InitDataUnsafe {
@@ -135,6 +143,36 @@ export const appSlice = createSlice({
       };
     },
 
+    updateMatches: (state, action: PayloadAction<MatchData[]>) => {
+      const updated_matches = [];
+
+      for (let i = 0; i < state.matches.length; i++) {
+        const match_collection = state.matches[i];
+
+        for (let j = 0; j < match_collection.length; j++) {
+          const match = match_collection[j];
+
+          const find = action.payload.find(
+            (fd) =>
+              fd.details.fixture.id.toString().trim().toLowerCase() ===
+              match.details.fixture.id.toString().trim().toLowerCase()
+          );
+
+          if (find) {
+            updated_matches.push({
+              ...find,
+              predicted: match.predicted,
+              predictions: match.predictions,
+            });
+          } else {
+            updated_matches.push(match);
+          }
+        }
+      }
+
+      state.matches = groupMatchesByDate(updated_matches);
+    },
+
     bulkSetMatches: (state, action: PayloadAction<MatchData[][]>) => {
       state.matches = action.payload;
     },
@@ -157,7 +195,14 @@ export const appSlice = createSlice({
             return {
               ...mmp,
               predicted: true,
-              predictions: [{ prediction: `${find.home}:${find.away}` }],
+              predictions: [
+                {
+                  prediction: {
+                    prediction: `${find.home}:${find.away}`,
+                    stake: find.stake,
+                  },
+                },
+              ],
             };
           }
 
@@ -220,7 +265,10 @@ export const appSlice = createSlice({
         {
           matchId: string;
           keyIndex: number;
-          prediction: string;
+          prediction: {
+            prediction: string;
+            stake: string;
+          };
         }[]
       >
     ) => {
@@ -265,6 +313,7 @@ export const {
   setShowRegisterModal,
   setIsRegistered,
   addLeaderboard,
+  updateMatches,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

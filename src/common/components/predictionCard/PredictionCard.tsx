@@ -19,6 +19,7 @@ import {
   formatTimeNative,
   TEN_MINUTES_IN_MS,
 } from "src/lib/utils";
+import toast from "react-hot-toast";
 
 const PredictionCard = ({
   match,
@@ -39,20 +40,36 @@ const PredictionCard = ({
   const targetDate = new Date(match.details.fixture.date);
 
   const [closed_prediction, set_closed_prediction] = useState(false);
+  const [is_live, set_is_live] = useState(false);
   useEffect(() => {
     set_closed_prediction(
       targetDate.getTime() - currentTime.getTime() <= TEN_MINUTES_IN_MS
     );
+
+    set_is_live(currentTime >= targetDate);
   }, [match]);
 
   return (
-    <div className="lg:w-[834px] w-[calc(100vw-5vw)] md:h-[390px] h-fit py-3 md:py-0 px-3  lg:px-[69px] rounded-xl md:rounded-[20px] dark:bg-[#042822] bg-spl-white lg:border-[2px] border-[0.5px] md:border-[#E4E5E5] border-[#E4E5E5] dark:border-[rgba(255,255,255,.5)] flex flex-col items-center justify-center shadow-sm">
+    <div className="lg:w-[834px] relative w-[calc(100vw-5vw)] md:h-[390px] h-fit py-3 md:py-0 px-3  lg:px-[69px] rounded-xl md:rounded-[20px] dark:bg-[#042822] bg-spl-white lg:border-[2px] border-[0.5px] md:border-[#E4E5E5] border-[#E4E5E5] dark:border-[rgba(255,255,255,.5)] flex flex-col items-center justify-center shadow-sm">
       <p className="dark:text-spl-white text-spl-black text-[10px] lg:text-[15px] lg:leading-[20px] leading-[12px]">
         {match.details.league.name}
       </p>
       <p className="dark:text-spl-white md:my-0 my-5 text-spl-black text-[10px] lg:text-[13px] lg:leading-[17px] leading-[12px] md:mt-3 mt-[9px]">
         {formatTimeNative(match.details.fixture.date)}
       </p>
+
+      {!match.scored && is_live ? (
+        <div className="absolute md:top-10 top-2 md:right-10 right-2">
+          <div className="relative flex items-center justify-center w-10 h-10">
+            {/* Outer Pulse */}
+            <div className="absolute w-10 h-10 rounded-full bg-input-gradient opacity-75 animate-ping"></div>
+            {/* Inner Pulse */}
+            <div className="absolute w-6 h-6 rounded-full bg-input-gradient opacity-50 animate-ping"></div>
+            {/* Core Circle */}
+            <div className="relative w-2 h-2 rounded-full bg-input-gradient"></div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-center gap-[35px]">
         <div className="flex flex-col items-center justify-center gap-[18px]">
@@ -87,12 +104,17 @@ const PredictionCard = ({
               </div>
             ) : (
               <input
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${
                   closed_prediction || match.predicted || predicting
                     ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
                     : "dark:border-spl-white border dark:text-spl-white"
                 } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
                 onChange={(e) => {
+                  if (!/^\d*$/.test(e.target.value)) {
+                    toast.error("Invalid character");
+                  }
                   onChangePrediction(match.details.fixture.id.toString(), {
                     home: e.target.value.trim(),
                     keyIndex,
@@ -100,7 +122,9 @@ const PredictionCard = ({
                 }}
                 defaultValue={
                   match.predictions?.length
-                    ? match.predictions[0].prediction.split(":")[0].trim()
+                    ? match.predictions[0].prediction.prediction
+                        .split(":")[0]
+                        .trim()
                     : ""
                 }
                 placeholder=""
@@ -118,12 +142,18 @@ const PredictionCard = ({
               </div>
             ) : (
               <input
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${
                   closed_prediction || match.predicted || predicting
                     ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
                     : "dark:border-spl-white border dark:text-spl-white"
                 } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
                 onChange={(e) => {
+                  if (!/^\d*$/.test(e.target.value)) {
+                    toast.error("Invalid character");
+                  }
+
                   onChangePrediction(match.details.fixture.id.toString(), {
                     away: e.target.value.trim(),
                     keyIndex,
@@ -131,7 +161,9 @@ const PredictionCard = ({
                 }}
                 defaultValue={
                   match.predictions?.length
-                    ? match.predictions[0].prediction.split(":")[1].trim()
+                    ? match.predictions[0].prediction.prediction
+                        .split(":")[1]
+                        .trim()
                     : ""
                 }
                 disabled={closed_prediction || match.predicted || predicting}
@@ -142,7 +174,7 @@ const PredictionCard = ({
 
           <p className="dark:text-spl-white text-spl-black md:text-[21px] text-[10px] md:leading-[27px] leading-[12px] font-light">
             {closed_prediction
-              ? match.details.fixture.status.short !== "F"
+              ? match.details.fixture.status.match_status !== "ended"
                 ? "Current Result"
                 : " Final Result"
               : " Your Prediction"}
@@ -168,35 +200,66 @@ const PredictionCard = ({
               <p className="text-xs">
                 Your Prediction:{" "}
                 {match.predictions?.length
-                  ? match.predictions[0].prediction.split(":")[0].trim()
+                  ? match.predictions[0].prediction.prediction
+                      .split(":")[0]
+                      .trim()
                   : ""}{" "}
                 :{" "}
                 {match.predictions?.length
-                  ? match.predictions[0].prediction.split(":")[1].trim()
+                  ? match.predictions[0].prediction.prediction
+                      .split(":")[1]
+                      .trim()
                   : ""}
               </p>
             ) : null}
             <p className="text-xs">
               Your Score:{" "}
-              {match.details.fixture.status.short !== "F"
+              {match.details.fixture.status.match_status !== "ended"
                 ? "in progress"
                 : match.details.goals && match.predicted
-                ? calculateScore(
-                    match.details.goals,
-                    match.predictions[0].prediction
-                  )
+                ? match.predictions.length
+                  ? calculateScore(
+                      match.details.goals,
+                      match.predictions[0].prediction.prediction
+                    )
+                  : 0
                 : 0}
             </p>
           </div>
         ) : null}
-        <div className="md:min-w-[195px] w-full md:h-[91px] h-[46px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white md:border border-[0.5px] border-[#0000000D] flex items-center justify-center">
+
+        <div className="flex items-center md:rounded-[20px] gap-2 w-full rounded-[6px] dark:border-spl-white md:border border-[0.5px] border-[#0000000D] md:h-[91px] h-[46px] px-2">
+          <input
+            onChange={(e) => {
+              if (!/^\d*$/.test(e.target.value)) {
+                toast.error("Invalid character");
+              }
+
+              onChangePrediction(match.details.fixture.id.toString(), {
+                stake: e.target.value.trim(),
+                keyIndex,
+              });
+            }}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            type="text"
+            className="bg-transparent w-[calc(100%-0px)] md:text-end text-center font-bold text-lg dark:text-spl-white text-spl-black border-none outline-none min-w-0.5"
+            name=""
+            id=""
+            placeholder="stake"
+          />
+          <small className="dark:text-spl-white font-bold text-spl-black md:text-[15px] text-[10px] md:leading-[19px] leading-[12px] font-[Lato]">
+            USDC
+          </small>
+        </div>
+        {/* <div className="md:min-w-[195px] w-full md:h-[91px] h-[46px] px-2 md:rounded-[20px] rounded-[6px] dark:border-spl-white md:border border-[0.5px] border-[#0000000D] flex items-center justify-center">
           <p className="dark:text-spl-white text-spl-black md:text-[32px] text-[20px] text-center md:leading-[38px] leading-[24px] font-bold font-[Lato]">
             10000
             <small className="dark:text-spl-white text-spl-black md:text-[15px] text-[10px] md:leading-[19px] leading-[12px] font-[Lato]">
               USDC
             </small>
           </p>
-        </div>
+        </div> */}
 
         {closed_prediction ? (
           <div className="bg-input-gradient md:h-[90px] text-white h-[39px] md:min-w-[267px] w-full sm:block hidden md:text-[32px] text-[12px] md:rounded-[12px] rounded-[6px]">
@@ -206,23 +269,29 @@ const PredictionCard = ({
                   <p className="text-sm">
                     Your Prediction:{" "}
                     {match.predictions.length
-                      ? match.predictions[0].prediction.split(":")[0].trim()
+                      ? match.predictions[0].prediction.prediction
+                          .split(":")[0]
+                          .trim()
                       : ""}{" "}
                     :{" "}
                     {match.predictions.length
-                      ? match.predictions[0].prediction.split(":")[1].trim()
+                      ? match.predictions[0].prediction.prediction
+                          .split(":")[1]
+                          .trim()
                       : ""}
                   </p>
                 ) : null}
                 <p className="text-sm">
                   Your Score:{" "}
-                  {match.details.fixture.status.short !== "F"
+                  {match.details.fixture.status.match_status !== "ended"
                     ? "in progress"
                     : match.details.goals && match.predicted
-                    ? calculateScore(
-                        match.details.goals,
-                        match.predictions[0].prediction
-                      )
+                    ? match.predictions.length
+                      ? calculateScore(
+                          match.details.goals,
+                          match.predictions[0].prediction.prediction
+                        )
+                      : 0
                     : 0}
                 </p>
               </div>

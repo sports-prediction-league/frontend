@@ -5,6 +5,7 @@ import {
   bulkSetMatches,
   InitDataUnsafe,
   LeaderboardProp,
+  MatchData,
   Prediction,
   setConnectedAddress,
   setIsMiniApp,
@@ -16,6 +17,7 @@ import {
   setShowRegisterModal,
   update_profile,
   updateLeaderboardImages,
+  updateMatches,
 } from "src/state/slices/appSlice";
 import { ThemeProvider } from "../context/ThemeContext";
 
@@ -36,6 +38,9 @@ import {
 } from "src/lib/utils";
 import toast from "react-hot-toast";
 import RegisterModal from "src/common/components/modal/RegisterModal";
+
+import SPLASH from "../assets/splash.gif";
+import { useSocket } from "src/lib/useSocket";
 declare global {
   interface Window {
     Telegram?: {
@@ -59,6 +64,11 @@ declare global {
   }
 }
 function App() {
+  let socket = useSocket(process.env.REACT_APP_RENDER_ENDPOINT!, {
+    reconnectionDelay: 10000,
+    transports: ["websocket"],
+    autoConnect: false,
+  });
   const dispatch = useAppDispatch();
   const {
     current_round,
@@ -118,6 +128,7 @@ function App() {
             home: Number(element.home),
             inputed: element.inputed,
             match_id: `${element.match_id}`,
+            stake: element.stake,
           });
         }
       }
@@ -519,6 +530,42 @@ function App() {
   //   }
   // }, [connected_address]);
 
+  const [splash_active, set_splash_active] = useState(true);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
+
+  useEffect(() => {
+    const handlePageLoad = () => {
+      setIsPageLoaded(true); // Page has fully loaded
+      // Start the 20-second timer
+      const timer = setTimeout(() => {
+        set_splash_active(false);
+      }, 7000);
+
+      // Cleanup timer
+      return () => clearTimeout(timer);
+    };
+
+    window.addEventListener("load", handlePageLoad);
+
+    return () => window.removeEventListener("load", handlePageLoad);
+  }, []);
+
+  const StartListeners = () => {
+    socket.on("update-matches", (updated_matches: MatchData[]) => {
+      console.log({ updated_matches });
+      dispatch(updateMatches(updated_matches));
+    });
+  };
+
+  useEffect(() => {
+    socket.connect();
+    StartListeners();
+  }, []);
+
+  if (!isPageLoaded) {
+    return null; // Wait until the page has fully loaded
+  }
+
   return (
     <ThemeProvider>
       <RegisterModal
@@ -530,7 +577,12 @@ function App() {
         onSubmit={register_user}
         open={show_register_modal}
       />
-      <Router />
+      {splash_active ? (
+        <img src={SPLASH} className="w-screen h-screen" alt="" />
+      ) : (
+        <Router />
+      )}
+      {/* <Router /> */}
     </ThemeProvider>
   );
 }

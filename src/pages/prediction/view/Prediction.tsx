@@ -78,6 +78,7 @@ const Prediction = () => {
             match_id: string;
             home: number;
             away: number;
+            stake:string
           }[] = await contract!.get_user_predictions(
             cairo.uint256(Number(round.trim())),
             connected_address
@@ -96,9 +97,12 @@ const Prediction = () => {
                 predicted: true,
                 predictions: [
                   {
-                    prediction: `${Number(element.home)}:${Number(
-                      element.away
-                    )}`,
+                    prediction: {
+                      prediction: `${Number(element.home)}:${Number(
+                        element.away
+                      )}`,
+                      stake:element.stake
+                    },
                   },
                 ],
               };
@@ -154,13 +158,12 @@ const Prediction = () => {
 
   const handleBulkPredict = async () => {
     try {
-      // console.log(predictions);
-      // return;
       if (predicting) return;
       if (!window.Wallet?.IsConnected) {
         toast.error("Wallet not connected!");
         return;
       }
+
       if (
         !Object.values(predictions).filter(
           (ft) => Boolean(ft.home) && Boolean(ft.away)
@@ -180,6 +183,12 @@ const Prediction = () => {
 
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
+        if (predictions[key].stake) {
+          if (isNaN(Number(predictions[key].stake))) {
+            toast.error("Invalid stake value!");
+            return;
+          }
+        }
         if (predictions[key].home !== "" || predictions[key].away !== "") {
           if (predictions[key].home === "" || predictions[key].away === "") {
             toast.error("Enter scores for both teams");
@@ -203,14 +212,19 @@ const Prediction = () => {
             dispatch_data.push({
               matchId: key,
               keyIndex: predictions[key].keyIndex,
-              prediction,
+              prediction: {
+                prediction,
+                stake: predictions[key]["stake"] ?? 0,
+              },
             });
             construct.push({
               inputed: true,
               match_id: cairo.felt(key),
               home: cairo.uint256(Number(predictions[key].home.trim())),
               away: cairo.uint256(Number(predictions[key].away.trim())),
-              stake: cairo.uint256(0),
+              stake:
+                cairo.uint256(Number(predictions[key]["stake"])) ??
+                cairo.uint256(0),
             });
           }
         }
