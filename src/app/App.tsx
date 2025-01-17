@@ -544,7 +544,14 @@ function App() {
           fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
           fd.user.id === profile?.id
       );
-      set_res(find ? JSON.stringify(find) : "Not found");
+      set_res(
+        find
+          ? JSON.stringify(find)
+          : JSON.stringify({
+              l_arrd: leaderboard[0].user?.address?.toLowerCase(),
+              connected_address,
+            })
+      );
 
       if (find_index !== -1) {
         dispatch(
