@@ -159,7 +159,7 @@ function App() {
           structured_data.push({
             user: {
               username: feltToString(element.user.username),
-              address: `0x${element.user?.address?.toString(16)}`,
+              address: `0x0${element.user?.address?.toString(16)}`,
               id: Number(element.user.id),
             },
             totalPoints: Number(element.total_score),
@@ -538,7 +538,7 @@ function App() {
       const find_index = leaderboard.findIndex(
         (fd) =>
           fd.user?.address?.toLowerCase() ===
-            connected_address?.toLowerCase() || fd.user.id === profile?.id
+            connected_address?.toLowerCase() || fd.user?.id === profile?.id
       );
       // const find = leaderboard.find(
       //   (fd) =>
