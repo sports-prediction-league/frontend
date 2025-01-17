@@ -554,45 +554,6 @@ function App() {
       }
     }
   }, [connected_address, leaderboard]);
-  // useEffect(() => {
-  //   if (connected_address && profile && leaderboard.length) {
-  // const find_index = leaderboard.findIndex(
-  //   (fd) =>
-  //     fd.user?.address?.toLowerCase() ===
-  //       connected_address?.toLowerCase() || fd.user?.id === profile?.id
-  // );
-  //     // const find = leaderboard.find(
-  //     //   (fd) =>
-  //     //     fd.user?.address?.toLowerCase() ===
-  //     //       connected_address?.toLowerCase() || fd.user.id === profile?.id
-  //     // );
-  //     // set_res(
-  //     //   find
-  //     //     ? JSON.stringify(find)
-  //     //     : JSON.stringify({
-  //     //         id: Number(leaderboard[0].user?.id ?? 0),
-  //     //         idd: profile?.id,
-  //     //         is_the_same:
-  //     //           leaderboard[0].user?.address?.toLowerCase() ===
-  //     //           connected_address?.toLowerCase(),
-  //     //         l_arrd: leaderboard[0].user?.address?.toLowerCase(),
-  //     //         connected_address,
-  //     //         index: find_index,
-  //     //       })
-  //     // );
-
-  // if (find_index !== -1) {
-  //   dispatch(
-  //     update_profile({
-  //       point: {
-  //         point: leaderboard[find_index].totalPoints,
-  //         rank: find_index + 1,
-  //       },
-  //     })
-  //   );
-  // }
-  //   }
-  // }, [connected_address, profile, leaderboard]);
 
   const [splash_active, set_splash_active] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
@@ -626,13 +587,12 @@ function App() {
     StartListeners();
   }, []);
 
-  // if (!isPageLoaded) {
-  //   return null; // Wait until the page has fully loaded
-  // }
+  if (!isPageLoaded) {
+    return null; // Wait until the page has fully loaded
+  }
 
   return (
     <ThemeProvider>
-      {/* {res} */}
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
@@ -660,7 +620,6 @@ function App() {
       ) : (
         <Router />
       )}
-      {/* <Router /> */}
     </ThemeProvider>
   );
 }

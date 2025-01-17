@@ -116,7 +116,7 @@ export function calculateScore(
   goals: { home: string; away: string },
   prediction: string
 ): number {
-  if (!goals.away || !goals.away) return 0;
+  if (!goals.home || !goals.away) return 0;
   let point = 0;
   const home = prediction.split(":")[0];
   const away = prediction.split(":")[1];
