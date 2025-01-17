@@ -160,6 +160,7 @@ function App() {
             user: {
               username: feltToString(element.user.username),
               address: `0x${element.user?.address?.toString(16)}`,
+              id: element.user.id,
             },
             totalPoints: Number(element.total_score),
           });
@@ -539,25 +540,25 @@ function App() {
           fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
           fd.user.id === profile?.id
       );
-      const find = leaderboard.find(
-        (fd) =>
-          fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
-          fd.user.id === profile?.id
-      );
-      set_res(
-        find
-          ? JSON.stringify(find)
-          : JSON.stringify({
-              id: leaderboard[0].user?.id,
-              idd: profile?.id,
-              is_the_same:
-                leaderboard[0].user?.address?.toLowerCase() ===
-                connected_address.toLowerCase(),
-              l_arrd: leaderboard[0].user?.address?.toLowerCase(),
-              connected_address,
-              index: find_index,
-            })
-      );
+      // const find = leaderboard.find(
+      //   (fd) =>
+      //     fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
+      //     fd.user.id === profile?.id
+      // );
+      // set_res(
+      //   find
+      //     ? JSON.stringify(find)
+      //     : JSON.stringify({
+      //         id: leaderboard[0].user?.id,
+      //         idd: profile?.id,
+      //         is_the_same:
+      //           leaderboard[0].user?.address?.toLowerCase() ===
+      //           connected_address.toLowerCase(),
+      //         l_arrd: leaderboard[0].user?.address?.toLowerCase(),
+      //         connected_address,
+      //         index: find_index,
+      //       })
+      // );
 
       if (find_index !== -1) {
         dispatch(
