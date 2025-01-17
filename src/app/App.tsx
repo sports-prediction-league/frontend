@@ -548,6 +548,9 @@ function App() {
         find
           ? JSON.stringify(find)
           : JSON.stringify({
+              is_the_same:
+                leaderboard[0].user?.address?.toLowerCase() ===
+                connected_address.toLowerCase(),
               l_arrd: leaderboard[0].user?.address?.toLowerCase(),
               connected_address,
             })
