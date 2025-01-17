@@ -292,8 +292,6 @@ const Prediction = () => {
               response.data?.message ?? "OOOPPPSSS!! Something went wrong"
             );
           }
-
-          // await contract!.make_bulk_prediction(construct);
         }
 
         setPredicting(false);

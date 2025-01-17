@@ -8,8 +8,6 @@ import { IPredictionCardProps } from "../../../interfaces/components/predictionC
 import Button from "../button/Button";
 
 // assets
-import FC_CHELSEA from "../../../assets/toTrash/fc_chelsea_logo.svg";
-import FC_LEICESTER from "../../../assets/toTrash/fc_leicester_city_logo.svg";
 import COLUN from "../../../assets/upComingMatches/colun.svg";
 import COLUN_DARK from "../../../assets/upComingMatches/colun_dark.svg";
 import BX_STATS from "../../../assets/buttons/bx_stats.svg";
@@ -17,6 +15,7 @@ import USERS_SOLID from "../../../assets/buttons/users_solid.svg";
 import {
   calculateScore,
   formatTimeNative,
+  formatUnits,
   TEN_MINUTES_IN_MS,
 } from "src/lib/utils";
 import toast from "react-hot-toast";
@@ -246,6 +245,11 @@ const PredictionCard = ({
             className="bg-transparent w-[calc(100%-0px)] md:text-end text-center font-bold text-lg dark:text-spl-white text-spl-black border-none outline-none min-w-0.5"
             name=""
             id=""
+            defaultValue={
+              match.predictions?.length
+                ? formatUnits(match.predictions[0].prediction.stake)
+                : ""
+            }
             placeholder="stake"
             disabled={closed_prediction || match.predicted || predicting}
           />
