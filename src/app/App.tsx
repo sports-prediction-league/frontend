@@ -39,8 +39,8 @@ import {
 import toast from "react-hot-toast";
 import RegisterModal from "src/common/components/modal/RegisterModal";
 
-import SPLASH from "../assets/splash.gif";
-import SPLASH_DESKTOP from "../assets/desktop_splash.gif";
+import SPLASH from "../assets/splash/splash.gif";
+import SPLASH_DESKTOP from "../assets/splash/desktop_splash.gif";
 import { useSocket } from "src/lib/useSocket";
 declare global {
   interface Window {
