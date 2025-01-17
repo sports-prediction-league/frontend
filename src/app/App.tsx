@@ -341,8 +341,6 @@ function App() {
             IsConnected: true,
           };
 
-          toast.success("connected");
-
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
         })
