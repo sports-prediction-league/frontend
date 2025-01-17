@@ -46,12 +46,12 @@ const Header = () => {
         <div className=" md:flex items-center gap-[15px] hidden">
           <Button
             text="Upcoming Matches"
-            onClick={() => handleNavigation("/prediction")}
+            onClick={() => handleNavigation("/upcoming-matches")}
             background={
-              location.pathname === "/prediction" ? undefined : "#FFFFFF"
+              location.pathname === "/upcoming-matches" ? undefined : "#FFFFFF"
             }
             textColor={
-              location.pathname === "/prediction" ? undefined : "#000000"
+              location.pathname === "/upcoming-matches" ? undefined : "#000000"
             }
             fontWeight="font-medium"
           />
