@@ -160,7 +160,7 @@ function App() {
             user: {
               username: feltToString(element.user.username),
               address: `0x0${element.user?.address?.toString(16)}`,
-              id: Number(element.user.id),
+              id: Number(element.user?.id),
             },
             totalPoints: Number(element.total_score),
           });
