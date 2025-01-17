@@ -99,7 +99,7 @@ const PredictionCard = ({
           <div className="flex items-center justify-center gap-[14px]">
             {closed_prediction ? (
               <div className="md:w-[112px] flex items-center justify-center outline-none  text-white md:text-[59px] text-[14px] text-center leading-[48px] font-black w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] bg-input-gradient">
-                <p>{match.details.goals?.away ?? 0}</p>
+                <p>{match.details.goals?.home ?? 0}</p>
               </div>
             ) : (
               <input
@@ -137,7 +137,7 @@ const PredictionCard = ({
             />
             {closed_prediction ? (
               <div className="md:w-[112px] flex items-center justify-center outline-none  text-white md:text-[59px] text-[14px] text-center leading-[48px] font-black w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] bg-input-gradient">
-                <p>{match.details.goals?.home ?? 0}</p>
+                <p>{match.details.goals?.away ?? 0}</p>
               </div>
             ) : (
               <input
@@ -221,8 +221,8 @@ const PredictionCard = ({
                       match.details.goals,
                       match.predictions[0].prediction.prediction
                     )
-                  : 20
-                : 10}
+                  : 0
+                : 0}
             </p>
           </div>
         ) : null}
@@ -296,8 +296,8 @@ const PredictionCard = ({
                           match.details.goals,
                           match.predictions[0].prediction.prediction
                         )
-                      : 20
-                    : 10}
+                      : 0
+                    : 0}
                 </p>
               </div>
             </div>
