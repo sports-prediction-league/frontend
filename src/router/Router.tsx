@@ -17,8 +17,9 @@ import Profile from "../pages/profile/view/Profile";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<RootLayout />}>
-      <Route index element={<Home />} />
-      <Route path="/upcoming-matches" element={<Prediction />} />
+      <Route index element={<Prediction />} />
+      <Route path="/home" element={<Home />} />
+      {/* <Route path="/upcoming-matches" element={<Prediction />} /> */}
       <Route path="/leaderboard" element={<LeaderBoard />} />
       <Route path="/profile" element={<Profile />} />
       {/* <Route path="admin" element={<RootLayout />}> */}
