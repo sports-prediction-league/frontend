@@ -533,15 +533,15 @@ function App() {
   // }, [connected_address]);
   const [res, set_res] = useState("");
   useEffect(() => {
-    if (profile && leaderboard.length) {
+    if (connected_address && leaderboard.length) {
       const find_index = leaderboard.findIndex(
         (fd) =>
-          fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase() ||
+          fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
           fd.user.id === profile?.id
       );
       const find = leaderboard.find(
         (fd) =>
-          fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase() ||
+          fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
           fd.user.id === profile?.id
       );
       set_res(find ? JSON.stringify(find) : "Not found");
@@ -557,7 +557,7 @@ function App() {
         );
       }
     }
-  }, [profile, leaderboard]);
+  }, [connected_address, leaderboard]);
 
   const [splash_active, set_splash_active] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
