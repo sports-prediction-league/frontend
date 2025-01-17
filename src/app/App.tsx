@@ -160,7 +160,7 @@ function App() {
             user: {
               username: feltToString(element.user.username),
               address: `0x${element.user?.address?.toString(16)}`,
-              id: element.user.id,
+              id: Number(element.user.id),
             },
             totalPoints: Number(element.total_score),
           });
@@ -549,7 +549,7 @@ function App() {
         find
           ? JSON.stringify(find)
           : JSON.stringify({
-              id: leaderboard[0].user?.id,
+              id: Number(leaderboard[0].user?.id),
               idd: profile?.id,
               is_the_same:
                 leaderboard[0].user?.address?.toLowerCase() ===
