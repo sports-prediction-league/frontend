@@ -611,7 +611,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      {/* {res} */}
+      {res}
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
