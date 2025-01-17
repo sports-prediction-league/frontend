@@ -30,7 +30,8 @@ const Profile = () => {
   useEffect(() => {
     const find_index = leaderboard.findIndex(
       (fd) =>
-        fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase()
+        fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase() ||
+        fd.user.id === profile?.id
     );
     if (find_index !== -1) {
       set_user_point({
