@@ -27,6 +27,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { Modal } from "antd";
+import { SessionAccountInterface } from "@argent/tma-wallet";
 
 const Prediction = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -239,34 +240,60 @@ const Prediction = () => {
         const contract = getWalletProviderContract();
 
         if (contract) {
-          await contract!.make_bulk_prediction(construct);
+          const call = contract!.populate("make_bulk_prediction", [construct]);
 
-          dispatch(updatePredictionState(dispatch_data));
+          const account = window.Wallet.Account as SessionAccountInterface;
 
-          if (activeRounds !== current_round) {
-            let new_data = roundsMatches;
+          const outsideExecutionPayload =
+            await account.getOutsideExecutionPayload({
+              calls: [call],
+            });
 
-            for (let i = 0; i < dispatch_data.length; i++) {
-              const element = dispatch_data[i];
-
-              const new_indexed_data = roundsMatches[element.keyIndex].map(
-                (mp) => {
-                  if (mp.details.fixture.id.toString() === element.matchId) {
-                    return {
-                      ...mp,
-                      predicted: true,
-                      predictions: [{ prediction: element.prediction }],
-                    };
-                  }
-                  return mp;
-                }
-              );
-              new_data[element.keyIndex] = new_indexed_data;
-            }
-            setRoundsMatches(new_data);
+          if (!outsideExecutionPayload) {
+            setPredicting(false);
+            toast.error("error processing outside payload");
+            return;
           }
-          setPredictions({});
-          toast.success("Prediction Successful!");
+
+          const response = await apiClient.post(
+            "/execute",
+            outsideExecutionPayload
+          );
+
+          if (response.data.success) {
+            dispatch(updatePredictionState(dispatch_data));
+
+            if (activeRounds !== current_round) {
+              let new_data = roundsMatches;
+
+              for (let i = 0; i < dispatch_data.length; i++) {
+                const element = dispatch_data[i];
+
+                const new_indexed_data = roundsMatches[element.keyIndex].map(
+                  (mp) => {
+                    if (mp.details.fixture.id.toString() === element.matchId) {
+                      return {
+                        ...mp,
+                        predicted: true,
+                        predictions: [{ prediction: element.prediction }],
+                      };
+                    }
+                    return mp;
+                  }
+                );
+                new_data[element.keyIndex] = new_indexed_data;
+              }
+              setRoundsMatches(new_data);
+            }
+            setPredictions({});
+            toast.success("Prediction Successful!");
+          } else {
+            toast.error(
+              response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+            );
+          }
+
+          // await contract!.make_bulk_prediction(construct);
         }
 
         setPredicting(false);

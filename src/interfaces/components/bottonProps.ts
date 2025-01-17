@@ -2,6 +2,7 @@ export interface IButtonProps {
   text: string;
   width?: string;
   height?: string;
+  loading?: boolean;
   fontSize?: string;
   onClick?: () => void;
   disabled?: boolean;

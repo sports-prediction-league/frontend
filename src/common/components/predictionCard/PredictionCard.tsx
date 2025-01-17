@@ -247,6 +247,7 @@ const PredictionCard = ({
             name=""
             id=""
             placeholder="stake"
+            disabled={closed_prediction || match.predicted || predicting}
           />
           <small className="dark:text-spl-white font-bold text-spl-black md:text-[15px] text-[10px] md:leading-[19px] leading-[12px] font-[Lato]">
             USDC
@@ -299,8 +300,9 @@ const PredictionCard = ({
           </div>
         ) : (
           <Button
-            text="Stake"
+            text="Predict"
             disabled={closed_prediction || match.predicted || predicting}
+            loading={predicting}
             height="md:h-[90px] h-[39px]"
             width="md:min-w-[267px] w-full sm:block hidden"
             fontSize="md:text-[32px] text-[12px]"
@@ -339,7 +341,8 @@ const PredictionCard = ({
           </div>
           <div className="col-span-6 w-full">
             <Button
-              text="Stake"
+              text="Predict"
+              loading={predicting}
               disabled={closed_prediction || match.predicted || predicting}
               width="w-full"
               fontSize="md:text-[32px] text-[12px]"
