@@ -58,7 +58,7 @@ const useConnect = () => {
           approvalRequests: [
             {
               tokenAddress: TOKEN_ADDRESS,
-              amount: parseUnits("10", TOKEN_DECIMAL),
+              amount: parseUnits("10", TOKEN_DECIMAL).toString(),
               spender: CONTRACT_ADDRESS,
             },
           ],
