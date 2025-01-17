@@ -626,9 +626,9 @@ function App() {
     StartListeners();
   }, []);
 
-  if (!isPageLoaded) {
-    return null; // Wait until the page has fully loaded
-  }
+  // if (!isPageLoaded) {
+  //   return null; // Wait until the page has fully loaded
+  // }
 
   return (
     <ThemeProvider>
