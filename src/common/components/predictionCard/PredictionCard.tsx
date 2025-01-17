@@ -296,8 +296,8 @@ const PredictionCard = ({
                           match.details.goals,
                           match.predictions[0].prediction.prediction
                         )
-                      : 0
-                    : 0}
+                      : 20
+                    : 10}
                 </p>
               </div>
             </div>
