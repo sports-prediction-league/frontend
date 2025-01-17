@@ -15,31 +15,11 @@ import useConnect from "src/lib/useConnect";
 const Profile = () => {
   const [progress, setProgress] = useState(10);
   const { handleDisconnect, handleConnect } = useConnect();
-  const { profile, connected_address, leaderboard } = useAppSelector(
-    (state) => state.app
-  );
+  const { profile, connected_address } = useAppSelector((state) => state.app);
   const updateProgress = (newProgress: number) => {
     setProgress(newProgress);
   };
 
-  const [user_point, set_user_point] = useState<{
-    point: number;
-    rank: number;
-  } | null>(null);
-
-  useEffect(() => {
-    const find_index = leaderboard.findIndex(
-      (fd) =>
-        fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase() ||
-        fd.user.id === profile?.id
-    );
-    if (find_index !== -1) {
-      set_user_point({
-        point: leaderboard[find_index].totalPoints,
-        rank: find_index + 1,
-      });
-    }
-  }, [leaderboard]);
   useEffect(() => {
     updateProgress(50);
   }, []);
@@ -110,7 +90,7 @@ const Profile = () => {
                 POINTS
               </p>
               <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                {user_point?.point ?? "--"}
+                {profile?.point?.point ?? "--"}
               </p>
             </div>
           </div>
@@ -125,7 +105,7 @@ const Profile = () => {
                 LOCAL RANK
               </p>
               <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                #{user_point?.rank ?? "--"}
+                #{profile?.point?.rank ?? "--"}
               </p>
             </div>
           </div>

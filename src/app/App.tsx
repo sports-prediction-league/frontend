@@ -75,6 +75,7 @@ function App() {
     current_round,
     is_mini_app,
     profile,
+    leaderboard,
     connected_address,
     show_register_modal,
   } = useAppSelector((state) => state.app);
@@ -530,6 +531,26 @@ function App() {
   //     })();
   //   }
   // }, [connected_address]);
+
+  useEffect(() => {
+    if (profile && leaderboard.length) {
+      const find_index = leaderboard.findIndex(
+        (fd) =>
+          fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase() ||
+          fd.user.id === profile?.id
+      );
+      if (find_index !== -1) {
+        dispatch(
+          update_profile({
+            point: {
+              point: leaderboard[find_index].totalPoints,
+              rank: find_index + 1,
+            },
+          })
+        );
+      }
+    }
+  }, [profile, leaderboard]);
 
   const [splash_active, set_splash_active] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);

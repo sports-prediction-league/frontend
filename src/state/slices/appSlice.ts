@@ -78,6 +78,10 @@ interface User {
   username?: string;
   profile_picture?: string;
   address?: string;
+  point?: {
+    point: number;
+    rank: number;
+  };
 }
 
 export interface Prediction {
@@ -140,6 +144,10 @@ export const appSlice = createSlice({
         ...state.profile,
         username: action.payload.user.username,
         id: action.payload.user.id,
+        point: {
+          point: 0,
+          rank: state.leaderboard.length,
+        },
       };
     },
 
