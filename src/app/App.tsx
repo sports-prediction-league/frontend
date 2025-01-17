@@ -531,7 +531,7 @@ function App() {
   //     })();
   //   }
   // }, [connected_address]);
-
+  const [res, set_res] = useState("");
   useEffect(() => {
     if (profile && leaderboard.length) {
       const find_index = leaderboard.findIndex(
@@ -539,6 +539,13 @@ function App() {
           fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase() ||
           fd.user.id === profile?.id
       );
+      const find = leaderboard.find(
+        (fd) =>
+          fd.user?.address?.toLowerCase() === profile?.address?.toLowerCase() ||
+          fd.user.id === profile?.id
+      );
+      set_res(find ? JSON.stringify(find) : "Not found");
+
       if (find_index !== -1) {
         dispatch(
           update_profile({
@@ -590,6 +597,7 @@ function App() {
 
   return (
     <ThemeProvider>
+      {res}
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
