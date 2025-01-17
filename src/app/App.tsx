@@ -193,7 +193,7 @@ function App() {
           dispatch(
             update_profile({
               username: feltToString(user.username),
-              address: `0x${user.address.toString(16)}`,
+              address: `0x0${user.address.toString(16)}`,
             })
           );
         }
