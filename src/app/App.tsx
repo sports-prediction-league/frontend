@@ -553,6 +553,7 @@ function App() {
                 connected_address.toLowerCase(),
               l_arrd: leaderboard[0].user?.address?.toLowerCase(),
               connected_address,
+              index: find_index,
             })
       );
 
