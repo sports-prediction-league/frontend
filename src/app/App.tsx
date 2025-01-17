@@ -40,6 +40,7 @@ import toast from "react-hot-toast";
 import RegisterModal from "src/common/components/modal/RegisterModal";
 
 import SPLASH from "../assets/splash.gif";
+import SPLASH_DESKTOP from "../assets/desktop_splash.gif";
 import { useSocket } from "src/lib/useSocket";
 declare global {
   interface Window {
@@ -568,17 +569,30 @@ function App() {
 
   return (
     <ThemeProvider>
-      <RegisterModal
-        t_username={profile?.username}
-        loading={registering}
-        onOpenChange={() => {
-          dispatch(setShowRegisterModal(false));
-        }}
-        onSubmit={register_user}
-        open={show_register_modal}
-      />
+      {splash_active ? null : (
+        <RegisterModal
+          t_username={profile?.username}
+          loading={registering}
+          onOpenChange={() => {
+            dispatch(setShowRegisterModal(false));
+          }}
+          onSubmit={register_user}
+          open={show_register_modal}
+        />
+      )}
       {splash_active ? (
-        <img src={SPLASH} className="w-screen h-screen" alt="" />
+        <div className="w-full h-full">
+          <img
+            src={SPLASH}
+            className="md:hidden block w-screen h-screen"
+            alt=""
+          />
+          <img
+            src={SPLASH_DESKTOP}
+            className="md:block hidden w-screen h-screen"
+            alt=""
+          />
+        </div>
       ) : (
         <Router />
       )}

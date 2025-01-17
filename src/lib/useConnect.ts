@@ -4,7 +4,12 @@ import { useAppDispatch, useAppSelector } from "src/state/store";
 import { WalletAccount } from "starknet";
 import { connect, disconnect } from "starknetkit";
 import { setConnectedAddress } from "src/state/slices/appSlice";
-import { CONTRACT_ADDRESS, TOKEN_ADDRESS } from "./utils";
+import {
+  CONTRACT_ADDRESS,
+  parseUnits,
+  TOKEN_ADDRESS,
+  TOKEN_DECIMAL,
+} from "./utils";
 import toast from "react-hot-toast";
 
 const useConnect = () => {
@@ -53,7 +58,7 @@ const useConnect = () => {
           approvalRequests: [
             {
               tokenAddress: TOKEN_ADDRESS,
-              amount: "10000000000000000000",
+              amount: parseUnits("10", TOKEN_DECIMAL),
               spender: CONTRACT_ADDRESS,
             },
           ],

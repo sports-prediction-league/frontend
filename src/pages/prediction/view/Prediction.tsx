@@ -14,6 +14,8 @@ import {
   formatDateNative,
   groupMatchesByDate,
   parse_error,
+  parseUnits,
+  TOKEN_DECIMAL,
 } from "src/lib/utils";
 import {
   MatchData,
@@ -78,7 +80,7 @@ const Prediction = () => {
             match_id: string;
             home: number;
             away: number;
-            stake:string
+            stake: string;
           }[] = await contract!.get_user_predictions(
             cairo.uint256(Number(round.trim())),
             connected_address
@@ -101,7 +103,7 @@ const Prediction = () => {
                       prediction: `${Number(element.home)}:${Number(
                         element.away
                       )}`,
-                      stake:element.stake
+                      stake: element.stake,
                     },
                   },
                 ],
@@ -222,9 +224,11 @@ const Prediction = () => {
               match_id: cairo.felt(key),
               home: cairo.uint256(Number(predictions[key].home.trim())),
               away: cairo.uint256(Number(predictions[key].away.trim())),
-              stake:
-                cairo.uint256(Number(predictions[key]["stake"])) ??
-                cairo.uint256(0),
+              stake: predictions[key]["stake"]
+                ? cairo.uint256(
+                    Number(parseUnits(predictions[key]["stake"], TOKEN_DECIMAL))
+                  )
+                : cairo.uint256(0),
             });
           }
         }

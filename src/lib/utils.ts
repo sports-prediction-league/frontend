@@ -8,6 +8,34 @@ export const apiClient = axios.create({
   },
 });
 
+export const parseUnits = (value: string, decimals: number = 18): bigint => {
+  const [integerPart, fractionalPart = ""] = value.split(".");
+
+  // Pad fractional part to the right with zeros up to `decimals`
+  const paddedFraction = fractionalPart
+    .padEnd(decimals, "0")
+    .slice(0, decimals);
+
+  // Combine integer and fractional parts and convert to BigInt
+  return BigInt(integerPart + paddedFraction);
+};
+
+export const formatUnits = (
+  value: string | bigint,
+  decimals: number = 18
+): string => {
+  const bigValue = BigInt(value); // Convert to BigInt for precision
+  const divisor = BigInt(10 ** decimals); // 10^decimals
+  const integerPart = bigValue / divisor;
+  const fractionalPart = bigValue % divisor;
+
+  // Pad fractional part with leading zeros
+  const fractionalString = fractionalPart.toString().padStart(decimals, "0");
+
+  // Remove trailing zeros and return
+  return `${integerPart}.${fractionalString}`.replace(/\.?0+$/, "");
+};
+
 export function groupMatchesByDate(matches: MatchData[]): MatchData[][] {
   // Use a Map to group matches by the same date
   const groupedMatches = new Map<string, MatchData[]>();
@@ -164,3 +192,4 @@ export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
 export const TOKEN_ADDRESS = process.env.REACT_APP_TOKEN_ADDRESS!;
+export const TOKEN_DECIMAL = 18;
