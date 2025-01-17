@@ -537,23 +537,23 @@ function App() {
     if (connected_address && profile && leaderboard.length) {
       const find_index = leaderboard.findIndex(
         (fd) =>
-          fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
-          fd.user.id === profile?.id
+          fd.user?.address?.toLowerCase() ===
+            connected_address?.toLowerCase() || fd.user.id === profile?.id
       );
       const find = leaderboard.find(
         (fd) =>
-          fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
-          fd.user.id === profile?.id
+          fd.user?.address?.toLowerCase() ===
+            connected_address?.toLowerCase() || fd.user.id === profile?.id
       );
       set_res(
         find
           ? JSON.stringify(find)
           : JSON.stringify({
-              id: Number(leaderboard[0].user?.id),
+              id: Number(leaderboard[0].user?.id ?? 0),
               idd: profile?.id,
               is_the_same:
                 leaderboard[0].user?.address?.toLowerCase() ===
-                connected_address.toLowerCase(),
+                connected_address?.toLowerCase(),
               l_arrd: leaderboard[0].user?.address?.toLowerCase(),
               connected_address,
               index: find_index,
