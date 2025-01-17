@@ -532,33 +532,13 @@ function App() {
   //     })();
   //   }
   // }, [connected_address]);
-  const [res, set_res] = useState("");
   useEffect(() => {
-    if (connected_address && leaderboard.length) {
+    if (connected_address && profile && leaderboard.length) {
       const find_index = leaderboard.findIndex(
         (fd) =>
           fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
           fd.user.id === profile?.id
       );
-      // const find = leaderboard.find(
-      //   (fd) =>
-      //     fd.user?.address?.toLowerCase() === connected_address.toLowerCase() ||
-      //     fd.user.id === profile?.id
-      // );
-      // set_res(
-      //   find
-      //     ? JSON.stringify(find)
-      //     : JSON.stringify({
-      //         id: leaderboard[0].user?.id,
-      //         idd: profile?.id,
-      //         is_the_same:
-      //           leaderboard[0].user?.address?.toLowerCase() ===
-      //           connected_address.toLowerCase(),
-      //         l_arrd: leaderboard[0].user?.address?.toLowerCase(),
-      //         connected_address,
-      //         index: find_index,
-      //       })
-      // );
 
       if (find_index !== -1) {
         dispatch(
@@ -571,7 +551,7 @@ function App() {
         );
       }
     }
-  }, [connected_address, leaderboard]);
+  }, [connected_address, profile, leaderboard]);
 
   const [splash_active, set_splash_active] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
@@ -611,7 +591,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      {res}
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
@@ -639,7 +618,6 @@ function App() {
       ) : (
         <Router />
       )}
-      {/* <Router /> */}
     </ThemeProvider>
   );
 }
