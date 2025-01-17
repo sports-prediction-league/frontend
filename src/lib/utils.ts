@@ -142,8 +142,8 @@ export function calculateScore(
 
   // 5 Points: Exact score match and correct goal range
   if (
-    goals?.home?.trim() === home?.trim() &&
-    goals?.away?.trim() === away?.trim() &&
+    goals.home === home?.trim() &&
+    goals.away === away?.trim() &&
     actualGoalRange === predictedGoalRange
   ) {
     point = 5; // Exact match
