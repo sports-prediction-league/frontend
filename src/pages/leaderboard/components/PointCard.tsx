@@ -1,6 +1,7 @@
 // assets
 import { LeaderboardProp } from "src/state/slices/appSlice";
-import badge from "../../../assets/leaderboard/badge.svg";
+// import badge from "../../../assets/leaderboard/badge.svg";
+// import DEFAULT_PROFILE from "../../../assets/leaderboard/default_profile.svg";
 
 const PointCard = ({
   active,
@@ -32,15 +33,19 @@ const PointCard = ({
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }
-                : undefined
+                : undefined /*{
+                    background: `url(${DEFAULT_PROFILE})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }*/
             }
             className="md:w-[69px] md:h-[69px] w-[42px] h-[42px] rounded-full bg-[#C4C4C4] relative"
           >
-            <img
+            {/* <img
               src={badge}
               alt="badge"
               className="absolute -bottom-[3px] md:bottom-1 md:-right-1 -right-0.5 md:w-[22px] md:h-[22px] w-[14px] h-[14px]"
-            />
+            /> */}
           </div>
           <div className="flex flex-col gap-0.5">
             <p className="md:text-[24px] capitalize  font-medium font-[Rubik]">
@@ -60,7 +65,9 @@ const PointCard = ({
         </div>
       </div>
       <div className="md:flex hidden">
-        <p className="text-[17px] font-[Rubik] text-[#858494]">2,569 points</p>
+        <p className="text-[17px] font-[Rubik] text-[#858494]">
+          {data.totalPoints?.toLocaleString()} points
+        </p>
       </div>
     </div>
   );

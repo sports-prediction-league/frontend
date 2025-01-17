@@ -1,4 +1,5 @@
 // interfaces
+import { TbLoader } from "react-icons/tb";
 import { IButtonProps } from "../../../interfaces";
 
 const Button = ({
@@ -7,6 +8,7 @@ const Button = ({
   height = "h-[34px]",
   fontSize = "text-[14px]",
   onClick,
+  loading,
   disabled,
   leftIcon,
   rounded = "rounded-[12px]",
@@ -28,10 +30,13 @@ const Button = ({
         } as React.CSSProperties
       }
     >
-      {leftIcon && (
+      {!loading && leftIcon && (
         <img src={leftIcon} alt="ICON" className="w-[16px] h-[16px]" />
       )}
-      {text}
+      {!loading ? text : null}
+      {loading ? (
+        <TbLoader size={22} color="white" className="mr-1.5 animate-spin" />
+      ) : null}
     </button>
   );
 };

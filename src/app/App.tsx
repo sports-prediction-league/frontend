@@ -5,6 +5,7 @@ import {
   bulkSetMatches,
   InitDataUnsafe,
   LeaderboardProp,
+  MatchData,
   Prediction,
   setConnectedAddress,
   setIsMiniApp,
@@ -16,12 +17,13 @@ import {
   setShowRegisterModal,
   update_profile,
   updateLeaderboardImages,
+  updateMatches,
 } from "src/state/slices/appSlice";
 import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { cairo, WalletAccount } from "starknet";
+import { cairo, CallData, WalletAccount } from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
@@ -36,6 +38,10 @@ import {
 } from "src/lib/utils";
 import toast from "react-hot-toast";
 import RegisterModal from "src/common/components/modal/RegisterModal";
+
+import SPLASH from "../assets/splash/splash.gif";
+import SPLASH_DESKTOP from "../assets/splash/desktop_splash.gif";
+import { useSocket } from "src/lib/useSocket";
 declare global {
   interface Window {
     Telegram?: {
@@ -44,6 +50,7 @@ declare global {
         close: () => void;
       };
     };
+    SIR: any;
   }
 }
 
@@ -58,11 +65,17 @@ declare global {
   }
 }
 function App() {
+  let socket = useSocket(process.env.REACT_APP_RENDER_ENDPOINT!, {
+    reconnectionDelay: 10000,
+    transports: ["websocket"],
+    autoConnect: false,
+  });
   const dispatch = useAppDispatch();
   const {
     current_round,
     is_mini_app,
     profile,
+    leaderboard,
     connected_address,
     show_register_modal,
   } = useAppSelector((state) => state.app);
@@ -117,6 +130,7 @@ function App() {
             home: Number(element.home),
             inputed: element.inputed,
             match_id: `${element.match_id}`,
+            stake: element.stake,
           });
         }
       }
@@ -145,7 +159,8 @@ function App() {
           structured_data.push({
             user: {
               username: feltToString(element.user.username),
-              address: `0x${element.user?.address?.toString(16)}`,
+              address: `0x0${element.user?.address?.toString(16)}`,
+              id: Number(element.user?.id),
             },
             totalPoints: Number(element.total_score),
           });
@@ -173,8 +188,15 @@ function App() {
         }
       } else {
         dispatch(setIsRegistered(true));
-        const username = await contract!.get_user_by_address(address);
-        dispatch(update_profile({ username: feltToString(username) }));
+        if (!is_mini_app) {
+          const user = await contract!.get_user_by_address(address);
+          dispatch(
+            update_profile({
+              username: feltToString(user.username),
+              address: `0x0${user.address.toString(16)}`,
+            })
+          );
+        }
       }
     } catch (error) {
       console.log(error);
@@ -265,6 +287,7 @@ function App() {
           fetchProfilePhoto(initDataUnsafe.user.id.toString());
         }
       } else {
+        telegram?.WebApp?.close();
       }
     } else {
       telegram?.WebApp?.close();
@@ -331,22 +354,29 @@ function App() {
   }, [is_mini_app]);
 
   const [registering, set_registering] = useState(false);
-
-  const register_user = async (username: string) => {
+  const register_user = async () => {
     try {
-      if (!username.trim()) return;
       set_registering(true);
       const contract = getWalletProviderContract();
 
-      const random = Math.floor(10000000 + Math.random() * 90000000).toString();
       if (!profile?.id || !profile?.username) {
         toast.error("Profile not initialized");
         set_registering(false);
         return;
       }
 
-      if (!window?.Wallet?.IsConnected || !window?.Wallet?.Account) {
+      if (
+        !window?.Wallet?.IsConnected ||
+        !window?.Wallet?.Account ||
+        !connected_address
+      ) {
         toast.error("Wallet not connected");
+        set_registering(false);
+        return;
+      }
+
+      if (!contract) {
+        toast.error("Contract not initialized");
         set_registering(false);
         return;
       }
@@ -355,7 +385,7 @@ function App() {
         {
           id: cairo.felt(profile.id.toString().trim()),
           username: cairo.felt(profile.username.trim().toLowerCase()),
-          address: connected_address!,
+          address: connected_address,
         },
       ]);
 
@@ -365,12 +395,15 @@ function App() {
         return;
       }
 
-      const outsideExecutionPayload = await (
-        window.Wallet.Account as SessionAccountInterface
-      ).getOutsideExecutionPayload({
+      const account = window.Wallet.Account as SessionAccountInterface;
+      // const oi = await account.getDeploymentPayload();
+      // setRes(JSON.stringify(oi));
+
+      const outsideExecutionPayload = await account.getOutsideExecutionPayload({
         calls: [call],
       });
 
+      // setPl(JSON.stringify(outsideExecutionPayload));
       if (!outsideExecutionPayload) {
         set_registering(false);
         toast.error("error processing outside payload");
@@ -387,13 +420,19 @@ function App() {
           addLeaderboard({
             totalPoints: 0,
             user: {
-              id: Number(random),
-              username: username,
+              id: Number(profile.id),
+              username: profile.username,
+              address: connected_address,
             },
           })
         );
         dispatch(setShowRegisterModal(false));
+        dispatch(setIsRegistered(true));
         toast.success("Username set!");
+      } else {
+        toast.error(
+          response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+        );
       }
 
       set_registering(false);
@@ -407,45 +446,180 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    (async function () {
+      try {
+        if (is_mini_app) {
+          if (window?.Wallet?.Account) {
+            if (!profile?.id) return;
+            const get_account_deployed_status =
+              localStorage.getItem("accountDeployed");
+            if (!get_account_deployed_status) {
+              const account = window.Wallet.Account as SessionAccountInterface;
+              const is_account_deployed = await account.isDeployed();
+              if (!is_account_deployed) {
+                const account_payload = await account.getDeploymentPayload();
+                const response = await apiClient.post("/deploy-account", {
+                  account_payload,
+                  user_id: profile.id,
+                });
+
+                if (response.data.success) {
+                  localStorage.setItem("accountDeployed", "true");
+                }
+              }
+            }
+          }
+        }
+      } catch (error: any) {
+        toast.error(
+          error.response?.data?.message
+            ? parse_error(error.response?.data?.message)
+            : error.message || "An error occurred"
+        );
+      }
+    })();
+  }, [connected_address]);
+
   // useEffect(() => {
   //   if (connected_address) {
   //     (async function () {
-  //       const contract = getWalletProviderContract();
+  //       try {
+  //         const contract = getWalletProviderContract();
 
-  //       const call = contract?.populate("make_bulk_prediction", [
-  //         [
-  //           {
-  //             inputed: true,
-  //             match_id: cairo.felt("123"),
-  //             home: cairo.uint256(4),
-  //             away: cairo.uint256(3),
-  //           },
-  //           {
-  //             inputed: true,
-  //             match_id: cairo.felt("123"),
-  //             home: cairo.uint256(4),
-  //             away: cairo.uint256(3),
-  //           },
-  //         ],
-  //       ]);
+  //         // const call = contract!.populate("make_bulk_prediction", [
+  //         //   [
+  //         //     {
+  //         //       inputed: true,
+  //         //       match_id: cairo.felt("123"),
+  //         //       home: cairo.uint256(4),
+  //         //       away: cairo.uint256(3),
+  //         //       stake: cairo.uint256(1),
+  //         //     },
+  //         //     {
+  //         //       inputed: true,
+  //         //       match_id: cairo.felt("123"),
+  //         //       home: cairo.uint256(4),
+  //         //       away: cairo.uint256(3),
+  //         //       stake: cairo.uint256(1),
+  //         //     },
+  //         //   ],
+  //         // ]);
 
-  //       console.log({ call });
+  //         const call = contract!.populate("register_user", [
+  //           {
+  //             id: cairo.felt(profile!.id!.toString().trim()),
+  //             username: cairo.felt(profile!.username!.trim().toLowerCase()),
+  //             address: connected_address,
+  //           },
+  //         ]);
+
+  //         setResp(JSON.stringify(CallData.compile([CONTRACT_ADDRESS])));
+
+  //         const account = window.Wallet.Account as SessionAccountInterface;
+
+  //         const outsideExecutionPayload =
+  //           await account.getOutsideExecutionPayload({
+  //             calls: [call],
+  //           });
+
+  //         // setRes(JSON.stringify(outsideExecutionPayload));
+  //       } catch (error: any) {
+  //         toast.error(error.message);
+  //       }
+
+  //       // console.log({ call });
   //     })();
   //   }
   // }, [connected_address]);
+  // const [res, set_res] = useState("");
+
+  useEffect(() => {
+    if (connected_address && leaderboard.length) {
+      const find_index = leaderboard.findIndex(
+        (fd) =>
+          fd.user?.address?.toLowerCase() ===
+            connected_address?.toLowerCase() || fd.user?.id === profile?.id
+      );
+
+      if (find_index !== -1) {
+        dispatch(
+          update_profile({
+            point: {
+              point: leaderboard[find_index].totalPoints,
+              rank: find_index + 1,
+            },
+          })
+        );
+      }
+    }
+  }, [connected_address, leaderboard]);
+
+  const [splash_active, set_splash_active] = useState(true);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
+
+  useEffect(() => {
+    const handlePageLoad = () => {
+      setIsPageLoaded(true); // Page has fully loaded
+      // Start the 20-second timer
+      const timer = setTimeout(() => {
+        set_splash_active(false);
+      }, 7000);
+
+      // Cleanup timer
+      return () => clearTimeout(timer);
+    };
+
+    window.addEventListener("load", handlePageLoad);
+
+    return () => window.removeEventListener("load", handlePageLoad);
+  }, []);
+
+  const StartListeners = () => {
+    socket.on("update-matches", (updated_matches: MatchData[]) => {
+      console.log({ updated_matches });
+      dispatch(updateMatches(updated_matches));
+    });
+  };
+
+  useEffect(() => {
+    socket.connect();
+    StartListeners();
+  }, []);
+
+  if (!isPageLoaded) {
+    return null; // Wait until the page has fully loaded
+  }
 
   return (
     <ThemeProvider>
-      <RegisterModal
-        t_username={profile?.username}
-        loading={registering}
-        onOpenChange={() => {
-          dispatch(setShowRegisterModal(false));
-        }}
-        onSubmit={register_user}
-        open={show_register_modal}
-      />
-      <Router />
+      {splash_active ? null : (
+        <RegisterModal
+          t_username={profile?.username}
+          loading={registering}
+          onOpenChange={() => {
+            dispatch(setShowRegisterModal(false));
+          }}
+          onSubmit={register_user}
+          open={show_register_modal}
+        />
+      )}
+      {splash_active ? (
+        <div className="w-full h-full">
+          <img
+            src={SPLASH}
+            className="md:hidden block w-screen h-screen"
+            alt=""
+          />
+          <img
+            src={SPLASH_DESKTOP}
+            className="md:block hidden w-screen h-screen"
+            alt=""
+          />
+        </div>
+      ) : (
+        <Router />
+      )}
     </ThemeProvider>
   );
 }

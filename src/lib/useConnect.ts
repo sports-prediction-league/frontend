@@ -4,7 +4,13 @@ import { useAppDispatch, useAppSelector } from "src/state/store";
 import { WalletAccount } from "starknet";
 import { connect, disconnect } from "starknetkit";
 import { setConnectedAddress } from "src/state/slices/appSlice";
-import { CONTRACT_ADDRESS } from "./utils";
+import {
+  CONTRACT_ADDRESS,
+  parseUnits,
+  TOKEN_ADDRESS,
+  TOKEN_DECIMAL,
+} from "./utils";
+import toast from "react-hot-toast";
 
 const useConnect = () => {
   const getArgentTMA = () => {
@@ -38,67 +44,6 @@ const useConnect = () => {
   const is_mini_app = useAppSelector((state) => state.app.is_mini_app);
   const dispatch = useAppDispatch();
 
-  // useEffect(() => {
-  //   // Call connect() as soon as the app is loaded
-  //   if (is_mini_app) {
-  //     const argentTMA = getArgentTMA();
-
-  //     argentTMA
-  //       .connect()
-  //       .then((res) => {
-  //         if (!res) {
-  //           // Not connected
-  //           window.Wallet = {
-  //             Account: undefined,
-  //             IsConnected: false,
-  //           };
-
-  //           const event = new Event("windowWalletClassChange");
-  //           window.dispatchEvent(event);
-
-  //           return;
-  //         }
-
-  //         if (
-  //           (
-  //             window.Wallet?.Account as SessionAccountInterface | undefined
-  //           )?.getSessionStatus() !== "VALID"
-  //         ) {
-  //           // Session has expired or scope (allowed methods) has changed
-  //           // A new connection request should be triggered
-
-  //           // The account object is still available to get access to user's address
-  //           // but transactions can't be executed
-  //           window.Wallet = {
-  //             Account: res.account,
-  //             IsConnected: false,
-  //           };
-
-  //           const event = new Event("windowWalletClassChange");
-  //           window.dispatchEvent(event);
-
-  //           return;
-  //         }
-
-  //         // Connected
-  //         // The session account is returned and can be used to submit transactions
-  //         window.Wallet = {
-  //           Account: res.account,
-  //           IsConnected: true,
-  //         };
-
-  //         const event = new Event("windowWalletClassChange");
-  //         window.dispatchEvent(event);
-
-  //         // Custom data passed to the requestConnection() method is available here
-  //         console.log("callback data:", res.callbackData);
-  //       })
-  //       .catch((err) => {
-  //         console.error("Failed to connect", err);
-  //       });
-  //   }
-  // }, []);
-
   const handleConnect = async () => {
     try {
       if (is_mini_app) {
@@ -110,6 +55,13 @@ const useConnect = () => {
         // from the connect() method -- see above
         await argentTMA.requestConnection({
           callbackData: "custom_callback_data",
+          approvalRequests: [
+            {
+              tokenAddress: TOKEN_ADDRESS,
+              amount: parseUnits("10", TOKEN_DECIMAL).toString(),
+              spender: CONTRACT_ADDRESS,
+            },
+          ],
         });
       } else {
         const { wallet } = await connect();
@@ -131,7 +83,8 @@ const useConnect = () => {
           window.dispatchEvent(event);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error.message || "error here");
       console.log(error);
     }
   };

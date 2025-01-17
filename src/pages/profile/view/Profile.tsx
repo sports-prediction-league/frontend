@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 // assets
 import PROFILE from "../../../assets/profile/profile.svg";
-import BADGE from "../../../assets/leaderboard/badge.svg";
+// import BADGE from "../../../assets/leaderboard/badge.svg";
 import STAR_ICON from "../../../assets/profile/star_icon.svg";
 import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 
@@ -43,7 +43,7 @@ const Profile = () => {
           />
         </div>
 
-        <div className="text-center w-[250px] h-[5px] mx-auto mt-[50px] relative">
+        {/* <div className="text-center w-[250px] h-[5px] mx-auto mt-[50px] relative">
           <div className="relative h-[5px] bg-[#e0e0e0] rounded-[5px] m-[10px_0]">
             <img
               src={BADGE}
@@ -59,11 +59,11 @@ const Profile = () => {
           <p className="mt-[10px] text-[14px] text-gray-600">
             Until next badge
           </p>
-        </div>
+        </div> */}
       </div>
 
       <div className="flex flex-col items-center justify-center mt-[70px]">
-        <Button text="See all badges" fontSize="text-[10px]" />
+        {/* <Button text="See all badges" fontSize="text-[10px]" /> */}
 
         <p className="mt-[38px] md:text-[36px] text-[20px] font-[Rubik] font-medium dark:text-spl-white">
           {profile?.username}
@@ -90,7 +90,7 @@ const Profile = () => {
                 POINTS
               </p>
               <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                590
+                {profile?.point?.point ?? "--"}
               </p>
             </div>
           </div>
@@ -105,7 +105,7 @@ const Profile = () => {
                 LOCAL RANK
               </p>
               <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                #56
+                #{profile?.point?.rank ?? "--"}
               </p>
             </div>
           </div>

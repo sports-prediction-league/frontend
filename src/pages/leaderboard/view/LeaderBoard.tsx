@@ -69,7 +69,9 @@ const LeaderBoard = () => {
         const element = tx[i];
         structured_data.push({
           user: {
-            username: feltToString(element.user),
+            username: feltToString(element.user.username),
+            address: `0x0${element.user?.address?.toString(16)}`,
+            id: Number(element.user.id),
           },
           totalPoints: Number(element.total_score),
         });
@@ -124,11 +126,22 @@ const LeaderBoard = () => {
           .slice(0)
           .map((_data: LeaderboardProp, _key: number) => {
             return (
-              <PointCard index={_key} data={_data} key={_key} active={false} />
+              <PointCard
+                index={_key}
+                data={_data}
+                key={_key}
+                active={
+                  _data.user?.username?.toLowerCase() ===
+                    profile?.username?.toLowerCase() ||
+                  (connected_address &&
+                    _data?.user?.address?.toLowerCase() ===
+                      connected_address.toLowerCase())
+                    ? true
+                    : false
+                }
+              />
             );
           })}
-
-        {/* <PointCard active={true} /> */}
       </div>
     </React.Fragment>
   );
