@@ -11,10 +11,12 @@ import { useAppDispatch, useAppSelector } from "src/state/store";
 import useContractInstance from "src/lib/useContractInstance";
 import {
   apiClient,
+  CONTRACT_ADDRESS,
   formatDateNative,
   groupMatchesByDate,
   parse_error,
   parseUnits,
+  TOKEN_ADDRESS,
   TOKEN_DECIMAL,
 } from "src/lib/utils";
 import {
@@ -28,9 +30,12 @@ import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { Modal } from "antd";
 import { SessionAccountInterface } from "@argent/tma-wallet";
+import useConnect from "src/lib/useConnect";
 
 const Prediction = () => {
   const [loading, setLoading] = useState<boolean>(false);
+  const { getArgentTMA } = useConnect();
+
   const {
     total_rounds,
     current_round,
@@ -40,7 +45,8 @@ const Prediction = () => {
     is_registered,
   } = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
-  const { getWalletProviderContract } = useContractInstance();
+  const { getWalletProviderContract, getWalletProviderContractERC20 } =
+    useContractInstance();
   const [activeRounds, setActiveRounds] = useState(current_round);
   const [predicting, setPredicting] = useState(false);
   const [predictions, setPredictions] = useState<Record<string, any>>({});
@@ -226,10 +232,8 @@ const Prediction = () => {
               home: cairo.uint256(Number(predictions[key].home.trim())),
               away: cairo.uint256(Number(predictions[key].away.trim())),
               stake: predictions[key]["stake"]
-                ? cairo.uint256(
-                    Number(parseUnits(predictions[key]["stake"], TOKEN_DECIMAL))
-                  )
-                : cairo.uint256(0),
+                ? Number(parseUnits(predictions[key]["stake"], TOKEN_DECIMAL))
+                : 0,
             });
           }
         }
@@ -237,6 +241,27 @@ const Prediction = () => {
 
       if (!stop) {
         setPredicting(true);
+        const total_stake = construct.reduce(
+          (total, num) => total + num.stake,
+          0
+        );
+        const erc20_contract = getWalletProviderContractERC20();
+        const check_allowance = await erc20_contract!.allowance(
+          connected_address,
+          CONTRACT_ADDRESS
+        );
+        if (Number(total_stake > Number(check_allowance))) {
+          const argentTMA = getArgentTMA();
+          await argentTMA.requestApprovals([
+            {
+              tokenAddress: TOKEN_ADDRESS,
+              amount: (
+                total_stake + Number(parseUnits("100", TOKEN_DECIMAL))
+              ).toString(),
+              spender: CONTRACT_ADDRESS,
+            },
+          ]);
+        }
         const contract = getWalletProviderContract();
 
         if (contract) {
