@@ -620,20 +620,8 @@ function App() {
     return null; // Wait until the page has fully loaded
   }
 
-  const shareUrl = "https://your-spl-url.com"; // Replace with your SPL website link
-  const title =
-    "🏆 Think you know sports? Prove it on SPL! Predict match outcomes, earn points, and compete for epic rewards! Start now: ";
-  const hashtags = ["SportsPrediction", "SPL", "GameOn"];
-
   return (
     <ThemeProvider>
-      {/* <TwitterShareButton
-        title={title}
-        url={shareUrl}
-        hashtags={hashtags}
-        children={<XIcon round />}
-      /> */}
-
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}

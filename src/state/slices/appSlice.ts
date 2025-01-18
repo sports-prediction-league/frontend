@@ -256,7 +256,7 @@ export const appSlice = createSlice({
 
     updateLeaderboardImages: (
       state,
-      action: PayloadAction<{ username: string; image: string }[]>
+      action: PayloadAction<{ username: string; profile_picture: string }[]>
     ) => {
       const new_leaderboard = state.leaderboard.map((mp) => {
         const find = action.payload.find(
@@ -269,7 +269,7 @@ export const appSlice = createSlice({
             ...mp,
             user: {
               ...mp.user,
-              profile_picture: find.image,
+              profile_picture: find.profile_picture,
             },
           };
         }
