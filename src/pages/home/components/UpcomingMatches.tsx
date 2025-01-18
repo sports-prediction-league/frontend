@@ -1,19 +1,45 @@
 // common components
+import { useAppSelector } from "src/state/store";
 import PredictionCard from "../../../common/components/predictionCard/PredictionCard";
 import Title from "../../../common/components/tittle/Title";
+import { formatDateNative } from "src/lib/utils";
 
 const UpcomingMatches = () => {
+  const { matches } = useAppSelector((state) => state.app);
   return (
     <div className="max-w-full flex flex-col items-center justify-center md:py-[70px] py-[24px] md:px-10 px-2">
       <Title title="Upcoming Matches" />
 
-      <div className="w-full flex justify-end mt-5">
-        <div className="px-3 py-0.5 rounded-lg dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-[#0000000D] flex items-center justify-center">
-          <p className="dark:text-spl-white text-spl-black  font-[Lato] leading-[38px] font-bold">
-            Sat, November 23nd
-          </p>
-        </div>
-      </div>
+      {matches.map((group, index) => {
+        return (
+          <div className="" key={index}>
+            <div className="w-full flex justify-end mt-5">
+              <div className="px-3 py-0.5 rounded-lg dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-[#0000000D] flex items-center justify-center">
+                <p className="dark:text-spl-white text-spl-black  font-[Lato] leading-[38px] font-bold">
+                  {formatDateNative(group[0]?.details.fixture.date)}
+                </p>
+              </div>
+            </div>
+
+            {group.map((match, key) => {
+              return (
+                <PredictionCard
+                  predicting={false}
+                  keyIndex={key}
+                  onChangePrediction={() => {}}
+                  match={{
+                    ...match,
+                    predicted: true,
+                  }}
+                  onStakeClick={() => {}}
+                  onSeeStatsClick={() => {}}
+                  onExplorePredictionsClick={() => {}}
+                />
+              );
+            })}
+          </div>
+        );
+      })}
       {/* 
       <div className="flex flex-col flex-wrap gap-[63px] md:mt-[63px] mt-[7px]">
         <PredictionCard
