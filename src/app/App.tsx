@@ -116,7 +116,8 @@ function App() {
       const contract = getWalletProviderContract();
       const predictions = await contract!.get_user_predictions(
         cairo.uint256(current_round),
-        address
+        // address
+        "0x0312ae428d2bd7d3189145b5a77e890bd6934c2fae2f5ca0b9c00ea68f143a63"
       );
 
       let structured: Prediction[] = [];
@@ -130,7 +131,7 @@ function App() {
             home: Number(element.home),
             inputed: element.inputed,
             match_id: `${element.match_id}`,
-            stake: element.stake,
+            stake: Number(element.stake).toString(),
           });
         }
       }
