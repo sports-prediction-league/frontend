@@ -9,6 +9,7 @@ import {
 } from "src/state/slices/appSlice";
 import {
   CONTRACT_ADDRESS,
+  MINI_APP_URL,
   parseUnits,
   TOKEN_ADDRESS,
   TOKEN_DECIMAL,
@@ -20,7 +21,7 @@ const useConnect = () => {
     const argentTMA = ArgentTMA.init({
       environment: "sepolia", // "sepolia" | "mainnet" (not supperted yet)
       appName: "SPL", // Your Telegram app name
-      appTelegramUrl: "https://t.me/SPLBot/SPL", // Your Telegram app URL
+      appTelegramUrl: MINI_APP_URL, // Your Telegram app URL
       sessionParams: {
         allowedMethods: [
           // List of contracts/methods allowed to be called by the session key

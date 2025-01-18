@@ -40,11 +40,13 @@ const PredictionCard = ({
 
   const [closed_prediction, set_closed_prediction] = useState(false);
   const [is_live, set_is_live] = useState(false);
+  const [exceed_two_hrs, set_exceed_two_hrs] = useState(false);
+  const timeDifference: number = currentTime.getTime() - targetDate.getTime();
   useEffect(() => {
     set_closed_prediction(
       targetDate.getTime() - currentTime.getTime() <= TEN_MINUTES_IN_MS
     );
-
+    set_exceed_two_hrs(timeDifference >= 2 * 60 * 60 * 1000);
     set_is_live(currentTime >= targetDate);
   }, [match]);
 
@@ -174,7 +176,9 @@ const PredictionCard = ({
           <p className="dark:text-spl-white text-spl-black md:text-[21px] text-[10px] md:leading-[27px] leading-[12px] font-light">
             {closed_prediction
               ? match.details.fixture.status.match_status !== "ended"
-                ? "Current Result"
+                ? exceed_two_hrs
+                  ? "Awaiting Result"
+                  : "Current Result"
                 : " Final Result"
               : " Your Prediction"}
           </p>

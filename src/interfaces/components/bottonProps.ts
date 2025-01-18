@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface IButtonProps {
   text: string;
   width?: string;
@@ -12,4 +14,5 @@ export interface IButtonProps {
   hoverBackground?: string;
   textColor?: string;
   fontWeight?: string;
+  icon?: ReactNode;
 }

@@ -33,6 +33,7 @@ const UpcomingMatches = () => {
             {group.slice(0, 2).map((match, key) => {
               return (
                 <PredictionCard
+                  key={key}
                   predicting={false}
                   keyIndex={key}
                   onChangePrediction={() => {}}

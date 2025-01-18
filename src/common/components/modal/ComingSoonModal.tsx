@@ -36,10 +36,10 @@ const ComingSoonModal = ({ onClose, open_modal }: Props) => {
         <h5 className="text-xl font-[700] text-black">
           This page will be available soon.
         </h5>
-        <p className="font-[300] text-black text-sm w-1/2">
+        <p className="font-[300] text-black w-1/2">
           Stay tuned for exciting updates—you won't have to wait long!
         </p>
-        <p className="font-[300] text-black text-sm w-1/2">
+        <p className="font-[300] text-black w-1/2">
           Thank you for your patience!
         </p>
       </div>
