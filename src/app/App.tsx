@@ -116,8 +116,7 @@ function App() {
       const contract = getWalletProviderContract();
       const predictions = await contract!.get_user_predictions(
         cairo.uint256(current_round),
-        // address
-        "0x0312ae428d2bd7d3189145b5a77e890bd6934c2fae2f5ca0b9c00ea68f143a63"
+        address
       );
 
       let structured: Prediction[] = [];
