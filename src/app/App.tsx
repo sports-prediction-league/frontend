@@ -3,10 +3,12 @@ import {
   addLeaderboard,
   bulkAddLeaderboard,
   bulkSetMatches,
+  ConnectCalldata,
   InitDataUnsafe,
   LeaderboardProp,
   MatchData,
   Prediction,
+  setCalldata,
   setConnectedAddress,
   setIsMiniApp,
   setIsRegistered,
@@ -344,6 +346,15 @@ function App() {
             Account: res.account,
             IsConnected: true,
           };
+
+          dispatch(
+            setCalldata(
+              JSON.parse(
+                res.callbackData ??
+                  JSON.stringify({ type: "none" } as ConnectCalldata)
+              )
+            )
+          );
 
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);

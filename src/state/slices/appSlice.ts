@@ -96,6 +96,11 @@ export interface InitDataUnsafe {
   user?: User;
 }
 
+export interface ConnectCalldata {
+  type: "none" | "prediction";
+  data?: any;
+}
+
 interface IAppState {
   leaderboard: LeaderboardProp[];
   matches: MatchData[][];
@@ -109,6 +114,7 @@ interface IAppState {
   show_register_modal: boolean;
   connected_address: string | null;
   reward: string;
+  connect_calldata: ConnectCalldata | null;
 }
 
 // Define the initial state using that type
@@ -125,6 +131,7 @@ const initialState: IAppState = {
   is_mini_app: false,
   connected_address: null,
   reward: "0",
+  connect_calldata: null,
 };
 
 export const appSlice = createSlice({
@@ -138,6 +145,18 @@ export const appSlice = createSlice({
         (a, b) => b.totalPoints - a.totalPoints
       );
       state.leaderboard = sorted;
+    },
+
+    setCalldata: (state, action: PayloadAction<ConnectCalldata | null>) => {
+      if (!action.payload) {
+        state.connect_calldata = null;
+        return;
+      }
+      if (action.payload.type !== "none") {
+        state.connect_calldata = action.payload;
+      } else {
+        state.connect_calldata = null;
+      }
     },
 
     addLeaderboard: (state, action: PayloadAction<LeaderboardProp>) => {
@@ -329,6 +348,7 @@ export const {
   addLeaderboard,
   updateMatches,
   setReward,
+  setCalldata,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

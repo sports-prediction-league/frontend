@@ -20,7 +20,9 @@ import {
   TOKEN_DECIMAL,
 } from "src/lib/utils";
 import {
+  ConnectCalldata,
   MatchData,
+  setCalldata,
   setShowRegisterModal,
   updatePredictionState,
 } from "src/state/slices/appSlice";
@@ -42,6 +44,7 @@ const Prediction = () => {
     loading_state,
     connected_address,
     is_registered,
+    connect_calldata,
   } = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
   const { getWalletProviderContract, getWalletProviderContractERC20 } =
@@ -165,7 +168,7 @@ const Prediction = () => {
     };
   }, []);
 
-  const handleBulkPredict = async () => {
+  const handleBulkPredict = async (_pred?: Record<string, any>) => {
     try {
       if (predicting) return;
       if (!window.Wallet?.IsConnected) {
@@ -173,8 +176,10 @@ const Prediction = () => {
         return;
       }
 
+      const _predictions = _pred ?? predictions;
+
       if (
-        !Object.values(predictions).filter(
+        !Object.values(_predictions).filter(
           (ft) => Boolean(ft.home) && Boolean(ft.away)
         ).length
       ) {
@@ -185,54 +190,54 @@ const Prediction = () => {
         dispatch(setShowRegisterModal(true));
         return;
       }
-      const keys = Object.keys(predictions);
+      const keys = Object.keys(_predictions);
       let construct = [];
       let dispatch_data = [];
       let stop = false;
 
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
-        if (predictions[key].stake) {
-          if (isNaN(Number(predictions[key].stake))) {
+        if (_predictions[key].stake) {
+          if (isNaN(Number(_predictions[key].stake))) {
             toast.error("Invalid stake value!");
             return;
           }
         }
-        if (predictions[key].home !== "" || predictions[key].away !== "") {
-          if (predictions[key].home === "" || predictions[key].away === "") {
+        if (_predictions[key].home !== "" || _predictions[key].away !== "") {
+          if (_predictions[key].home === "" || _predictions[key].away === "") {
             toast.error("Enter scores for both teams");
             stop = true;
             break;
           } else {
-            if (isNaN(Number(predictions[key].home?.trim()))) {
+            if (isNaN(Number(_predictions[key].home?.trim()))) {
               toast.error("Invalid fields");
               stop = true;
               break;
             }
-            if (isNaN(Number(predictions[key].away?.trim()))) {
+            if (isNaN(Number(_predictions[key].away?.trim()))) {
               toast.error("Invalid fields");
               stop = true;
               break;
             }
-            const prediction = `${predictions[key].home.trim()}:${predictions[
+            const prediction = `${_predictions[key].home.trim()}:${_predictions[
               key
             ].away.trim()}`;
 
             dispatch_data.push({
               matchId: key,
-              keyIndex: predictions[key].keyIndex,
+              keyIndex: _predictions[key].keyIndex,
               prediction: {
                 prediction,
-                stake: predictions[key]["stake"] ?? 0,
+                stake: _predictions[key]["stake"] ?? 0,
               },
             });
             construct.push({
               inputed: true,
               match_id: cairo.felt(key),
-              home: cairo.uint256(Number(predictions[key].home.trim())),
-              away: cairo.uint256(Number(predictions[key].away.trim())),
-              stake: predictions[key]["stake"]
-                ? Number(parseUnits(predictions[key]["stake"], TOKEN_DECIMAL))
+              home: cairo.uint256(Number(_predictions[key].home.trim())),
+              away: cairo.uint256(Number(_predictions[key].away.trim())),
+              stake: _predictions[key]["stake"]
+                ? Number(parseUnits(_predictions[key]["stake"], TOKEN_DECIMAL))
                 : 0,
             });
           }
@@ -252,15 +257,23 @@ const Prediction = () => {
         );
         if (Number(total_stake > Number(check_allowance))) {
           await handleDisconnect();
-          await handleConnect([
-            {
-              tokenAddress: TOKEN_ADDRESS,
-              amount: (
-                total_stake + Number(parseUnits("100", TOKEN_DECIMAL))
-              ).toString(),
-              spender: CONTRACT_ADDRESS,
-            },
-          ]);
+          const return_calldata: ConnectCalldata = {
+            type: "prediction",
+            data: predictions,
+          };
+          await handleConnect(
+            [
+              {
+                tokenAddress: TOKEN_ADDRESS,
+                amount: (
+                  total_stake + Number(parseUnits("100", TOKEN_DECIMAL))
+                ).toString(),
+                spender: CONTRACT_ADDRESS,
+              },
+            ],
+
+            JSON.stringify(return_calldata)
+          );
         }
         const contract = getWalletProviderContract();
 
@@ -310,7 +323,9 @@ const Prediction = () => {
               }
               setRoundsMatches(new_data);
             }
-            setPredictions({});
+            if (!_pred) {
+              setPredictions({});
+            }
             toast.success("Prediction Successful!");
           } else {
             toast.error(
@@ -321,12 +336,22 @@ const Prediction = () => {
 
         setPredicting(false);
       }
+      dispatch(setCalldata(null));
     } catch (error: any) {
+      dispatch(setCalldata(null));
       toast.error(parse_error(error?.message));
       setPredicting(false);
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (connect_calldata) {
+      if (connect_calldata.type === "prediction") {
+        handleBulkPredict(connect_calldata.data);
+      }
+    }
+  }, [connected_address]);
 
   const widgetContainerRef = useRef<HTMLDivElement>(null);
   const [isWidgetActive, setWidgetActive] = useState(false);
