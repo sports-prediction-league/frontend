@@ -110,6 +110,8 @@ function App() {
     }
   };
 
+  const [predd, setPredd] = useState("");
+
   const get_user_predictions = async (address: string) => {
     try {
       if (current_round === 0) return;
@@ -130,10 +132,12 @@ function App() {
             home: Number(element.home),
             inputed: element.inputed,
             match_id: `${element.match_id}`,
-            stake: element.stake,
+            stake: Number(element.stake).toString(),
           });
         }
       }
+
+      setPredd(JSON.stringify(structured));
 
       dispatch(setPredictions(structured));
     } catch (error: any) {
