@@ -627,12 +627,12 @@ function App() {
 
   return (
     <ThemeProvider>
-      <TwitterShareButton
+      {/* <TwitterShareButton
         title={title}
         url={shareUrl}
         hashtags={hashtags}
         children={<XIcon round />}
-      />
+      /> */}
 
       {splash_active ? null : (
         <RegisterModal

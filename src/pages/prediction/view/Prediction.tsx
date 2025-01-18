@@ -33,6 +33,7 @@ import { IoClose } from "react-icons/io5";
 import { Modal } from "antd";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import useConnect from "src/lib/useConnect";
+import ComingSoonModal from "src/common/components/modal/ComingSoonModal";
 
 const Prediction = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -365,74 +366,7 @@ const Prediction = () => {
     }
   }, [connected_address]);
 
-  const widgetContainerRef = useRef<HTMLDivElement>(null);
-  const [isWidgetActive, setWidgetActive] = useState(false);
-  const [matchId, setMatchId] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!isWidgetActive) {
-      // const loadedScript = document.querySelector(
-      //   'script[src="https://widgets.sir.sportradar.com/sportradar/widgetloader"]'
-      // );
-      // if (loadedScript) {
-      //   document.body.removeChild(loadedScript);
-      // }
-      return;
-    }
-
-    const scriptId = "sportradar-widget-loader";
-
-    // Check if the script is already added
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = "https://widgets.sir.sportradar.com/sportradar/widgetloader";
-      script.async = true;
-      script.setAttribute("n", "SIR");
-      document.body.appendChild(script);
-
-      script.onload = () => {
-        initializeWidget();
-      };
-    } else {
-      initializeWidget();
-    }
-
-    function initializeWidget() {
-      if (window.SIR && widgetContainerRef.current && matchId) {
-        window.SIR(
-          "addWidget",
-          `.widget-container-${matchId}`,
-          "match.lmtPlus",
-          {
-            matchId: matchId,
-            scoreboard: "extended",
-          }
-        );
-      }
-    }
-
-    return () => {
-      // Cleanup: Clear widget container
-      if (widgetContainerRef.current) {
-        widgetContainerRef.current.innerHTML = "";
-      }
-      const loadedScript = document.querySelector(
-        'script[src="https://widgets.sir.sportradar.com/sportradar/widgetloader"]'
-      );
-      if (loadedScript) {
-        document.body.removeChild(loadedScript);
-      }
-    };
-  }, [isWidgetActive]);
-  const toggleWidget = () => {
-    // let status;
-    setWidgetActive((prev) => !prev);
-
-    // if (status) {
-    //   setMatchId(null);
-    // }
-  };
+  const [open_modal, set_open_modal] = useState(false);
 
   return (
     <React.Fragment>
@@ -452,35 +386,6 @@ const Prediction = () => {
           )}
         </button>
       ) : null} */}
-
-      <Modal
-        className="text-white"
-        open={isWidgetActive}
-        onCancel={toggleWidget}
-        destroyOnClose
-        styles={{
-          content: {
-            background: "#042822",
-            paddingLeft: "0",
-            paddingRight: "0",
-          },
-          header: { background: "#042822", color: "white" },
-        }}
-        // width={"100%"}
-        // closeIcon={<IoClose color="white" />}
-        okButtonProps={{ hidden: true }}
-        cancelButtonProps={{ hidden: true }}
-      >
-        <div
-          ref={widgetContainerRef}
-          className={`sr-widget widget-container-${matchId}`}
-          style={{
-            // maxWidth: "620px",
-            width: "100%",
-            border: "1px solid rgba(0, 0, 0, 0.12)",
-          }}
-        ></div>
-      </Modal>
 
       {/* <div
         style={{
@@ -508,6 +413,14 @@ const Prediction = () => {
           ></div>
         )}
       </div> */}
+
+      <ComingSoonModal
+        open_modal={open_modal}
+        onClose={() => {
+          set_open_modal(false);
+        }}
+      />
+
       {isOpen && (
         <div className="absolute z-50 right-0 w-48 mt-2 h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
           {Array.from({ length: total_rounds }).map((_, index) => {
@@ -595,10 +508,11 @@ const Prediction = () => {
                             );
                           }}
                           onSeeStatsClick={() => {
-                            setMatchId(Number(match.details.fixture.id));
-                            setWidgetActive(true);
+                            set_open_modal(true);
                           }}
-                          onExplorePredictionsClick={() => {}}
+                          onExplorePredictionsClick={() => {
+                            set_open_modal(true);
+                          }}
                         />
                       </div>
                     );
