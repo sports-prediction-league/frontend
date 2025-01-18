@@ -589,7 +589,10 @@ const Prediction = () => {
                           onChangePrediction={onChangePrediction}
                           match={match}
                           onStakeClick={() => {
-                            handleBulkPredict();
+                            handleBulkPredict(
+                              undefined,
+                              match.details.fixture.id.toString()
+                            );
                           }}
                           onSeeStatsClick={() => {
                             setMatchId(Number(match.details.fixture.id));
