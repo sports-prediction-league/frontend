@@ -137,10 +137,20 @@ function App() {
         }
       }
 
-      setPredd(JSON.stringify(structured));
+      if (structured.length) {
+        setPredd(JSON.stringify(structured));
+      } else {
+        setPredd(JSON.stringify({ current_round, msg: "empty" }));
+        toast.error("empty");
+      }
 
       dispatch(setPredictions(structured));
     } catch (error: any) {
+      toast.error(error?.message ?? "OOOPPSSS Prediction failed");
+      setPredd(
+        JSON.stringify({ current_round, msg: error?.message ?? "failed" })
+      );
+
       console.log(error);
     }
   };
