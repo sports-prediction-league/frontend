@@ -312,7 +312,7 @@ export const appSlice = createSlice({
         const prediction = element.prediction;
         if (keyIndex < state.matches.length && state.matches[keyIndex].length) {
           const newMatchesConstruct = state.matches[keyIndex].map((mp) => {
-            if (mp.details.fixture.id.toString() === matchId) {
+            if (mp.details.fixture.id.toString() === matchId.toString()) {
               return { ...mp, predicted: true, predictions: [{ prediction }] };
             }
             return mp;

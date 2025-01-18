@@ -50,7 +50,7 @@ const Prediction = () => {
   const { getWalletProviderContract, getWalletProviderContractERC20 } =
     useContractInstance();
   const [activeRounds, setActiveRounds] = useState(current_round);
-  const [predicting, setPredicting] = useState(false);
+  const [predicting, setPredicting] = useState<any>(false);
   const [predictions, setPredictions] = useState<Record<string, any>>({});
   const { handleConnect, handleDisconnect } = useConnect();
 
@@ -168,7 +168,10 @@ const Prediction = () => {
     };
   }, []);
 
-  const handleBulkPredict = async (_pred?: Record<string, any>) => {
+  const handleBulkPredict = async (
+    _pred?: Record<string, any>,
+    _key?: string
+  ) => {
     try {
       if (predicting) return;
       if (!window.Wallet?.IsConnected) {
@@ -176,7 +179,8 @@ const Prediction = () => {
         return;
       }
 
-      const _predictions = _pred ?? predictions;
+      const _predictions =
+        _pred ?? _key ? { [_key!]: predictions[_key!] } : predictions;
 
       if (
         !Object.values(_predictions).filter(
@@ -194,6 +198,7 @@ const Prediction = () => {
       let construct = [];
       let dispatch_data = [];
       let stop = false;
+      let predicting_keys: any = {};
 
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
@@ -223,6 +228,8 @@ const Prediction = () => {
               key
             ].away.trim()}`;
 
+            predicting_keys[key] = true;
+
             dispatch_data.push({
               matchId: key,
               keyIndex: _predictions[key].keyIndex,
@@ -245,7 +252,7 @@ const Prediction = () => {
       }
 
       if (!stop) {
-        setPredicting(true);
+        setPredicting(predicting_keys);
         const total_stake = construct.reduce(
           (total, num) => total + num.stake,
           0
@@ -313,7 +320,12 @@ const Prediction = () => {
                       return {
                         ...mp,
                         predicted: true,
-                        predictions: [{ prediction: element.prediction }],
+                        predictions: [
+                          {
+                            prediction: element.prediction,
+                            stake: element.prediction.stake,
+                          },
+                        ],
                       };
                     }
                     return mp;
@@ -570,7 +582,9 @@ const Prediction = () => {
                         className="w-full flex flex-col md:gap-[63px] gap-[24px] justify-center items-center"
                       >
                         <PredictionCard
-                          predicting={predicting}
+                          predicting={
+                            predicting[match.details.fixture.id.toString()]
+                          }
                           keyIndex={_key}
                           onChangePrediction={onChangePrediction}
                           match={match}
