@@ -15,7 +15,9 @@ import useConnect from "src/lib/useConnect";
 const Profile = () => {
   const [progress, setProgress] = useState(10);
   const { handleDisconnect, handleConnect } = useConnect();
-  const { profile, connected_address } = useAppSelector((state) => state.app);
+  const { profile, connected_address, reward } = useAppSelector(
+    (state) => state.app
+  );
   const updateProgress = (newProgress: number) => {
     setProgress(newProgress);
   };
@@ -116,7 +118,7 @@ const Profile = () => {
             Available for withdrawal
           </p>
           <p className="text-spl-white font-bold md:text-[30px] text-[15px] md:mt-5 mt-2">
-            632.000
+            {Number(reward).toFixed(3)}
           </p>
 
           <div className="md:mt-[60px] mt-[20px]">

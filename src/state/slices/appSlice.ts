@@ -108,6 +108,7 @@ interface IAppState {
   is_registered: boolean;
   show_register_modal: boolean;
   connected_address: string | null;
+  reward: string;
 }
 
 // Define the initial state using that type
@@ -123,6 +124,7 @@ const initialState: IAppState = {
   profile: null,
   is_mini_app: false,
   connected_address: null,
+  reward: "0",
 };
 
 export const appSlice = createSlice({
@@ -183,6 +185,10 @@ export const appSlice = createSlice({
 
     bulkSetMatches: (state, action: PayloadAction<MatchData[][]>) => {
       state.matches = action.payload;
+    },
+
+    setReward: (state, action: PayloadAction<string>) => {
+      state.reward = action.payload;
     },
 
     setLoaded: (state, action: PayloadAction<boolean>) => {
@@ -322,6 +328,7 @@ export const {
   setIsRegistered,
   addLeaderboard,
   updateMatches,
+  setReward,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

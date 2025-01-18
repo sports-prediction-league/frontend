@@ -13,6 +13,7 @@ import {
   setLoaded,
   setLoadingState,
   setPredictions,
+  setReward,
   setRounds,
   setShowRegisterModal,
   update_profile,
@@ -33,8 +34,10 @@ import {
   apiClient,
   CONTRACT_ADDRESS,
   feltToString,
+  formatUnits,
   groupMatchesByDate,
   parse_error,
+  TOKEN_DECIMAL,
 } from "src/lib/utils";
 import toast from "react-hot-toast";
 import RegisterModal from "src/common/components/modal/RegisterModal";
@@ -42,6 +45,7 @@ import RegisterModal from "src/common/components/modal/RegisterModal";
 import SPLASH from "../assets/splash/splash.gif";
 import SPLASH_DESKTOP from "../assets/splash/desktop_splash.gif";
 import { useSocket } from "src/lib/useSocket";
+import { TwitterIcon, TwitterShareButton, XIcon } from "react-share";
 declare global {
   interface Window {
     Telegram?: {
@@ -581,6 +585,22 @@ function App() {
   };
 
   useEffect(() => {
+    if (connected_address) {
+      (async function () {
+        try {
+          const contract = getWalletProviderContract();
+          const reward = await contract!.get_user_reward(connected_address);
+          dispatch(
+            setReward(formatUnits(Number(reward).toString(), TOKEN_DECIMAL))
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    }
+  }, [connected_address]);
+
+  useEffect(() => {
     socket.connect();
     StartListeners();
   }, []);
@@ -589,8 +609,20 @@ function App() {
     return null; // Wait until the page has fully loaded
   }
 
+  const shareUrl = "https://your-spl-url.com"; // Replace with your SPL website link
+  const title =
+    "🏆 Think you know sports? Prove it on SPL! Predict match outcomes, earn points, and compete for epic rewards! Start now: ";
+  const hashtags = ["SportsPrediction", "SPL", "GameOn"];
+
   return (
     <ThemeProvider>
+      <TwitterShareButton
+        title={title}
+        url={shareUrl}
+        hashtags={hashtags}
+        children={<XIcon round />}
+      />
+
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
