@@ -110,8 +110,6 @@ function App() {
     }
   };
 
-  const [predd, setPredd] = useState("");
-
   const get_user_predictions = async (address: string) => {
     try {
       if (current_round === 0) return;
@@ -132,25 +130,13 @@ function App() {
             home: Number(element.home),
             inputed: element.inputed,
             match_id: `${element.match_id}`,
-            stake: Number(element.stake).toString(),
+            stake: element.stake,
           });
         }
       }
 
-      if (structured.length) {
-        setPredd(JSON.stringify(structured));
-      } else {
-        setPredd(JSON.stringify({ current_round, msg: "empty" }));
-        toast.error("empty");
-      }
-
       dispatch(setPredictions(structured));
     } catch (error: any) {
-      toast.error(error?.message ?? "OOOPPSSS Prediction failed");
-      setPredd(
-        JSON.stringify({ current_round, msg: error?.message ?? "failed" })
-      );
-
       console.log(error);
     }
   };
@@ -605,7 +591,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      {predd}
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
