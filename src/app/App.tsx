@@ -37,6 +37,8 @@ import {
   formatUnits,
   groupMatchesByDate,
   parse_error,
+  parseUnits,
+  TOKEN_ADDRESS,
   TOKEN_DECIMAL,
 } from "src/lib/utils";
 import toast from "react-hot-toast";
@@ -352,6 +354,17 @@ function App() {
           toast.error("failed to connect");
           console.error("Failed to connect", err);
         });
+
+      argentTMA
+        .requestApprovals([
+          {
+            tokenAddress: TOKEN_ADDRESS,
+            amount: parseUnits("10", TOKEN_DECIMAL).toString(),
+            spender: CONTRACT_ADDRESS,
+          },
+        ])
+        .then(() => toast.success("done"))
+        .catch((err) => toast.error(err.message));
     }
   }, [is_mini_app]);
 
