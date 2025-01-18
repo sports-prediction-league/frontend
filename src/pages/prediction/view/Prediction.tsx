@@ -388,7 +388,6 @@ const Prediction = () => {
 
     function initializeWidget() {
       if (window.SIR && widgetContainerRef.current && matchId) {
-        console.log("whhi");
         window.SIR(
           "addWidget",
           `.widget-container-${matchId}`,
@@ -575,7 +574,9 @@ const Prediction = () => {
                           keyIndex={_key}
                           onChangePrediction={onChangePrediction}
                           match={match}
-                          onStakeClick={handleBulkPredict}
+                          onStakeClick={() => {
+                            handleBulkPredict();
+                          }}
                           onSeeStatsClick={() => {
                             setMatchId(Number(match.details.fixture.id));
                             setWidgetActive(true);
