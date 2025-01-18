@@ -34,7 +34,6 @@ import useConnect from "src/lib/useConnect";
 
 const Prediction = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { getArgentTMA } = useConnect();
 
   const {
     total_rounds,
@@ -50,6 +49,7 @@ const Prediction = () => {
   const [activeRounds, setActiveRounds] = useState(current_round);
   const [predicting, setPredicting] = useState(false);
   const [predictions, setPredictions] = useState<Record<string, any>>({});
+  const { handleConnect, handleDisconnect } = useConnect();
 
   const onChangePrediction = (match_id: string, value: any) => {
     setPredictions({
@@ -251,8 +251,8 @@ const Prediction = () => {
           CONTRACT_ADDRESS
         );
         if (Number(total_stake > Number(check_allowance))) {
-          const argentTMA = getArgentTMA();
-          await argentTMA.requestApprovals([
+          await handleDisconnect();
+          await handleConnect([
             {
               tokenAddress: TOKEN_ADDRESS,
               amount: (

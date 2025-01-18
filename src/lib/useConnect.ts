@@ -44,7 +44,7 @@ const useConnect = () => {
   const is_mini_app = useAppSelector((state) => state.app.is_mini_app);
   const dispatch = useAppDispatch();
 
-  const handleConnect = async () => {
+  const handleConnect = async (approvals?: any[]) => {
     try {
       if (is_mini_app) {
         const argentTMA = getArgentTMA();
@@ -55,13 +55,7 @@ const useConnect = () => {
         // from the connect() method -- see above
         await argentTMA.requestConnection({
           callbackData: "custom_callback_data",
-          approvalRequests: [
-            {
-              tokenAddress: TOKEN_ADDRESS,
-              amount: parseUnits("10", TOKEN_DECIMAL).toString(),
-              spender: CONTRACT_ADDRESS,
-            },
-          ],
+          approvalRequests: approvals,
         });
       } else {
         const { wallet } = await connect();
