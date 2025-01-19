@@ -3,16 +3,19 @@ import {
   addLeaderboard,
   bulkAddLeaderboard,
   bulkSetMatches,
+  ConnectCalldata,
   InitDataUnsafe,
   LeaderboardProp,
   MatchData,
   Prediction,
+  setCalldata,
   setConnectedAddress,
   setIsMiniApp,
   setIsRegistered,
   setLoaded,
   setLoadingState,
   setPredictions,
+  setReward,
   setRounds,
   setShowRegisterModal,
   update_profile,
@@ -33,8 +36,10 @@ import {
   apiClient,
   CONTRACT_ADDRESS,
   feltToString,
+  formatUnits,
   groupMatchesByDate,
   parse_error,
+  TOKEN_DECIMAL,
 } from "src/lib/utils";
 import toast from "react-hot-toast";
 import RegisterModal from "src/common/components/modal/RegisterModal";
@@ -42,6 +47,7 @@ import RegisterModal from "src/common/components/modal/RegisterModal";
 import SPLASH from "../assets/splash/splash.gif";
 import SPLASH_DESKTOP from "../assets/splash/desktop_splash.gif";
 import { useSocket } from "src/lib/useSocket";
+import { TwitterIcon, TwitterShareButton, XIcon } from "react-share";
 declare global {
   interface Window {
     Telegram?: {
@@ -130,7 +136,7 @@ function App() {
             home: Number(element.home),
             inputed: element.inputed,
             match_id: `${element.match_id}`,
-            stake: element.stake,
+            stake: Number(element.stake).toString(),
           });
         }
       }
@@ -267,12 +273,20 @@ function App() {
       try {
         const response = await apiClient.get(`/profile_pic`, {
           params: { userId },
-          responseType: "blob",
+          // responseType: "blob",
         });
 
-        const photoUrl = URL.createObjectURL(new Blob([response.data]));
-        dispatch(update_profile({ profile_picture: photoUrl }));
-      } catch (error) {}
+        // const photoUrl = URL.createObjectURL(new Blob([response.data]));
+        dispatch(
+          update_profile({
+            profile_picture: `data:image/jpeg;base64,${response.data?.data?.profile_picture}`,
+          })
+        );
+      } catch (error: any) {
+        toast.error(
+          error?.response?.data?.message || error.message || "An error occurred"
+        );
+      }
     };
 
     const telegram = window.Telegram;
@@ -341,7 +355,14 @@ function App() {
             IsConnected: true,
           };
 
-          toast.success("connected");
+          dispatch(
+            setCalldata(
+              JSON.parse(
+                res.callbackData ??
+                  JSON.stringify({ type: "none" } as ConnectCalldata)
+              )
+            )
+          );
 
           const event = new Event("windowWalletClassChange");
           window.dispatchEvent(event);
@@ -581,6 +602,22 @@ function App() {
       dispatch(updateMatches(updated_matches));
     });
   };
+
+  useEffect(() => {
+    if (connected_address) {
+      (async function () {
+        try {
+          const contract = getWalletProviderContract();
+          const reward = await contract!.get_user_reward(connected_address);
+          dispatch(
+            setReward(formatUnits(Number(reward).toString(), TOKEN_DECIMAL))
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    }
+  }, [connected_address]);
 
   useEffect(() => {
     socket.connect();

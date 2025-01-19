@@ -15,6 +15,7 @@ const Button = ({
   background,
   hoverBackground,
   textColor,
+  icon,
   fontWeight = "font-bold",
 }: IButtonProps) => {
   return (
@@ -34,6 +35,7 @@ const Button = ({
         <img src={leftIcon} alt="ICON" className="w-[16px] h-[16px]" />
       )}
       {!loading ? text : null}
+      {icon}
       {loading ? (
         <TbLoader size={22} color="white" className="mr-1.5 animate-spin" />
       ) : null}

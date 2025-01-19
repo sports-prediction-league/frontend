@@ -3,9 +3,13 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import { WalletAccount } from "starknet";
 import { connect, disconnect } from "starknetkit";
-import { setConnectedAddress } from "src/state/slices/appSlice";
+import {
+  ConnectCalldata,
+  setConnectedAddress,
+} from "src/state/slices/appSlice";
 import {
   CONTRACT_ADDRESS,
+  MINI_APP_URL,
   parseUnits,
   TOKEN_ADDRESS,
   TOKEN_DECIMAL,
@@ -17,7 +21,7 @@ const useConnect = () => {
     const argentTMA = ArgentTMA.init({
       environment: "sepolia", // "sepolia" | "mainnet" (not supperted yet)
       appName: "SPL", // Your Telegram app name
-      appTelegramUrl: "https://t.me/SPLBot/SPL", // Your Telegram app URL
+      appTelegramUrl: MINI_APP_URL, // Your Telegram app URL
       sessionParams: {
         allowedMethods: [
           // List of contracts/methods allowed to be called by the session key
@@ -44,7 +48,7 @@ const useConnect = () => {
   const is_mini_app = useAppSelector((state) => state.app.is_mini_app);
   const dispatch = useAppDispatch();
 
-  const handleConnect = async () => {
+  const handleConnect = async (approvals?: any[], callbackData?: string) => {
     try {
       if (is_mini_app) {
         const argentTMA = getArgentTMA();
@@ -54,14 +58,9 @@ const useConnect = () => {
         // The wallet will redirect back to the app and the account will be available
         // from the connect() method -- see above
         await argentTMA.requestConnection({
-          callbackData: "custom_callback_data",
-          approvalRequests: [
-            {
-              tokenAddress: TOKEN_ADDRESS,
-              amount: parseUnits("10", TOKEN_DECIMAL).toString(),
-              spender: CONTRACT_ADDRESS,
-            },
-          ],
+          callbackData:
+            callbackData ?? JSON.stringify({ type: "none" } as ConnectCalldata),
+          approvalRequests: approvals,
         });
       } else {
         const { wallet } = await connect();

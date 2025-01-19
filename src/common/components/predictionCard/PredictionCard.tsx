@@ -40,11 +40,13 @@ const PredictionCard = ({
 
   const [closed_prediction, set_closed_prediction] = useState(false);
   const [is_live, set_is_live] = useState(false);
+  const [exceed_two_hrs, set_exceed_two_hrs] = useState(false);
+  const timeDifference: number = currentTime.getTime() - targetDate.getTime();
   useEffect(() => {
     set_closed_prediction(
       targetDate.getTime() - currentTime.getTime() <= TEN_MINUTES_IN_MS
     );
-
+    set_exceed_two_hrs(timeDifference >= 2 * 60 * 60 * 1000);
     set_is_live(currentTime >= targetDate);
   }, [match]);
 
@@ -174,7 +176,9 @@ const PredictionCard = ({
           <p className="dark:text-spl-white text-spl-black md:text-[21px] text-[10px] md:leading-[27px] leading-[12px] font-light">
             {closed_prediction
               ? match.details.fixture.status.match_status !== "ended"
-                ? "Current Result"
+                ? exceed_two_hrs
+                  ? "Awaiting Result"
+                  : "Current Result"
                 : " Final Result"
               : " Your Prediction"}
           </p>
@@ -195,7 +199,7 @@ const PredictionCard = ({
       <div className="w-full flex flex-col md:flex-row items-center justify-center gap-[16px] mt-[34px]">
         {closed_prediction ? (
           <div className="flex md:hidden flex-col items-center md:w-auto w-full text-white rounded-md py-1 px-6 justify-center bg-input-gradient text-center">
-            {match.predicted ? (
+            {match.predicted && match.predictions?.length ? (
               <p className="text-xs">
                 Your Prediction:{" "}
                 {match.predictions?.length
@@ -215,8 +219,8 @@ const PredictionCard = ({
               Your Score:{" "}
               {match.details.fixture.status.match_status !== "ended"
                 ? "in progress"
-                : match.details.goals && match.predicted
-                ? match.predictions.length
+                : match.details.goals && match?.predicted
+                ? match.predictions?.length
                   ? calculateScore(
                       match.details.goals,
                       match.predictions[0].prediction.prediction
@@ -270,16 +274,16 @@ const PredictionCard = ({
           <div className="bg-input-gradient md:h-[90px] text-white h-[39px] md:min-w-[267px] w-full sm:block hidden md:text-[32px] text-[12px] md:rounded-[12px] rounded-[6px]">
             <div className="flex items-center w-full h-full justify-center flex-col">
               <div className="flex flex-col gap-2 items-start">
-                {match.predicted ? (
+                {match.predicted && match.predictions?.length ? (
                   <p className="text-sm">
                     Your Prediction:{" "}
-                    {match.predictions.length
+                    {match.predictions?.length
                       ? match.predictions[0].prediction.prediction
                           .split(":")[0]
                           .trim()
                       : ""}{" "}
                     :{" "}
-                    {match.predictions.length
+                    {match.predictions?.length
                       ? match.predictions[0].prediction.prediction
                           .split(":")[1]
                           .trim()
@@ -291,7 +295,7 @@ const PredictionCard = ({
                   {match.details.fixture.status.match_status !== "ended"
                     ? "in progress"
                     : match.details.goals && match.predicted
-                    ? match.predictions.length
+                    ? match.predictions?.length
                       ? calculateScore(
                           match.details.goals,
                           match.predictions[0].prediction.prediction

@@ -142,8 +142,8 @@ export function calculateScore(
 
   // 5 Points: Exact score match and correct goal range
   if (
-    goals.home === home &&
-    goals.away === away &&
+    goals?.home?.toString()?.trim() === home?.trim() &&
+    goals?.away?.toString()?.trim() === away?.trim() &&
     actualGoalRange === predictedGoalRange
   ) {
     point = 5; // Exact match
@@ -193,3 +193,4 @@ export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
 export const TOKEN_ADDRESS = process.env.REACT_APP_TOKEN_ADDRESS!;
 export const TOKEN_DECIMAL = 18;
+export const MINI_APP_URL = "https://t.me/SPLBot/SPL";

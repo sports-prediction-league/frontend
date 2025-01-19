@@ -96,6 +96,11 @@ export interface InitDataUnsafe {
   user?: User;
 }
 
+export interface ConnectCalldata {
+  type: "none" | "prediction";
+  data?: any;
+}
+
 interface IAppState {
   leaderboard: LeaderboardProp[];
   matches: MatchData[][];
@@ -108,6 +113,8 @@ interface IAppState {
   is_registered: boolean;
   show_register_modal: boolean;
   connected_address: string | null;
+  reward: string;
+  connect_calldata: ConnectCalldata | null;
 }
 
 // Define the initial state using that type
@@ -123,6 +130,8 @@ const initialState: IAppState = {
   profile: null,
   is_mini_app: false,
   connected_address: null,
+  reward: "0",
+  connect_calldata: null,
 };
 
 export const appSlice = createSlice({
@@ -136,6 +145,18 @@ export const appSlice = createSlice({
         (a, b) => b.totalPoints - a.totalPoints
       );
       state.leaderboard = sorted;
+    },
+
+    setCalldata: (state, action: PayloadAction<ConnectCalldata | null>) => {
+      if (!action.payload) {
+        state.connect_calldata = null;
+        return;
+      }
+      if (action.payload.type !== "none") {
+        state.connect_calldata = action.payload;
+      } else {
+        state.connect_calldata = null;
+      }
     },
 
     addLeaderboard: (state, action: PayloadAction<LeaderboardProp>) => {
@@ -185,6 +206,10 @@ export const appSlice = createSlice({
       state.matches = action.payload;
     },
 
+    setReward: (state, action: PayloadAction<string>) => {
+      state.reward = action.payload;
+    },
+
     setLoaded: (state, action: PayloadAction<boolean>) => {
       state.loaded = action.payload;
     },
@@ -231,20 +256,23 @@ export const appSlice = createSlice({
 
     updateLeaderboardImages: (
       state,
-      action: PayloadAction<{ username: string; image: string }[]>
+      action: PayloadAction<
+        { username: string; profile_picture: string; id: string }[]
+      >
     ) => {
       const new_leaderboard = state.leaderboard.map((mp) => {
         const find = action.payload.find(
           (fd) =>
-            fd.username.toString().toLowerCase() ===
-            mp.user.username?.toString()?.toLocaleLowerCase()
+            fd.id.toString().toLowerCase() ===
+            mp.user.id?.toString()?.toLocaleLowerCase()
         );
         if (find) {
           return {
             ...mp,
             user: {
               ...mp.user,
-              profile_picture: find.image,
+              username: find.username,
+              profile_picture: find.profile_picture,
             },
           };
         }
@@ -287,7 +315,7 @@ export const appSlice = createSlice({
         const prediction = element.prediction;
         if (keyIndex < state.matches.length && state.matches[keyIndex].length) {
           const newMatchesConstruct = state.matches[keyIndex].map((mp) => {
-            if (mp.details.fixture.id.toString() === matchId) {
+            if (mp.details.fixture.id.toString() === matchId.toString()) {
               return { ...mp, predicted: true, predictions: [{ prediction }] };
             }
             return mp;
@@ -322,6 +350,8 @@ export const {
   setIsRegistered,
   addLeaderboard,
   updateMatches,
+  setReward,
+  setCalldata,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

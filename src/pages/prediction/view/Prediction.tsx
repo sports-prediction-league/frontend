@@ -11,14 +11,18 @@ import { useAppDispatch, useAppSelector } from "src/state/store";
 import useContractInstance from "src/lib/useContractInstance";
 import {
   apiClient,
+  CONTRACT_ADDRESS,
   formatDateNative,
   groupMatchesByDate,
   parse_error,
   parseUnits,
+  TOKEN_ADDRESS,
   TOKEN_DECIMAL,
 } from "src/lib/utils";
 import {
+  ConnectCalldata,
   MatchData,
+  setCalldata,
   setShowRegisterModal,
   updatePredictionState,
 } from "src/state/slices/appSlice";
@@ -28,9 +32,12 @@ import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { Modal } from "antd";
 import { SessionAccountInterface } from "@argent/tma-wallet";
+import useConnect from "src/lib/useConnect";
+import ComingSoonModal from "src/common/components/modal/ComingSoonModal";
 
 const Prediction = () => {
   const [loading, setLoading] = useState<boolean>(false);
+
   const {
     total_rounds,
     current_round,
@@ -38,12 +45,15 @@ const Prediction = () => {
     loading_state,
     connected_address,
     is_registered,
+    connect_calldata,
   } = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
-  const { getWalletProviderContract } = useContractInstance();
+  const { getWalletProviderContract, getWalletProviderContractERC20 } =
+    useContractInstance();
   const [activeRounds, setActiveRounds] = useState(current_round);
-  const [predicting, setPredicting] = useState(false);
+  const [predicting, setPredicting] = useState<any>(false);
   const [predictions, setPredictions] = useState<Record<string, any>>({});
+  const { handleConnect, handleDisconnect } = useConnect();
 
   const onChangePrediction = (match_id: string, value: any) => {
     setPredictions({
@@ -159,7 +169,10 @@ const Prediction = () => {
     };
   }, []);
 
-  const handleBulkPredict = async () => {
+  const handleBulkPredict = async (
+    _pred?: Record<string, any>,
+    _key?: string
+  ) => {
     try {
       if (predicting) return;
       if (!window.Wallet?.IsConnected) {
@@ -167,8 +180,11 @@ const Prediction = () => {
         return;
       }
 
+      const _predictions =
+        _pred ?? _key ? { [_key!]: predictions[_key!] } : predictions;
+
       if (
-        !Object.values(predictions).filter(
+        !Object.values(_predictions).filter(
           (ft) => Boolean(ft.home) && Boolean(ft.away)
         ).length
       ) {
@@ -179,64 +195,94 @@ const Prediction = () => {
         dispatch(setShowRegisterModal(true));
         return;
       }
-      const keys = Object.keys(predictions);
+      const keys = Object.keys(_predictions);
       let construct = [];
       let dispatch_data = [];
       let stop = false;
+      let predicting_keys: any = {};
 
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
-        if (predictions[key].stake) {
-          if (isNaN(Number(predictions[key].stake))) {
+        if (_predictions[key].stake) {
+          if (isNaN(Number(_predictions[key].stake))) {
             toast.error("Invalid stake value!");
             return;
           }
         }
-        if (predictions[key].home !== "" || predictions[key].away !== "") {
-          if (predictions[key].home === "" || predictions[key].away === "") {
+        if (_predictions[key].home !== "" || _predictions[key].away !== "") {
+          if (_predictions[key].home === "" || _predictions[key].away === "") {
             toast.error("Enter scores for both teams");
             stop = true;
             break;
           } else {
-            if (isNaN(Number(predictions[key].home?.trim()))) {
+            if (isNaN(Number(_predictions[key].home?.trim()))) {
               toast.error("Invalid fields");
               stop = true;
               break;
             }
-            if (isNaN(Number(predictions[key].away?.trim()))) {
+            if (isNaN(Number(_predictions[key].away?.trim()))) {
               toast.error("Invalid fields");
               stop = true;
               break;
             }
-            const prediction = `${predictions[key].home.trim()}:${predictions[
+            const prediction = `${_predictions[key].home.trim()}:${_predictions[
               key
             ].away.trim()}`;
 
+            predicting_keys[key] = true;
+
             dispatch_data.push({
               matchId: key,
-              keyIndex: predictions[key].keyIndex,
+              keyIndex: _predictions[key].keyIndex,
               prediction: {
                 prediction,
-                stake: predictions[key]["stake"] ?? 0,
+                stake: _predictions[key]["stake"] ?? 0,
               },
             });
             construct.push({
               inputed: true,
               match_id: cairo.felt(key),
-              home: cairo.uint256(Number(predictions[key].home.trim())),
-              away: cairo.uint256(Number(predictions[key].away.trim())),
-              stake: predictions[key]["stake"]
-                ? cairo.uint256(
-                    Number(parseUnits(predictions[key]["stake"], TOKEN_DECIMAL))
-                  )
-                : cairo.uint256(0),
+              home: cairo.uint256(Number(_predictions[key].home.trim())),
+              away: cairo.uint256(Number(_predictions[key].away.trim())),
+              stake: _predictions[key]["stake"]
+                ? Number(parseUnits(_predictions[key]["stake"], TOKEN_DECIMAL))
+                : 0,
             });
           }
         }
       }
 
       if (!stop) {
-        setPredicting(true);
+        setPredicting(predicting_keys);
+        const total_stake = construct.reduce(
+          (total, num) => total + num.stake,
+          0
+        );
+        const erc20_contract = getWalletProviderContractERC20();
+        const check_allowance = await erc20_contract!.allowance(
+          connected_address,
+          CONTRACT_ADDRESS
+        );
+        if (Number(total_stake > Number(check_allowance))) {
+          await handleDisconnect();
+          const return_calldata: ConnectCalldata = {
+            type: "prediction",
+            data: predictions,
+          };
+          await handleConnect(
+            [
+              {
+                tokenAddress: TOKEN_ADDRESS,
+                amount: (
+                  total_stake + Number(parseUnits("100", TOKEN_DECIMAL))
+                ).toString(),
+                spender: CONTRACT_ADDRESS,
+              },
+            ],
+
+            JSON.stringify(return_calldata)
+          );
+        }
         const contract = getWalletProviderContract();
 
         if (contract) {
@@ -275,7 +321,12 @@ const Prediction = () => {
                       return {
                         ...mp,
                         predicted: true,
-                        predictions: [{ prediction: element.prediction }],
+                        predictions: [
+                          {
+                            prediction: element.prediction,
+                            stake: element.prediction.stake,
+                          },
+                        ],
                       };
                     }
                     return mp;
@@ -285,7 +336,9 @@ const Prediction = () => {
               }
               setRoundsMatches(new_data);
             }
-            setPredictions({});
+            if (!_pred) {
+              setPredictions({});
+            }
             toast.success("Prediction Successful!");
           } else {
             toast.error(
@@ -296,82 +349,24 @@ const Prediction = () => {
 
         setPredicting(false);
       }
+      dispatch(setCalldata(null));
     } catch (error: any) {
+      dispatch(setCalldata(null));
       toast.error(parse_error(error?.message));
       setPredicting(false);
       console.log(error);
     }
   };
 
-  const widgetContainerRef = useRef<HTMLDivElement>(null);
-  const [isWidgetActive, setWidgetActive] = useState(false);
-  const [matchId, setMatchId] = useState<number | null>(null);
-
   useEffect(() => {
-    if (!isWidgetActive) {
-      // const loadedScript = document.querySelector(
-      //   'script[src="https://widgets.sir.sportradar.com/sportradar/widgetloader"]'
-      // );
-      // if (loadedScript) {
-      //   document.body.removeChild(loadedScript);
-      // }
-      return;
-    }
-
-    const scriptId = "sportradar-widget-loader";
-
-    // Check if the script is already added
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = "https://widgets.sir.sportradar.com/sportradar/widgetloader";
-      script.async = true;
-      script.setAttribute("n", "SIR");
-      document.body.appendChild(script);
-
-      script.onload = () => {
-        initializeWidget();
-      };
-    } else {
-      initializeWidget();
-    }
-
-    function initializeWidget() {
-      if (window.SIR && widgetContainerRef.current && matchId) {
-        console.log("whhi");
-        window.SIR(
-          "addWidget",
-          `.widget-container-${matchId}`,
-          "match.lmtPlus",
-          {
-            matchId: matchId,
-            scoreboard: "extended",
-          }
-        );
+    if (connect_calldata) {
+      if (connect_calldata.type === "prediction") {
+        handleBulkPredict(connect_calldata.data);
       }
     }
+  }, [connected_address]);
 
-    return () => {
-      // Cleanup: Clear widget container
-      if (widgetContainerRef.current) {
-        widgetContainerRef.current.innerHTML = "";
-      }
-      const loadedScript = document.querySelector(
-        'script[src="https://widgets.sir.sportradar.com/sportradar/widgetloader"]'
-      );
-      if (loadedScript) {
-        document.body.removeChild(loadedScript);
-      }
-    };
-  }, [isWidgetActive]);
-  const toggleWidget = () => {
-    // let status;
-    setWidgetActive((prev) => !prev);
-
-    // if (status) {
-    //   setMatchId(null);
-    // }
-  };
+  const [open_modal, set_open_modal] = useState(false);
 
   return (
     <React.Fragment>
@@ -391,35 +386,6 @@ const Prediction = () => {
           )}
         </button>
       ) : null} */}
-
-      <Modal
-        className="text-white"
-        open={isWidgetActive}
-        onCancel={toggleWidget}
-        destroyOnClose
-        styles={{
-          content: {
-            background: "#042822",
-            paddingLeft: "0",
-            paddingRight: "0",
-          },
-          header: { background: "#042822", color: "white" },
-        }}
-        // width={"100%"}
-        // closeIcon={<IoClose color="white" />}
-        okButtonProps={{ hidden: true }}
-        cancelButtonProps={{ hidden: true }}
-      >
-        <div
-          ref={widgetContainerRef}
-          className={`sr-widget widget-container-${matchId}`}
-          style={{
-            // maxWidth: "620px",
-            width: "100%",
-            border: "1px solid rgba(0, 0, 0, 0.12)",
-          }}
-        ></div>
-      </Modal>
 
       {/* <div
         style={{
@@ -447,6 +413,14 @@ const Prediction = () => {
           ></div>
         )}
       </div> */}
+
+      <ComingSoonModal
+        open_modal={open_modal}
+        onClose={() => {
+          set_open_modal(false);
+        }}
+      />
+
       {isOpen && (
         <div className="absolute z-50 right-0 w-48 mt-2 h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
           {Array.from({ length: total_rounds }).map((_, index) => {
@@ -521,16 +495,24 @@ const Prediction = () => {
                         className="w-full flex flex-col md:gap-[63px] gap-[24px] justify-center items-center"
                       >
                         <PredictionCard
-                          predicting={predicting}
+                          predicting={
+                            predicting[match.details.fixture.id.toString()]
+                          }
                           keyIndex={_key}
                           onChangePrediction={onChangePrediction}
                           match={match}
-                          onStakeClick={handleBulkPredict}
-                          onSeeStatsClick={() => {
-                            setMatchId(Number(match.details.fixture.id));
-                            setWidgetActive(true);
+                          onStakeClick={() => {
+                            handleBulkPredict(
+                              undefined,
+                              match.details.fixture.id.toString()
+                            );
                           }}
-                          onExplorePredictionsClick={() => {}}
+                          onSeeStatsClick={() => {
+                            set_open_modal(true);
+                          }}
+                          onExplorePredictionsClick={() => {
+                            set_open_modal(true);
+                          }}
                         />
                       </div>
                     );

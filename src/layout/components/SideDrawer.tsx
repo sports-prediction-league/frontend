@@ -46,14 +46,10 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
           text="Upcoming Matches"
           onClick={() => {
             onClose();
-            handleNavigation("/prediction");
+            handleNavigation("/");
           }}
-          background={
-            location.pathname === "/prediction" ? undefined : "#FFFFFF"
-          }
-          textColor={
-            location.pathname === "/prediction" ? undefined : "#000000"
-          }
+          background={location.pathname === "/" ? undefined : "#FFFFFF"}
+          textColor={location.pathname === "/" ? undefined : "#000000"}
           fontWeight="font-medium"
         />
         <Button

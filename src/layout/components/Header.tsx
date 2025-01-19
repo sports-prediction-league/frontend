@@ -11,6 +11,8 @@ import { FaBars } from "react-icons/fa";
 
 // assets
 import SPL_LOGO from "../../assets/header/spl_logo.svg";
+import { useAppSelector } from "src/state/store";
+import useConnect from "src/lib/useConnect";
 
 // styles
 // import "./styles.css";
@@ -20,6 +22,11 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+
+  const connected_address = useAppSelector(
+    (state) => state.app.connected_address
+  );
+  const { handleConnect } = useConnect();
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -35,7 +42,7 @@ const Header = () => {
         <img
           src={SPL_LOGO}
           alt="SPL LOGO"
-          onClick={() => handleNavigation("/")}
+          onClick={() => handleNavigation("/home")}
           className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"
         />
 
@@ -63,6 +70,27 @@ const Header = () => {
             fontWeight="font-medium"
           />
           <Button
+            text={connected_address ? "Profile" : "Connect Wallet"}
+            onClick={async () => {
+              if (connected_address) {
+                handleNavigation("/profile");
+                return;
+              }
+              await handleConnect();
+            }}
+            background={
+              location.pathname === "/profile" || !connected_address
+                ? undefined
+                : "#FFFFFF"
+            }
+            textColor={
+              location.pathname === "/profile" || !connected_address
+                ? undefined
+                : "#000000"
+            }
+            fontWeight="font-medium"
+          />
+          {/* <Button
             text="Profile"
             onClick={() => handleNavigation("/profile")}
             background={
@@ -70,7 +98,7 @@ const Header = () => {
             }
             textColor={location.pathname === "/profile" ? undefined : "#000000"}
             fontWeight="font-medium"
-          />
+          /> */}
 
           <div className="">
             <DarkmodeButton mode={mode} toggleMode={toggleMode} />

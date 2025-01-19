@@ -11,14 +11,21 @@ import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 import Button from "../../../common/components/button/Button";
 import { useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
+import { IoShareSocialOutline } from "react-icons/io5";
+import ShareModal from "src/common/components/modal/ShareModal";
+import { MINI_APP_URL } from "src/lib/utils";
 
 const Profile = () => {
   const [progress, setProgress] = useState(10);
   const { handleDisconnect, handleConnect } = useConnect();
-  const { profile, connected_address } = useAppSelector((state) => state.app);
+  const { profile, connected_address, reward } = useAppSelector(
+    (state) => state.app
+  );
   const updateProgress = (newProgress: number) => {
     setProgress(newProgress);
   };
+
+  const [open_modal, set_open_modal] = useState(false);
 
   useEffect(() => {
     updateProgress(50);
@@ -26,6 +33,17 @@ const Profile = () => {
 
   return (
     <div className="">
+      <ShareModal
+        modal_title="Share your progress"
+        content={{
+          message: `🚀 I'm crushing it at #${profile?.point?.rank} on the @HQ_SPL Leaderboard! 🏆 Can you dethrone me? 💪 Prove your prediction skills and take me on in the ultimate sports showdown! ⚽🏀🔥 #PredictPlayWin #SPL`,
+          url: MINI_APP_URL,
+        }}
+        open_modal={open_modal}
+        onClose={() => {
+          set_open_modal(false);
+        }}
+      />
       <div className="md:my-10 my-5">
         <Title title="Profile" />
       </div>
@@ -78,37 +96,54 @@ const Profile = () => {
       </div>
 
       <div className="flex flex-col items-center justify-center mt-[40px] lg:px-0 md:px-16 px-3 gap-[34px]">
-        <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex justify-between items-center">
-          <div className="">
-            <div className="md:w-[235px] flex flex-col items-center justify-center">
-              <img
-                src={STAR_ICON}
-                alt="ICON"
-                className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"
-              />
-              <p className="text-[#FFFFFF]/[0.5] font-[Rubik] font-medium md:text-[27px] text-[12px] md:leading-[40px] text-center mt-2">
-                POINTS
-              </p>
-              <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                {profile?.point?.point ?? "--"}
-              </p>
+        <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px]">
+          <div className="flex justify-between items-center">
+            <div className="">
+              <div className="md:w-[235px] flex flex-col items-center justify-center">
+                <img
+                  src={STAR_ICON}
+                  alt="ICON"
+                  className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"
+                />
+                <p className="text-[#FFFFFF]/[0.5] font-[Rubik] font-medium md:text-[27px] text-[12px] md:leading-[40px] text-center mt-2">
+                  POINTS
+                </p>
+                <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
+                  {profile?.point?.point ?? "--"}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end justify-center">
+              <div className="md:w-[235px] flex flex-col items-center justify-center">
+                <img
+                  src={RANK_ICON}
+                  alt="ICON"
+                  className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"
+                />
+                <p className="text-[#FFFFFF]/[0.5] font-[Rubik] font-medium md:text-[27px] text-[12px] md:leading-[40px] text-center mt-2">
+                  LOCAL RANK
+                </p>
+                <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
+                  #{profile?.point?.rank ?? "--"}
+                </p>
+              </div>
             </div>
           </div>
-          <div className="flex flex-col items-end justify-center">
-            <div className="md:w-[235px] flex flex-col items-center justify-center">
-              <img
-                src={RANK_ICON}
-                alt="ICON"
-                className="md:w-[54px] w-[23px] md:h-[54px] h-[23px]"
+
+          {profile?.point?.rank && profile?.point?.rank > 0 ? (
+            <div className="flex items-center mt-10 justify-center">
+              <Button
+                onClick={() => {
+                  set_open_modal(true);
+                }}
+                text="Share your progress"
+                icon={<IoShareSocialOutline />}
+                fontSize="md:text-[24px] text-xs rounded-[5px]"
+                height="md:h-[76px] h-[33px]"
+                width="md:w-[484px] w-[209px]"
               />
-              <p className="text-[#FFFFFF]/[0.5] font-[Rubik] font-medium md:text-[27px] text-[12px] md:leading-[40px] text-center mt-2">
-                LOCAL RANK
-              </p>
-              <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                #{profile?.point?.rank ?? "--"}
-              </p>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center">
@@ -116,7 +151,7 @@ const Profile = () => {
             Available for withdrawal
           </p>
           <p className="text-spl-white font-bold md:text-[30px] text-[15px] md:mt-5 mt-2">
-            632.000
+            {Number(reward).toFixed(3)}
           </p>
 
           <div className="md:mt-[60px] mt-[20px]">
