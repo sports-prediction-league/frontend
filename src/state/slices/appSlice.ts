@@ -256,13 +256,15 @@ export const appSlice = createSlice({
 
     updateLeaderboardImages: (
       state,
-      action: PayloadAction<{ username: string; profile_picture: string }[]>
+      action: PayloadAction<
+        { username: string; profile_picture: string; id: string }[]
+      >
     ) => {
       const new_leaderboard = state.leaderboard.map((mp) => {
         const find = action.payload.find(
           (fd) =>
-            fd.username.toString().toLowerCase() ===
-            mp.user.username?.toString()?.toLocaleLowerCase()
+            fd.id.toString().toLowerCase() ===
+            mp.user.id?.toString()?.toLocaleLowerCase()
         );
         if (find) {
           return {
