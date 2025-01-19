@@ -273,12 +273,20 @@ function App() {
       try {
         const response = await apiClient.get(`/profile_pic`, {
           params: { userId },
-          responseType: "blob",
+          // responseType: "blob",
         });
 
-        const photoUrl = URL.createObjectURL(new Blob([response.data]));
-        dispatch(update_profile({ profile_picture: photoUrl }));
-      } catch (error) {}
+        // const photoUrl = URL.createObjectURL(new Blob([response.data]));
+        dispatch(
+          update_profile({
+            profile_picture: `data:image/jpeg;base64,${response.data?.data?.profile_picture}`,
+          })
+        );
+      } catch (error: any) {
+        toast.error(
+          error?.response?.data?.message || error.message || "An error occurred"
+        );
+      }
     };
 
     const telegram = window.Telegram;
