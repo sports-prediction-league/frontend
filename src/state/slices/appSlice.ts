@@ -271,6 +271,7 @@ export const appSlice = createSlice({
             ...mp,
             user: {
               ...mp.user,
+              username: find.username,
               profile_picture: find.profile_picture,
             },
           };
