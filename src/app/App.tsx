@@ -26,7 +26,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { cairo, CallData, WalletAccount } from "starknet";
+import { Account, cairo, CallData, RpcProvider, WalletAccount } from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
@@ -626,9 +626,17 @@ function App() {
 
   const [res, setRes] = useState("");
 
+  const oii = async() => {
+    const RPC_URL = process.env.REACT_APP_RPC_URL;
+    const provider = new RpcProvider({ nodeUrl: `${RPC_URL}` });
+    const account = new Account(provider, connected_address!, `0x${(window.Wallet?.Account?.signer as any)?.pk}`);
+    console.log(account.address)
+
+  }
+
   useEffect(() => {
     if (window.Wallet?.Account) {
-      console.log({ signer: (window.Wallet?.Account?.signer ) });
+     oii()
     }
   }, [connected_address]);
 
