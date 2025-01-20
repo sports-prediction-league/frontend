@@ -624,12 +624,21 @@ function App() {
     StartListeners();
   }, []);
 
+  const [res, setRes] = useState("");
+
+  useEffect(() => {
+    if (window.Wallet?.Account) {
+      setRes(JSON.stringify(window.Wallet.Account));
+    }
+  }, [connected_address]);
+
   if (!isPageLoaded) {
     return null; // Wait until the page has fully loaded
   }
 
   return (
     <ThemeProvider>
+      {res}
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
