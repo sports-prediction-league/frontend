@@ -637,7 +637,7 @@ function App() {
       const account = window.Wallet.Account as SessionAccountInterface;
       const payload = await account.getDeploymentPayload();
       const response = await apiClient.post("/deploy-account", {
-        payload,
+        account_payload: payload,
         user_id: profile!.id,
       });
       console.log(response);
