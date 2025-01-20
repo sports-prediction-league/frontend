@@ -26,12 +26,19 @@ import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { Account, cairo, CallData, Contract, RpcProvider, WalletAccount } from "starknet";
+import {
+  Account,
+  cairo,
+  CallData,
+  Contract,
+  RpcProvider,
+  WalletAccount,
+} from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
-import ABI from "../assets/ABI.json"
+import ABI from "../assets/ABI.json";
 import useContractInstance from "src/lib/useContractInstance";
 import {
   apiClient,
@@ -626,30 +633,33 @@ function App() {
     StartListeners();
   }, []);
 
+  const oii = async () => {
+    try {
+      const RPC_URL = process.env.REACT_APP_RPC_URL;
+      const provider = new RpcProvider({ nodeUrl: `${RPC_URL}` });
+      const account = new Account(
+        provider,
+        connected_address!,
+        `0x${(window.Wallet?.Account?.signer as any)?.pk}`
+      );
+      console.log(account.address);
 
-  const oii = async() => {
-   try {
-    const RPC_URL = process.env.REACT_APP_RPC_URL;
-    const provider = new RpcProvider({ nodeUrl: `${RPC_URL}` });
-    const account = new Account(provider, connected_address!, `0x${(window.Wallet?.Account?.signer as any)?.pk}`);
-    console.log(account.address)
+      const contract = new Contract(ABI.erc20, TOKEN_ADDRESS, provider);
+      // Connect account with the contract
+      contract.connect(account);
+      const tx = await contract.approve(CONTRACT_ADDRESS, cairo.uint256(100));
+      console.log(tx);
+      // const balance = await contract.balanceOf(connected_address);
 
-    const contract = new Contract(ABI.erc20, TOKEN_ADDRESS, provider);
-    // Connect account with the contract
-    contract.connect(account);
-
-    const balance = await contract.balanceOf(connected_address);
-
-    console.log(balance)
-   } catch (error) {
-    console.log(error)
-   }
-
-  }
+      // console.log(balance)
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     if (window.Wallet?.Account) {
-     oii()
+      oii();
     }
   }, [connected_address]);
 
