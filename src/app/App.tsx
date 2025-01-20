@@ -628,7 +628,7 @@ function App() {
 
   useEffect(() => {
     if (window.Wallet?.Account) {
-      console.log({ signer: (window.Wallet?.Account?.signer as any)?.pk });
+      console.log({ signer: (window.Wallet?.Account?.signer ) });
     }
   }, [connected_address]);
 
