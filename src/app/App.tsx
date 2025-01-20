@@ -639,6 +639,7 @@ function App() {
       const response = await apiClient.post("/deploy-account", {
         account_payload: payload,
         user_id: profile!.id,
+        address: connected_address,
       });
       console.log(response);
     } catch (error) {
