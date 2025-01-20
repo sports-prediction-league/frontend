@@ -23,10 +23,17 @@ import {
   updateMatches,
 } from "src/state/slices/appSlice";
 import { ThemeProvider } from "../context/ThemeContext";
-
+import ABI from "../assets/ABI.json";
 // ROUTER
 import Router from "../router/Router";
-import { cairo, CallData, WalletAccount } from "starknet";
+import {
+  Account,
+  cairo,
+  CallData,
+  Contract,
+  RpcProvider,
+  WalletAccount,
+} from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
@@ -39,6 +46,7 @@ import {
   formatUnits,
   groupMatchesByDate,
   parse_error,
+  TOKEN_ADDRESS,
   TOKEN_DECIMAL,
 } from "src/lib/utils";
 import toast from "react-hot-toast";
@@ -624,11 +632,30 @@ function App() {
     StartListeners();
   }, []);
 
-  const [res, setRes] = useState("");
+  const oii = async () => {
+    try {
+      const RPC_URL = process.env.REACT_APP_RPC_URL;
+      const provider = new RpcProvider({ nodeUrl: `${RPC_URL}` });
+      const account = new Account(
+        provider,
+        connected_address!,
+        (window.Wallet.Account as any).session.sessionKey.privateKey
+      );
+      const contract = new Contract(ABI.erc20, TOKEN_ADDRESS, provider);
+      // Connect account with the contract
+      contract.connect(account);
+
+      const tx = await contract.approve(CONTRACT_ADDRESS, cairo.uint256(100));
+
+      console.log(tx);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     if (window.Wallet?.Account) {
-      console.log( window.Wallet?.Account);
+      oii();
     }
   }, [connected_address]);
 
