@@ -636,18 +636,21 @@ function App() {
     try {
       const account = window.Wallet.Account as SessionAccountInterface;
       const payload = await account.getDeploymentPayload();
-      const tx = await account.deployAccount(payload);
-      console.log(tx);
+      const response = await apiClient.post("/deploy-account", {
+        payload,
+        user_id: profile!.id,
+      });
+      console.log(response);
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    if (window.Wallet?.Account) {
+    if (window.Wallet?.Account && profile) {
       oii();
     }
-  }, [connected_address]);
+  }, [connected_address, profile]);
 
   if (!isPageLoaded) {
     return null; // Wait until the page has fully loaded
