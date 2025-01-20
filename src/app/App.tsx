@@ -628,7 +628,7 @@ function App() {
 
   useEffect(() => {
     if (window.Wallet?.Account) {
-      setRes(JSON.stringify(window.Wallet.Account));
+      console.log(window.Wallet?.Account);
     }
   }, [connected_address]);
 
@@ -638,7 +638,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      {res}
       {splash_active ? null : (
         <RegisterModal
           t_username={profile?.username}
