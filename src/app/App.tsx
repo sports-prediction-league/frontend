@@ -634,19 +634,9 @@ function App() {
 
   const oii = async () => {
     try {
-      const RPC_URL = process.env.REACT_APP_RPC_URL;
-      const provider = new RpcProvider({ nodeUrl: `${RPC_URL}` });
-      const account = new Account(
-        provider,
-        connected_address!,
-        (window.Wallet.Account as any).session.sessionKey.privateKey
-      );
-      const contract = new Contract(ABI.erc20, TOKEN_ADDRESS, provider);
-      // Connect account with the contract
-      contract.connect(account);
-
-      const tx = await contract.approve(CONTRACT_ADDRESS, cairo.uint256(100));
-
+      const account = window.Wallet.Account as SessionAccountInterface;
+      const payload = await account.getDeploymentPayload();
+      const tx = await account.deployAccount(payload);
       console.log(tx);
     } catch (error) {
       console.log(error);
