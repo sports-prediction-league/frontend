@@ -23,17 +23,10 @@ import {
   updateMatches,
 } from "src/state/slices/appSlice";
 import { ThemeProvider } from "../context/ThemeContext";
-import ABI from "../assets/ABI.json";
+
 // ROUTER
 import Router from "../router/Router";
-import {
-  Account,
-  cairo,
-  CallData,
-  Contract,
-  RpcProvider,
-  WalletAccount,
-} from "starknet";
+import { cairo, CallData, WalletAccount } from "starknet";
 import { SessionAccountInterface } from "@argent/tma-wallet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
@@ -46,7 +39,6 @@ import {
   formatUnits,
   groupMatchesByDate,
   parse_error,
-  TOKEN_ADDRESS,
   TOKEN_DECIMAL,
 } from "src/lib/utils";
 import toast from "react-hot-toast";
@@ -631,27 +623,6 @@ function App() {
     socket.connect();
     StartListeners();
   }, []);
-
-  const oii = async () => {
-    try {
-      const account = window.Wallet.Account as SessionAccountInterface;
-      const payload = await account.getDeploymentPayload();
-      const response = await apiClient.post("/deploy-account", {
-        account_payload: payload,
-        user_id: profile!.id,
-        address: connected_address,
-      });
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    if (window.Wallet?.Account && profile) {
-      oii();
-    }
-  }, [connected_address, profile]);
 
   if (!isPageLoaded) {
     return null; // Wait until the page has fully loaded
