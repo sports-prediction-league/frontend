@@ -185,7 +185,7 @@ const Prediction = () => {
 
       if (
         !Object.values(_predictions).filter(
-          (ft) => Boolean(ft.home) && Boolean(ft.away)
+          (ft) => Boolean(ft?.home) && Boolean(ft?.away)
         ).length
       ) {
         toast.error("Enter match scores");
