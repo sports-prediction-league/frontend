@@ -34,7 +34,7 @@ const ComingSoonModal = ({ onClose, open_modal }: Props) => {
       <div className="pilat space-y-2">
         <h2 className="text-[#2A2F3F] text-3xl font-[700]">Coming soon!</h2>
         <h5 className="text-xl font-[700] text-black">
-          This page will be available soon.
+          This feature will be available soon.
         </h5>
         <p className="font-[300] text-black w-1/2">
           Stay tuned for exciting updates—you won't have to wait long!
