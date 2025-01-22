@@ -18,7 +18,6 @@ import toast from "react-hot-toast";
 
 const useConnect = () => {
   const getArgentTMA = () => {
-    alert(CONTRACT_ADDRESS)
     const argentTMA = ArgentTMA.init({
       environment: "sepolia", // "sepolia" | "mainnet" (not supperted yet)
       appName: "SPL", // Your Telegram app name
@@ -59,9 +58,9 @@ const useConnect = () => {
         // The wallet will redirect back to the app and the account will be available
         // from the connect() method -- see above
         await argentTMA.requestConnection({
-          callbackData:"callback",
-            // callbackData ?? JSON.stringify({ type: "none" } as ConnectCalldata),
-          // approvalRequests: approvals,
+          callbackData:
+            callbackData ?? JSON.stringify({ type: "none" } as ConnectCalldata),
+          approvalRequests: approvals,
         });
       } else {
         const { wallet } = await connect();
