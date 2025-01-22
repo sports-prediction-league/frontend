@@ -25,7 +25,7 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
   const connected_address = useAppSelector(
     (state) => state.app.connected_address
   );
-  const { handleConnect } = useConnect();
+  const { handleConnect, handleDisconnect } = useConnect();
 
   return (
     <div className={`side-drawer ${isOpen ? "open" : ""}`}>
@@ -74,6 +74,7 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
               handleNavigation("/profile");
               return;
             }
+            await handleDisconnect()
             await handleConnect();
             onClose();
           }}
