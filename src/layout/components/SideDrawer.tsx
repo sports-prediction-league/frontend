@@ -1,8 +1,7 @@
 import React from "react";
 import Button from "../../common/components/button/Button";
-import { FaTimes } from "react-icons/fa"; // Import the close icon
+import { X } from "lucide-react"; // Import the close icon
 import { useLocation } from "react-router";
-import DarkmodeButton from "../../common/components/button/DarkmodeButton";
 import { useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
 
@@ -35,10 +34,10 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
           aria-label="Close"
           className="w-[30px] h-[30px] flex justify-center items-center bg-spl-green-300 rounded-full"
         >
-          <FaTimes className="text-white" />
+          <X className="text-white" />
         </button>
 
-        <DarkmodeButton mode={mode} toggleMode={toggleMode} />
+        {/* <DarkmodeButton mode={mode} toggleMode={toggleMode} /> */}
       </div>
 
       <div className="nav-buttons mt-[20px]">

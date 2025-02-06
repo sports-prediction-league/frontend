@@ -1,16 +1,12 @@
 // CONTEXT
 import {
-  addLeaderboard,
   bulkAddLeaderboard,
   bulkSetMatches,
-  ConnectCalldata,
   InitDataUnsafe,
   LeaderboardProp,
   MatchData,
   Prediction,
-  setCalldata,
   setConnectedAddress,
-  setIsMiniApp,
   setIsRegistered,
   setLoaded,
   setLoadingState,
@@ -26,8 +22,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { cairo, CallData, WalletAccount } from "starknet";
-import { SessionAccountInterface } from "@argent/tma-wallet";
+import { cairo, WalletAccount } from "starknet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
@@ -48,6 +43,7 @@ import SPLASH from "../assets/splash/splash.gif";
 import SPLASH_DESKTOP from "../assets/splash/desktop_splash.gif";
 import { useSocket } from "src/lib/useSocket";
 import { TwitterIcon, TwitterShareButton, XIcon } from "react-share";
+import FootballField from "src/pages/home/components/Play";
 declare global {
   interface Window {
     Telegram?: {
@@ -62,7 +58,7 @@ declare global {
 
 interface Wallet {
   IsConnected: boolean;
-  Account: SessionAccountInterface | WalletAccount | typeof undefined;
+  Account: WalletAccount | typeof undefined;
 }
 
 declare global {
@@ -79,13 +75,11 @@ function App() {
   const dispatch = useAppDispatch();
   const {
     current_round,
-    is_mini_app,
     profile,
     leaderboard,
     connected_address,
     show_register_modal,
   } = useAppSelector((state) => state.app);
-  const { getArgentTMA } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
     useContractInstance();
   const fetch_matches = async () => {
@@ -194,15 +188,15 @@ function App() {
         }
       } else {
         dispatch(setIsRegistered(true));
-        if (!is_mini_app) {
-          const user = await contract!.get_user_by_address(address);
-          dispatch(
-            update_profile({
-              username: feltToString(user.username),
-              address: `0x0${user.address.toString(16)}`,
-            })
-          );
-        }
+        // if (!is_mini_app) {
+        //   const user = await contract!.get_user_by_address(address);
+        //   dispatch(
+        //     update_profile({
+        //       username: feltToString(user.username),
+        //       address: `0x0${user.address.toString(16)}`,
+        //     })
+        //   );
+        // }
       }
     } catch (error) {
       console.log(error);
@@ -295,7 +289,6 @@ function App() {
       const initDataUnsafe = telegram.WebApp.initDataUnsafe;
 
       if (initDataUnsafe.user) {
-        dispatch(setIsMiniApp(true));
         dispatch(update_profile(initDataUnsafe.user));
         if (initDataUnsafe?.user?.id) {
           fetchProfilePhoto(initDataUnsafe.user.id.toString());
@@ -308,199 +301,102 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    // Call connect() as soon as the app is loaded
-    if (is_mini_app) {
-      const argentTMA = getArgentTMA();
 
-      argentTMA
-        .connect()
-        .then((res) => {
-          if (!res) {
-            // Not connected
-            window.Wallet = {
-              Account: undefined,
-              IsConnected: false,
-            };
-
-            const event = new Event("windowWalletClassChange");
-            window.dispatchEvent(event);
-
-            return;
-          }
-
-          if (
-            (res.account as SessionAccountInterface).getSessionStatus() !==
-            "VALID"
-          ) {
-            // Session has expired or scope (allowed methods) has changed
-            // A new connection request should be triggered
-            // The account object is still available to get access to user's address
-            // but transactions can't be executed
-            window.Wallet = {
-              Account: res.account,
-              IsConnected: false,
-            };
-
-            const event = new Event("windowWalletClassChange");
-            window.dispatchEvent(event);
-
-            return;
-          }
-
-          // Connected
-          // The session account is returned and can be used to submit transactions
-          window.Wallet = {
-            Account: res.account,
-            IsConnected: true,
-          };
-
-          dispatch(
-            setCalldata(
-              JSON.parse(
-                res.callbackData ??
-                  JSON.stringify({ type: "none" } as ConnectCalldata)
-              )
-            )
-          );
-
-          const event = new Event("windowWalletClassChange");
-          window.dispatchEvent(event);
-        })
-        .catch((err: any) => {
-          toast.error("failed to connect");
-          console.error("Failed to connect", err);
-        });
-    }
-  }, [is_mini_app]);
 
   const [registering, set_registering] = useState(false);
-  const register_user = async () => {
-    try {
-      set_registering(true);
-      const contract = getWalletProviderContract();
+  // const register_user = async () => {
+  //   try {
+  //     set_registering(true);
+  //     const contract = getWalletProviderContract();
 
-      if (!profile?.id || !profile?.username) {
-        toast.error("Profile not initialized");
-        set_registering(false);
-        return;
-      }
+  //     if (!profile?.id || !profile?.username) {
+  //       toast.error("Profile not initialized");
+  //       set_registering(false);
+  //       return;
+  //     }
 
-      if (
-        !window?.Wallet?.IsConnected ||
-        !window?.Wallet?.Account ||
-        !connected_address
-      ) {
-        toast.error("Wallet not connected");
-        set_registering(false);
-        return;
-      }
+  //     if (
+  //       !window?.Wallet?.IsConnected ||
+  //       !window?.Wallet?.Account ||
+  //       !connected_address
+  //     ) {
+  //       toast.error("Wallet not connected");
+  //       set_registering(false);
+  //       return;
+  //     }
 
-      if (!contract) {
-        toast.error("Contract not initialized");
-        set_registering(false);
-        return;
-      }
+  //     if (!contract) {
+  //       toast.error("Contract not initialized");
+  //       set_registering(false);
+  //       return;
+  //     }
 
-      const call = contract?.populate("register_user", [
-        {
-          id: cairo.felt(profile.id.toString().trim()),
-          username: cairo.felt(profile.username.trim().toLowerCase()),
-          address: connected_address,
-        },
-      ]);
+  //     const call = contract?.populate("register_user", [
+  //       {
+  //         id: cairo.felt(profile.id.toString().trim()),
+  //         username: cairo.felt(profile.username.trim().toLowerCase()),
+  //         address: connected_address,
+  //       },
+  //     ]);
 
-      if (!call?.calldata) {
-        toast.error("Invalid call");
-        set_registering(false);
-        return;
-      }
+  //     if (!call?.calldata) {
+  //       toast.error("Invalid call");
+  //       set_registering(false);
+  //       return;
+  //     }
 
-      const account = window.Wallet.Account as SessionAccountInterface;
-      // const oi = await account.getDeploymentPayload();
-      // setRes(JSON.stringify(oi));
+  //     const account = window.Wallet.Account WalletAccount;
+  //     // const oi = await account.getDeploymentPayload();
+  //     // setRes(JSON.stringify(oi));
 
-      const outsideExecutionPayload = await account.getOutsideExecutionPayload({
-        calls: [call],
-      });
+  //     const outsideExecutionPayload = await account.getOutsideExecutionPayload({
+  //       calls: [call],
+  //     });
 
-      // setPl(JSON.stringify(outsideExecutionPayload));
-      if (!outsideExecutionPayload) {
-        set_registering(false);
-        toast.error("error processing outside payload");
-        return;
-      }
+  //     // setPl(JSON.stringify(outsideExecutionPayload));
+  //     if (!outsideExecutionPayload) {
+  //       set_registering(false);
+  //       toast.error("error processing outside payload");
+  //       return;
+  //     }
 
-      const response = await apiClient.post(
-        "/execute",
-        outsideExecutionPayload
-      );
+  //     const response = await apiClient.post(
+  //       "/execute",
+  //       outsideExecutionPayload
+  //     );
 
-      if (response.data.success) {
-        dispatch(
-          addLeaderboard({
-            totalPoints: 0,
-            user: {
-              id: Number(profile.id),
-              username: profile.username,
-              address: connected_address,
-            },
-          })
-        );
-        dispatch(setShowRegisterModal(false));
-        dispatch(setIsRegistered(true));
-        toast.success("Username set!");
-      } else {
-        toast.error(
-          response.data?.message ?? "OOOPPPSSS!! Something went wrong"
-        );
-      }
+  //     if (response.data.success) {
+  //       dispatch(
+  //         addLeaderboard({
+  //           totalPoints: 0,
+  //           user: {
+  //             id: Number(profile.id),
+  //             username: profile.username,
+  //             address: connected_address,
+  //           },
+  //         })
+  //       );
+  //       dispatch(setShowRegisterModal(false));
+  //       dispatch(setIsRegistered(true));
+  //       toast.success("Username set!");
+  //     } else {
+  //       toast.error(
+  //         response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+  //       );
+  //     }
 
-      set_registering(false);
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message
-          ? parse_error(error.response?.data?.message)
-          : error.message || "An error occurred"
-      );
-      set_registering(false);
-    }
-  };
+  //     set_registering(false);
+  //   } catch (error: any) {
+  //     toast.error(
+  //       error.response?.data?.message
+  //         ? parse_error(error.response?.data?.message)
+  //         : error.message || "An error occurred"
+  //     );
+  //     set_registering(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    (async function () {
-      try {
-        if (is_mini_app) {
-          if (window?.Wallet?.Account) {
-            if (!profile?.id) return;
-            const get_account_deployed_status =
-              localStorage.getItem("accountDeployed");
-            if (!get_account_deployed_status) {
-              const account = window.Wallet.Account as SessionAccountInterface;
-              const is_account_deployed = await account.isDeployed();
-              if (!is_account_deployed) {
-                const account_payload = await account.getDeploymentPayload();
-                const response = await apiClient.post("/deploy-account", {
-                  account_payload,
-                  user_id: profile.id,
-                });
 
-                if (response.data.success) {
-                  localStorage.setItem("accountDeployed", "true");
-                }
-              }
-            }
-          }
-        }
-      } catch (error: any) {
-        toast.error(
-          error.response?.data?.message
-            ? parse_error(error.response?.data?.message)
-            : error.message || "An error occurred"
-        );
-      }
-    })();
-  }, [connected_address]);
 
   // useEffect(() => {
   //   if (connected_address) {
@@ -560,7 +456,7 @@ function App() {
       const find_index = leaderboard.findIndex(
         (fd) =>
           fd.user?.address?.toLowerCase() ===
-            connected_address?.toLowerCase() || fd.user?.id === profile?.id
+          connected_address?.toLowerCase() || fd.user?.id === profile?.id
       );
 
       if (find_index !== -1) {
@@ -603,21 +499,21 @@ function App() {
     });
   };
 
-  useEffect(() => {
-    if (connected_address) {
-      (async function () {
-        try {
-          const contract = getWalletProviderContract();
-          const reward = await contract!.get_user_reward(connected_address);
-          dispatch(
-            setReward(formatUnits(Number(reward).toString(), TOKEN_DECIMAL))
-          );
-        } catch (error) {
-          console.log(error);
-        }
-      })();
-    }
-  }, [connected_address]);
+  // useEffect(() => {
+  //   if (connected_address) {
+  //     (async function () {
+  //       try {
+  //         const contract = getWalletProviderContract();
+  //         const reward = await contract!.get_user_reward(connected_address);
+  //         dispatch(
+  //           setReward(formatUnits(Number(reward).toString(), TOKEN_DECIMAL))
+  //         );
+  //       } catch (error) {
+  //         console.log(error);
+  //       }
+  //     })();
+  //   }
+  // }, [connected_address]);
 
   useEffect(() => {
     socket.connect();
@@ -628,6 +524,8 @@ function App() {
     return null; // Wait until the page has fully loaded
   }
 
+  // return <FootballField />
+
   return (
     <ThemeProvider>
       {splash_active ? null : (
@@ -637,7 +535,7 @@ function App() {
           onOpenChange={() => {
             dispatch(setShowRegisterModal(false));
           }}
-          onSubmit={register_user}
+          onSubmit={() => { }}
           open={show_register_modal}
         />
       )}

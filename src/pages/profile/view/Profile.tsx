@@ -11,9 +11,10 @@ import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 import Button from "../../../common/components/button/Button";
 import { useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
-import { IoShareSocialOutline } from "react-icons/io5";
+import { Share2 } from "lucide-react";
 import ShareModal from "src/common/components/modal/ShareModal";
 import { MINI_APP_URL } from "src/lib/utils";
+import ThemeToggle from "src/common/components/theme/ThemeToggle";
 
 const Profile = () => {
   const [progress, setProgress] = useState(10);
@@ -44,6 +45,9 @@ const Profile = () => {
           set_open_modal(false);
         }}
       />
+      <div className="flex items-center justify-end my-5 mx-3">
+        <ThemeToggle />
+      </div>
       <div className="md:my-10 my-5">
         <Title title="Profile" />
       </div>
@@ -89,8 +93,8 @@ const Profile = () => {
         <p className="mt-[10px] md:text-[24px] text-[15px] dark:text-spl-white">
           {connected_address
             ? `${connected_address.slice(0, 6)}... ${connected_address.slice(
-                -4
-              )}`
+              -4
+            )}`
             : ""}
         </p>
       </div>
@@ -137,7 +141,7 @@ const Profile = () => {
                   set_open_modal(true);
                 }}
                 text="Share your progress"
-                icon={<IoShareSocialOutline />}
+                icon={<Share2 />}
                 fontSize="md:text-[24px] text-xs rounded-[5px]"
                 height="md:h-[76px] h-[33px]"
                 width="md:w-[484px] w-[209px]"

@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from "react";
-import { ThemeContext } from "../../../context/ThemeContext";
+import { useEffect, useState } from "react";
+import { useTheme } from "../../../context/ThemeContext";
 
 // interfaces
 import { IPredictionCardProps } from "../../../interfaces/components/predictionCardProps";
@@ -29,7 +29,7 @@ const PredictionCard = ({
   onExplorePredictionsClick,
   onChangePrediction,
 }: IPredictionCardProps) => {
-  const { mode } = useContext(ThemeContext)!;
+  const { isDark } = useTheme();
 
   // Helper function to truncate names after 6 characters
   const truncateName = (name: string) =>
@@ -107,11 +107,10 @@ const PredictionCard = ({
               <input
                 inputMode="numeric"
                 pattern="[0-9]*"
-                className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${
-                  closed_prediction || match.predicted || predicting
-                    ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
-                    : "dark:border-spl-white border dark:text-spl-white"
-                } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
+                className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${closed_prediction || match.predicted || predicting
+                  ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
+                  : "dark:border-spl-white border dark:text-spl-white"
+                  } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
                 onChange={(e) => {
                   if (!/^\d*$/.test(e.target.value)) {
                     toast.error("Invalid character");
@@ -124,8 +123,8 @@ const PredictionCard = ({
                 defaultValue={
                   match.predictions?.length
                     ? match.predictions[0].prediction.prediction
-                        .split(":")[0]
-                        .trim()
+                      .split(":")[0]
+                      .trim()
                     : ""
                 }
                 placeholder=""
@@ -133,7 +132,7 @@ const PredictionCard = ({
               />
             )}
             <img
-              src={mode === "dark" ? COLUN : COLUN_DARK}
+              src={isDark ? COLUN : COLUN_DARK}
               alt="COLUN"
               className="md:w-[22px] w-[5px] smm:w-[8px] md:h-[76px] h-[23px]"
             />
@@ -145,11 +144,10 @@ const PredictionCard = ({
               <input
                 inputMode="numeric"
                 pattern="[0-9]*"
-                className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${
-                  closed_prediction || match.predicted || predicting
-                    ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
-                    : "dark:border-spl-white border dark:text-spl-white"
-                } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
+                className={`md:w-[112px] outline-none w-[38px] smm:text-[20px] smm:w-[48px] md:h-[115px] h-[40px] smm:h-[48px] px-2 md:rounded-[20px] rounded-[6px] ${closed_prediction || match.predicted || predicting
+                  ? "dark:border-[#ffffff]/[0.5] dark:text-[#ffffff]/[0.8]"
+                  : "dark:border-spl-white border dark:text-spl-white"
+                  } flex items-center justify-center border border-[#0000000D] bg-transparent  text-spl-black md:text-[59px] text-[14px] text-center leading-[48px] font-black`}
                 onChange={(e) => {
                   if (!/^\d*$/.test(e.target.value)) {
                     toast.error("Invalid character");
@@ -163,8 +161,8 @@ const PredictionCard = ({
                 defaultValue={
                   match.predictions?.length
                     ? match.predictions[0].prediction.prediction
-                        .split(":")[1]
-                        .trim()
+                      .split(":")[1]
+                      .trim()
                     : ""
                 }
                 disabled={closed_prediction || match.predicted || predicting}
@@ -204,14 +202,14 @@ const PredictionCard = ({
                 Your Prediction:{" "}
                 {match.predictions?.length
                   ? match.predictions[0].prediction.prediction
-                      .split(":")[0]
-                      .trim()
+                    .split(":")[0]
+                    .trim()
                   : ""}{" "}
                 :{" "}
                 {match.predictions?.length
                   ? match.predictions[0].prediction.prediction
-                      .split(":")[1]
-                      .trim()
+                    .split(":")[1]
+                    .trim()
                   : ""}
               </p>
             ) : null}
@@ -220,13 +218,13 @@ const PredictionCard = ({
               {match.details.fixture.status.match_status !== "ended"
                 ? "in progress"
                 : match.details.goals && match?.predicted
-                ? match.predictions?.length
-                  ? calculateScore(
+                  ? match.predictions?.length
+                    ? calculateScore(
                       match.details.goals,
                       match.predictions[0].prediction.prediction
                     )
-                  : 0
-                : 0}
+                    : 0
+                  : 0}
             </p>
           </div>
         ) : null}
@@ -279,14 +277,14 @@ const PredictionCard = ({
                     Your Prediction:{" "}
                     {match.predictions?.length
                       ? match.predictions[0].prediction.prediction
-                          .split(":")[0]
-                          .trim()
+                        .split(":")[0]
+                        .trim()
                       : ""}{" "}
                     :{" "}
                     {match.predictions?.length
                       ? match.predictions[0].prediction.prediction
-                          .split(":")[1]
-                          .trim()
+                        .split(":")[1]
+                        .trim()
                       : ""}
                   </p>
                 ) : null}
@@ -295,13 +293,13 @@ const PredictionCard = ({
                   {match.details.fixture.status.match_status !== "ended"
                     ? "in progress"
                     : match.details.goals && match.predicted
-                    ? match.predictions?.length
-                      ? calculateScore(
+                      ? match.predictions?.length
+                        ? calculateScore(
                           match.details.goals,
                           match.predictions[0].prediction.prediction
                         )
-                      : 0
-                    : 0}
+                        : 0
+                      : 0}
                 </p>
               </div>
             </div>

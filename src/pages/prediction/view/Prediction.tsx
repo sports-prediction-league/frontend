@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 // components
 import PredictionHero from "../components/PredictionHero";
 import PredictionCard from "../../../common/components/predictionCard/PredictionCard";
-import { TbLoader } from "react-icons/tb";
+import { Loader } from "lucide-react";
 
 // assets
 import FAV_ICON from "../../../assets/prediction/fav_icon.svg";
@@ -22,16 +22,12 @@ import {
 import {
   ConnectCalldata,
   MatchData,
-  setCalldata,
   setShowRegisterModal,
   updatePredictionState,
 } from "src/state/slices/appSlice";
-import { cairo } from "starknet";
+import { cairo, WalletAccount } from "starknet";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { IoClose } from "react-icons/io5";
-import { Modal } from "antd";
-import { SessionAccountInterface } from "@argent/tma-wallet";
 import useConnect from "src/lib/useConnect";
 import ComingSoonModal from "src/common/components/modal/ComingSoonModal";
 
@@ -45,7 +41,6 @@ const Prediction = () => {
     loading_state,
     connected_address,
     is_registered,
-    connect_calldata,
   } = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
   const { getWalletProviderContract, getWalletProviderContractERC20 } =
@@ -169,250 +164,202 @@ const Prediction = () => {
     };
   }, []);
 
-  const handleBulkPredict = async (
-    _pred?: Record<string, any>,
-    _key?: string
-  ) => {
-    try {
-      if (predicting) return;
-      if (!window.Wallet?.IsConnected) {
-        toast.error("Wallet not connected!");
-        return;
-      }
+  // const handleBulkPredict = async (
+  //   _pred?: Record<string, any>,
+  //   _key?: string
+  // ) => {
+  //   try {
+  //     if (predicting) return;
+  //     if (!window.Wallet?.IsConnected) {
+  //       toast.error("Wallet not connected!");
+  //       return;
+  //     }
 
-      const _predictions =
-        _pred ?? _key ? { [_key!]: predictions[_key!] } : predictions;
+  //     const _predictions =
+  //       _pred ?? _key ? { [_key!]: predictions[_key!] } : predictions;
 
-      if (
-        !Object.values(_predictions).filter(
-          (ft) => Boolean(ft?.home) && Boolean(ft?.away)
-        ).length
-      ) {
-        toast.error("Enter match scores");
-        return;
-      }
-      if (!is_registered) {
-        dispatch(setShowRegisterModal(true));
-        return;
-      }
-      const keys = Object.keys(_predictions);
-      let construct = [];
-      let dispatch_data = [];
-      let stop = false;
-      let predicting_keys: any = {};
+  //     if (
+  //       !Object.values(_predictions).filter(
+  //         (ft) => Boolean(ft?.home) && Boolean(ft?.away)
+  //       ).length
+  //     ) {
+  //       toast.error("Enter match scores");
+  //       return;
+  //     }
+  //     if (!is_registered) {
+  //       dispatch(setShowRegisterModal(true));
+  //       return;
+  //     }
+  //     const keys = Object.keys(_predictions);
+  //     let construct = [];
+  //     let dispatch_data = [];
+  //     let stop = false;
+  //     let predicting_keys: any = {};
 
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        if (_predictions[key].stake) {
-          if (isNaN(Number(_predictions[key].stake))) {
-            toast.error("Invalid stake value!");
-            return;
-          }
-        }
-        if (_predictions[key].home !== "" || _predictions[key].away !== "") {
-          if (_predictions[key].home === "" || _predictions[key].away === "") {
-            toast.error("Enter scores for both teams");
-            stop = true;
-            break;
-          } else {
-            if (isNaN(Number(_predictions[key].home?.trim()))) {
-              toast.error("Invalid fields");
-              stop = true;
-              break;
-            }
-            if (isNaN(Number(_predictions[key].away?.trim()))) {
-              toast.error("Invalid fields");
-              stop = true;
-              break;
-            }
-            const prediction = `${_predictions[key].home.trim()}:${_predictions[
-              key
-            ].away.trim()}`;
+  //     for (let i = 0; i < keys.length; i++) {
+  //       const key = keys[i];
+  //       if (_predictions[key].stake) {
+  //         if (isNaN(Number(_predictions[key].stake))) {
+  //           toast.error("Invalid stake value!");
+  //           return;
+  //         }
+  //       }
+  //       if (_predictions[key].home !== "" || _predictions[key].away !== "") {
+  //         if (_predictions[key].home === "" || _predictions[key].away === "") {
+  //           toast.error("Enter scores for both teams");
+  //           stop = true;
+  //           break;
+  //         } else {
+  //           if (isNaN(Number(_predictions[key].home?.trim()))) {
+  //             toast.error("Invalid fields");
+  //             stop = true;
+  //             break;
+  //           }
+  //           if (isNaN(Number(_predictions[key].away?.trim()))) {
+  //             toast.error("Invalid fields");
+  //             stop = true;
+  //             break;
+  //           }
+  //           const prediction = `${_predictions[key].home.trim()}:${_predictions[
+  //             key
+  //           ].away.trim()}`;
 
-            predicting_keys[key] = true;
+  //           predicting_keys[key] = true;
 
-            dispatch_data.push({
-              matchId: key,
-              keyIndex: _predictions[key].keyIndex,
-              prediction: {
-                prediction,
-                stake: _predictions[key]["stake"] ?? 0,
-              },
-            });
-            construct.push({
-              inputed: true,
-              match_id: cairo.felt(key),
-              home: cairo.uint256(Number(_predictions[key].home.trim())),
-              away: cairo.uint256(Number(_predictions[key].away.trim())),
-              stake: _predictions[key]["stake"]
-                ? Number(parseUnits(_predictions[key]["stake"], TOKEN_DECIMAL))
-                : 0,
-            });
-          }
-        }
-      }
+  //           dispatch_data.push({
+  //             matchId: key,
+  //             keyIndex: _predictions[key].keyIndex,
+  //             prediction: {
+  //               prediction,
+  //               stake: _predictions[key]["stake"] ?? 0,
+  //             },
+  //           });
+  //           construct.push({
+  //             inputed: true,
+  //             match_id: cairo.felt(key),
+  //             home: cairo.uint256(Number(_predictions[key].home.trim())),
+  //             away: cairo.uint256(Number(_predictions[key].away.trim())),
+  //             stake: _predictions[key]["stake"]
+  //               ? Number(parseUnits(_predictions[key]["stake"], TOKEN_DECIMAL))
+  //               : 0,
+  //           });
+  //         }
+  //       }
+  //     }
 
-      if (!stop) {
-        setPredicting(predicting_keys);
-        const total_stake = construct.reduce(
-          (total, num) => total + num.stake,
-          0
-        );
-        const erc20_contract = getWalletProviderContractERC20();
-        const check_allowance = await erc20_contract!.allowance(
-          connected_address,
-          CONTRACT_ADDRESS
-        );
-        if (Number(total_stake > Number(check_allowance))) {
-          await handleDisconnect();
-          const return_calldata: ConnectCalldata = {
-            type: "prediction",
-            data: predictions,
-          };
-          await handleConnect(
-            [
-              {
-                tokenAddress: TOKEN_ADDRESS,
-                amount: (
-                  total_stake + Number(parseUnits("100", TOKEN_DECIMAL))
-                ).toString(),
-                spender: CONTRACT_ADDRESS,
-              },
-            ],
+  //     if (!stop) {
+  //       setPredicting(predicting_keys);
+  //       const total_stake = construct.reduce(
+  //         (total, num) => total + num.stake,
+  //         0
+  //       );
+  //       const erc20_contract = getWalletProviderContractERC20();
+  //       const check_allowance = await erc20_contract!.allowance(
+  //         connected_address,
+  //         CONTRACT_ADDRESS
+  //       );
+  //       if (Number(total_stake > Number(check_allowance))) {
+  //         await handleDisconnect();
+  //         const return_calldata: ConnectCalldata = {
+  //           type: "prediction",
+  //           data: predictions,
+  //         };
+  //         await handleConnect(
+  //           [
+  //             {
+  //               tokenAddress: TOKEN_ADDRESS,
+  //               amount: (
+  //                 total_stake + Number(parseUnits("100", TOKEN_DECIMAL))
+  //               ).toString(),
+  //               spender: CONTRACT_ADDRESS,
+  //             },
+  //           ],
 
-            JSON.stringify(return_calldata)
-          );
-        }
-        const contract = getWalletProviderContract();
+  //           JSON.stringify(return_calldata)
+  //         );
+  //       }
+  //       const contract = getWalletProviderContract();
 
-        if (contract) {
-          const call = contract!.populate("make_bulk_prediction", [construct]);
+  //       if (contract) {
+  //         const call = contract!.populate("make_bulk_prediction", [construct]);
 
-          const account = window.Wallet.Account as SessionAccountInterface;
+  //         const account = window.Wallet.Account as WalletAccount;
 
-          const outsideExecutionPayload =
-            await account.getOutsideExecutionPayload({
-              calls: [call],
-            });
+  //         const outsideExecutionPayload =
+  //           await account.getOutsideExecutionPayload({
+  //             calls: [call],
+  //           });
 
-          if (!outsideExecutionPayload) {
-            setPredicting(false);
-            toast.error("error processing outside payload");
-            return;
-          }
+  //         if (!outsideExecutionPayload) {
+  //           setPredicting(false);
+  //           toast.error("error processing outside payload");
+  //           return;
+  //         }
 
-          const response = await apiClient.post(
-            "/execute",
-            outsideExecutionPayload
-          );
+  //         const response = await apiClient.post(
+  //           "/execute",
+  //           outsideExecutionPayload
+  //         );
 
-          if (response.data.success) {
-            dispatch(updatePredictionState(dispatch_data));
+  //         if (response.data.success) {
+  //           dispatch(updatePredictionState(dispatch_data));
 
-            if (activeRounds !== current_round) {
-              let new_data = roundsMatches;
+  //           if (activeRounds !== current_round) {
+  //             let new_data = roundsMatches;
 
-              for (let i = 0; i < dispatch_data.length; i++) {
-                const element = dispatch_data[i];
+  //             for (let i = 0; i < dispatch_data.length; i++) {
+  //               const element = dispatch_data[i];
 
-                const new_indexed_data = roundsMatches[element.keyIndex].map(
-                  (mp) => {
-                    if (mp.details.fixture.id.toString() === element.matchId) {
-                      return {
-                        ...mp,
-                        predicted: true,
-                        predictions: [
-                          {
-                            prediction: element.prediction,
-                            stake: element.prediction.stake,
-                          },
-                        ],
-                      };
-                    }
-                    return mp;
-                  }
-                );
-                new_data[element.keyIndex] = new_indexed_data;
-              }
-              setRoundsMatches(new_data);
-            }
-            if (!_pred) {
-              setPredictions({});
-            }
-            toast.success("Prediction Successful!");
-          } else {
-            toast.error(
-              response.data?.message ?? "OOOPPPSSS!! Something went wrong"
-            );
-          }
-        }
+  //               const new_indexed_data = roundsMatches[element.keyIndex].map(
+  //                 (mp) => {
+  //                   if (mp.details.fixture.id.toString() === element.matchId) {
+  //                     return {
+  //                       ...mp,
+  //                       predicted: true,
+  //                       predictions: [
+  //                         {
+  //                           prediction: element.prediction,
+  //                           stake: element.prediction.stake,
+  //                         },
+  //                       ],
+  //                     };
+  //                   }
+  //                   return mp;
+  //                 }
+  //               );
+  //               new_data[element.keyIndex] = new_indexed_data;
+  //             }
+  //             setRoundsMatches(new_data);
+  //           }
+  //           if (!_pred) {
+  //             setPredictions({});
+  //           }
+  //           toast.success("Prediction Successful!");
+  //         } else {
+  //           toast.error(
+  //             response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+  //           );
+  //         }
+  //       }
 
-        setPredicting(false);
-      }
-      dispatch(setCalldata(null));
-    } catch (error: any) {
-      dispatch(setCalldata(null));
-      toast.error(parse_error(error?.message));
-      setPredicting(false);
-      console.log(error);
-    }
-  };
+  //       setPredicting(false);
+  //     }
+  //     dispatch(setCalldata(null));
+  //   } catch (error: any) {
+  //     dispatch(setCalldata(null));
+  //     toast.error(parse_error(error?.message));
+  //     setPredicting(false);
+  //     console.log(error);
+  //   }
+  // };
 
-  useEffect(() => {
-    if (connect_calldata) {
-      if (connect_calldata.type === "prediction") {
-        handleBulkPredict(connect_calldata.data);
-      }
-    }
-  }, [connected_address]);
+
 
   const [open_modal, set_open_modal] = useState(false);
 
   return (
     <React.Fragment>
       <PredictionHero />
-      {/* {Object.values(predictions).filter(
-        (ft) => Boolean(ft.home) && Boolean(ft.away)
-      ).length ? (
-        <button
-          disabled={predicting}
-          onClick={handleBulkPredict}
-          className="!bg-primary-foreground text-black shadow-md shadow-white fixed bottom-10 right-10 rounded-full py-3 px-5"
-        >
-          {predicting ? (
-            <TbLoader size={22} color="black" className="mr-1.5 animate-spin" />
-          ) : (
-            "Apply"
-          )}
-        </button>
-      ) : null} */}
-
-      {/* <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "16px",
-        }}
-      >
-        <button
-          onClick={toggleWidget}
-          style={{ padding: "8px 16px", fontSize: "16px" }}
-        >
-          {isWidgetActive ? "Remove Widget" : "Load Widget"}
-        </button>
-        {isWidgetActive && (
-          <div
-            ref={widgetContainerRef}
-            className="sr-widget sr-widget-1"
-            style={{
-              maxWidth: "620px",
-              width: "100%",
-              border: "1px solid rgba(0, 0, 0, 0.12)",
-            }}
-          ></div>
-        )}
-      </div> */}
 
       <ComingSoonModal
         open_modal={open_modal}
@@ -448,7 +395,7 @@ const Prediction = () => {
       <div className=" w-full flex flex-col md:gap-[90px] gap-[18px] lg:px-[90px] mt-[45px]">
         {loading || loading_state ? (
           <div className="flex items-center justify-center">
-            <TbLoader
+            <Loader
               size={40}
               className="text-black dark:text-white mr-1.5 animate-spin"
             />
@@ -502,10 +449,10 @@ const Prediction = () => {
                           onChangePrediction={onChangePrediction}
                           match={match}
                           onStakeClick={() => {
-                            handleBulkPredict(
-                              undefined,
-                              match.details.fixture.id.toString()
-                            );
+                            // handleBulkPredict(
+                            //   undefined,
+                            //   match.details.fixture.id.toString()
+                            // );
                           }}
                           onSeeStatsClick={() => {
                             set_open_modal(true);

@@ -108,13 +108,13 @@ interface IAppState {
   current_round: number;
   loading_state: boolean;
   profile: null | User;
-  is_mini_app: boolean;
+  // is_mini_app: boolean;
   loaded: boolean;
   is_registered: boolean;
   show_register_modal: boolean;
   connected_address: string | null;
   reward: string;
-  connect_calldata: ConnectCalldata | null;
+  // connect_calldata: ConnectCalldata | null;
 }
 
 // Define the initial state using that type
@@ -128,10 +128,10 @@ const initialState: IAppState = {
   total_rounds: 0,
   loading_state: true,
   profile: null,
-  is_mini_app: false,
+  // is_mini_app: false,
   connected_address: null,
   reward: "0",
-  connect_calldata: null,
+  // connect_calldata: null,
 };
 
 export const appSlice = createSlice({
@@ -147,17 +147,7 @@ export const appSlice = createSlice({
       state.leaderboard = sorted;
     },
 
-    setCalldata: (state, action: PayloadAction<ConnectCalldata | null>) => {
-      if (!action.payload) {
-        state.connect_calldata = null;
-        return;
-      }
-      if (action.payload.type !== "none") {
-        state.connect_calldata = action.payload;
-      } else {
-        state.connect_calldata = null;
-      }
-    },
+   
 
     addLeaderboard: (state, action: PayloadAction<LeaderboardProp>) => {
       state.leaderboard.push(action.payload);
@@ -291,9 +281,7 @@ export const appSlice = createSlice({
       state.loading_state = action.payload;
     },
 
-    setIsMiniApp: (state, action: PayloadAction<boolean>) => {
-      state.is_mini_app = action.payload;
-    },
+
 
     updatePredictionState: (
       state,
@@ -340,7 +328,6 @@ export const {
   setRounds,
   updatePredictionState,
   setLoadingState,
-  setIsMiniApp,
   update_profile,
   setConnectedAddress,
   setPredictions,
@@ -351,7 +338,6 @@ export const {
   addLeaderboard,
   updateMatches,
   setReward,
-  setCalldata,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type
