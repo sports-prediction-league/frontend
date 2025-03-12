@@ -11,6 +11,8 @@ import Button from "../../common/components/button/Button";
 import SPL_LOGO from "../../assets/header/spl_logo.svg";
 import { useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
+import ThemeToggle from "src/common/components/theme/ThemeToggle";
+import toast from "react-hot-toast";
 
 // styles
 // import "./styles.css";
@@ -45,6 +47,9 @@ const Header = () => {
           className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"
         />
 
+        {/* <div className="flex items-center justify-end my-5 mx-3">
+          <ThemeToggle />
+        </div> */}
         {/* <div className="rounded-full bg-spl-green-300 p-[5px] md:hidden">
           <FaBars onClick={toggleDrawer} className="text-white" />
         </div> */}
@@ -74,11 +79,19 @@ const Header = () => {
           <Button
             text={connected_address ? "Profile" : "Connect Wallet"}
             onClick={async () => {
-              if (connected_address) {
-                handleNavigation("/profile");
-                return;
+
+              try {
+                if (connected_address) {
+                  handleNavigation("/profile");
+                  return;
+                }
+                await handleConnect();
+              } catch (error: any) {
+                console.log(error)
+                toast.error(error.message || "error here");
+
               }
-              await handleConnect();
+
             }}
             background={
               location.pathname === "/profile" || !connected_address

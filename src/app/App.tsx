@@ -1,28 +1,33 @@
 // CONTEXT
 import {
+  addLeaderboard,
   bulkAddLeaderboard,
-  bulkSetMatches,
+  bulkAddVirtualMatches,
+  bulkSetVirtualMatches,
+  ConnectCalldata,
   InitDataUnsafe,
   LeaderboardProp,
   MatchData,
   Prediction,
+  setCalldata,
   setConnectedAddress,
   setIsRegistered,
   setLoaded,
   setLoadingState,
-  setPredictions,
+  // setPredictions,
   setReward,
   setRounds,
   setShowRegisterModal,
   update_profile,
   updateLeaderboardImages,
-  updateMatches,
+  updateVirtualMatches,
+  // updateMatches,
 } from "src/state/slices/appSlice";
 import { ThemeProvider } from "../context/ThemeContext";
 
 // ROUTER
 import Router from "../router/Router";
-import { cairo, WalletAccount } from "starknet";
+import { cairo, RpcProvider, WalletAccount } from "starknet";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
@@ -33,6 +38,7 @@ import {
   feltToString,
   formatUnits,
   groupMatchesByDate,
+  groupVirtualMatches,
   parse_error,
   TOKEN_DECIMAL,
 } from "src/lib/utils";
@@ -44,6 +50,7 @@ import SPLASH_DESKTOP from "../assets/splash/desktop_splash.gif";
 import { useSocket } from "src/lib/useSocket";
 import { TwitterIcon, TwitterShareButton, XIcon } from "react-share";
 import FootballField from "src/pages/home/components/Play";
+import { SessionAccountInterface } from "@argent/invisible-sdk";
 declare global {
   interface Window {
     Telegram?: {
@@ -58,7 +65,7 @@ declare global {
 
 interface Wallet {
   IsConnected: boolean;
-  Account: WalletAccount | typeof undefined;
+  Account: SessionAccountInterface | typeof undefined;
 }
 
 declare global {
@@ -66,6 +73,14 @@ declare global {
     Wallet: Wallet;
   }
 }
+
+
+
+
+
+
+
+
 function App() {
   let socket = useSocket(process.env.REACT_APP_RENDER_ENDPOINT!, {
     reconnectionDelay: 10000,
@@ -76,28 +91,30 @@ function App() {
   const {
     current_round,
     profile,
-    leaderboard,
+    matches,
     connected_address,
     show_register_modal,
   } = useAppSelector((state) => state.app);
+  const { getArgentWallet } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
     useContractInstance();
   const fetch_matches = async () => {
     try {
       dispatch(setLoadingState(true));
       const response = await apiClient.get("/matches");
+      console.log(response.data)
 
       if (response.data.success) {
-        const groupedMatches = groupMatchesByDate(
-          response.data.data.matches.rows
-        );
+        // const groupedLiveMatches = groupMatchesByDate(
+        //   response.data.data.matches.live
+        // );
         dispatch(
           setRounds([
             response.data.data.total_rounds,
             response.data.data.current_round,
           ])
         );
-        dispatch(bulkSetMatches(groupedMatches));
+        dispatch(bulkSetVirtualMatches(groupVirtualMatches(response.data.data.matches.virtual)));
       }
       dispatch(setLoadingState(false));
 
@@ -114,10 +131,12 @@ function App() {
     try {
       if (current_round === 0) return;
       const contract = getWalletProviderContract();
-      const predictions = await contract!.get_user_predictions(
-        cairo.uint256(current_round),
+      const predictions = await contract!.get_user_matches_predictions(
+        matches.virtual.map(mp => mp.matches.map(mp => cairo.felt(mp.details.fixture.id))).flat(),
         address
       );
+
+      console.log({ predictions })
 
       let structured: Prediction[] = [];
 
@@ -135,7 +154,7 @@ function App() {
         }
       }
 
-      dispatch(setPredictions(structured));
+      // dispatch(setPredictions(structured));
     } catch (error: any) {
       console.log(error);
     }
@@ -167,11 +186,11 @@ function App() {
         }
         dispatch(bulkAddLeaderboard(structured_data));
 
-        const response = await apiClient.get("/leaderboard_images");
+        // const response = await apiClient.get("/leaderboard_images");
 
-        if (response.data.success) {
-          dispatch(updateLeaderboardImages(response.data.data));
-        }
+        // if (response.data.success) {
+        //   dispatch(updateLeaderboardImages(response.data.data));
+        // }
       } catch (error) {
         console.log({ error });
       }
@@ -262,139 +281,122 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchProfilePhoto = async (userId: string) => {
-      try {
-        const response = await apiClient.get(`/profile_pic`, {
-          params: { userId },
-          // responseType: "blob",
-        });
 
-        // const photoUrl = URL.createObjectURL(new Blob([response.data]));
-        dispatch(
-          update_profile({
-            profile_picture: `data:image/jpeg;base64,${response.data?.data?.profile_picture}`,
-          })
-        );
-      } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message || error.message || "An error occurred"
-        );
-      }
-    };
 
-    const telegram = window.Telegram;
 
-    if (telegram && telegram.WebApp && telegram.WebApp.initDataUnsafe) {
-      const initDataUnsafe = telegram.WebApp.initDataUnsafe;
 
-      if (initDataUnsafe.user) {
-        dispatch(update_profile(initDataUnsafe.user));
-        if (initDataUnsafe?.user?.id) {
-          fetchProfilePhoto(initDataUnsafe.user.id.toString());
-        }
-      } else {
-        telegram?.WebApp?.close();
-      }
-    } else {
-      telegram?.WebApp?.close();
-    }
-  }, []);
 
 
 
   const [registering, set_registering] = useState(false);
-  // const register_user = async () => {
-  //   try {
-  //     set_registering(true);
-  //     const contract = getWalletProviderContract();
+  const register_user = async (user_name?: string) => {
+    try {
+      set_registering(true);
+      const contract = getWalletProviderContract();
 
-  //     if (!profile?.id || !profile?.username) {
-  //       toast.error("Profile not initialized");
-  //       set_registering(false);
-  //       return;
-  //     }
+      if (!user_name || user_name.trim().length < 1) {
+        toast.error("Input username");
+        set_registering(false);
+        return;
+      }
+      // if (!profile?.id || !profile?.username) {
+      //   toast.error("Profile not initialized");
+      //   set_registering(false);
+      //   return;
+      // }
 
-  //     if (
-  //       !window?.Wallet?.IsConnected ||
-  //       !window?.Wallet?.Account ||
-  //       !connected_address
-  //     ) {
-  //       toast.error("Wallet not connected");
-  //       set_registering(false);
-  //       return;
-  //     }
+      if (
+        !window?.Wallet?.IsConnected ||
+        !window?.Wallet?.Account ||
+        !connected_address
+      ) {
+        toast.error("Wallet not connected");
+        set_registering(false);
+        return;
+      }
 
-  //     if (!contract) {
-  //       toast.error("Contract not initialized");
-  //       set_registering(false);
-  //       return;
-  //     }
+      if (!contract) {
+        toast.error("Contract not initialized");
+        set_registering(false);
+        return;
+      }
 
-  //     const call = contract?.populate("register_user", [
-  //       {
-  //         id: cairo.felt(profile.id.toString().trim()),
-  //         username: cairo.felt(profile.username.trim().toLowerCase()),
-  //         address: connected_address,
-  //       },
-  //     ]);
+      const id = Math.random().toString(36).substring(2, 12);
+      const call = contract?.populate("register_user", [
+        {
+          id: cairo.felt(id),
+          username: cairo.felt(user_name.trim().toLowerCase()),
+          address: connected_address,
+        },
+      ]);
 
-  //     if (!call?.calldata) {
-  //       toast.error("Invalid call");
-  //       set_registering(false);
-  //       return;
-  //     }
+      if (!call?.calldata) {
+        toast.error("Invalid call");
+        set_registering(false);
+        return;
+      }
 
-  //     const account = window.Wallet.Account WalletAccount;
-  //     // const oi = await account.getDeploymentPayload();
-  //     // setRes(JSON.stringify(oi));
 
-  //     const outsideExecutionPayload = await account.getOutsideExecutionPayload({
-  //       calls: [call],
-  //     });
+      const account = window.Wallet.Account;
 
-  //     // setPl(JSON.stringify(outsideExecutionPayload));
-  //     if (!outsideExecutionPayload) {
-  //       set_registering(false);
-  //       toast.error("error processing outside payload");
-  //       return;
-  //     }
+      const tx = await account.execute(call);
+      const receipt = await account.waitForTransaction(tx.transaction_hash);
+      console.log(receipt);
 
-  //     const response = await apiClient.post(
-  //       "/execute",
-  //       outsideExecutionPayload
-  //     );
 
-  //     if (response.data.success) {
-  //       dispatch(
-  //         addLeaderboard({
-  //           totalPoints: 0,
-  //           user: {
-  //             id: Number(profile.id),
-  //             username: profile.username,
-  //             address: connected_address,
-  //           },
-  //         })
-  //       );
-  //       dispatch(setShowRegisterModal(false));
-  //       dispatch(setIsRegistered(true));
-  //       toast.success("Username set!");
-  //     } else {
-  //       toast.error(
-  //         response.data?.message ?? "OOOPPPSSS!! Something went wrong"
-  //       );
-  //     }
+      // const oi = await account.getDeploymentPayload();
+      // setRes(JSON.stringify(oi));
 
-  //     set_registering(false);
-  //   } catch (error: any) {
-  //     toast.error(
-  //       error.response?.data?.message
-  //         ? parse_error(error.response?.data?.message)
-  //         : error.message || "An error occurred"
-  //     );
-  //     set_registering(false);
-  //   }
-  // };
+      // const outsideExecutionPayload = await account.getOutsideExecutionPayload({
+      //   calls: [call],
+      // });
+
+
+      // console.log(outsideExecutionPayload)
+
+      // setPl(JSON.stringify(outsideExecutionPayload));
+      // if (!outsideExecutionPayload) {
+      //   set_registering(false);
+      //   toast.error("error processing outside payload");
+      //   return;
+      // }
+
+      // const response = await apiClient.post(
+      //   "/execute",
+      //   outsideExecutionPayload
+      // );
+
+      // if (response.data.success) {
+      dispatch(
+        addLeaderboard({
+          totalPoints: 0,
+          user: {
+            id: Number(id),
+            username: user_name.trim().toLowerCase(),
+            address: connected_address,
+          },
+        })
+      );
+      dispatch(setShowRegisterModal(false));
+      dispatch(setIsRegistered(true));
+      toast.success("Username set!");
+      // } else {
+      //   toast.error(
+      //     response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+      //   );
+      // }
+
+      set_registering(false);
+    } catch (error: any) {
+      console.log(error)
+      toast.error(
+        error.response?.data?.message
+          ? parse_error(error.response?.data?.message)
+          : error.message || "An error occurred"
+      );
+      set_registering(false);
+    }
+  };
 
 
 
@@ -451,26 +453,6 @@ function App() {
   // }, [connected_address]);
   // const [res, set_res] = useState("");
 
-  useEffect(() => {
-    if (connected_address && leaderboard.length) {
-      const find_index = leaderboard.findIndex(
-        (fd) =>
-          fd.user?.address?.toLowerCase() ===
-          connected_address?.toLowerCase() || fd.user?.id === profile?.id
-      );
-
-      if (find_index !== -1) {
-        dispatch(
-          update_profile({
-            point: {
-              point: leaderboard[find_index].totalPoints,
-              rank: find_index + 1,
-            },
-          })
-        );
-      }
-    }
-  }, [connected_address, leaderboard]);
 
   const [splash_active, set_splash_active] = useState(true);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
@@ -495,30 +477,87 @@ function App() {
   const StartListeners = () => {
     socket.on("update-matches", (updated_matches: MatchData[]) => {
       console.log({ updated_matches });
-      dispatch(updateMatches(updated_matches));
+      // dispatch(updateMatches(updated_matches));
     });
+
+
+    socket.on("new-matches", (new_matches: MatchData[]) => {
+      console.log({ new_matches });
+
+      dispatch(bulkAddVirtualMatches(groupVirtualMatches(new_matches)));
+    });
+
+    socket.on("match-events-response", (response: MatchData[]) => {
+      console.log({ match_event_response: response }, "==========>>>>>>>")
+      dispatch(updateVirtualMatches(response))
+    })
   };
 
-  // useEffect(() => {
-  //   if (connected_address) {
-  //     (async function () {
-  //       try {
-  //         const contract = getWalletProviderContract();
-  //         const reward = await contract!.get_user_reward(connected_address);
-  //         dispatch(
-  //           setReward(formatUnits(Number(reward).toString(), TOKEN_DECIMAL))
-  //         );
-  //       } catch (error) {
-  //         console.log(error);
-  //       }
-  //     })();
-  //   }
-  // }, [connected_address]);
+
+  useEffect(() => {
+    window.addEventListener("matchStatusChange", (event: Event) => {
+      const customEvent = event as CustomEvent;
+      socket.emit("match-events-request", customEvent.detail);
+      // console.log("Match status changed:", customEvent.detail);
+    });
+
+    return () => window.removeEventListener("matchStatusChange", () => { });
+  }, [])
+
 
   useEffect(() => {
     socket.connect();
     StartListeners();
   }, []);
+
+  useEffect(() => {
+
+    const argentWebWallet = getArgentWallet();
+    argentWebWallet
+      .connect()
+      .then((res) => {
+
+        if (!res) {
+          console.log("Not connected");
+          return;
+        }
+
+        console.log("Connected to Argent Web Wallet", res);
+        const { account, callbackData, approvalTransactionHash } = res;
+
+        if (account.getSessionStatus() !== "VALID") {
+          console.log("Session is not valid");
+          return;
+        }
+
+        window.Wallet = {
+          Account: res.account,
+          IsConnected: true,
+        };
+
+        dispatch(
+          setCalldata(
+            JSON.parse(
+              res.callbackData ??
+              JSON.stringify({ type: "none" } as ConnectCalldata)
+            )
+          )
+        );
+
+        const event = new Event("windowWalletClassChange");
+        window.dispatchEvent(event);
+        console.log(res)
+        console.log("Callback data", callbackData); // -- custom_callback_string
+        console.log("Approval transaction hash", approvalTransactionHash); // -- custom_callback_string
+      })
+      .catch((err) => {
+        console.error("Failed to connect to Argent Web Wallet", err);
+      });
+  }, []);
+
+
+
+
 
   if (!isPageLoaded) {
     return null; // Wait until the page has fully loaded
@@ -535,7 +574,7 @@ function App() {
           onOpenChange={() => {
             dispatch(setShowRegisterModal(false));
           }}
-          onSubmit={() => { }}
+          onSubmit={register_user}
           open={show_register_modal}
         />
       )}

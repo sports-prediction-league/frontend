@@ -1,11 +1,11 @@
 import { useAppDispatch, useAppSelector } from "src/state/store";
 import { WalletAccount } from "starknet";
-import { connect, disconnect } from "starknetkit";
 import {
   ConnectCalldata,
   setConnectedAddress,
 } from "src/state/slices/appSlice";
 import {
+  AVNU_API_KEY,
   CONTRACT_ADDRESS,
   MINI_APP_URL,
   parseUnits,
@@ -13,44 +13,80 @@ import {
   TOKEN_DECIMAL,
 } from "./utils";
 import toast from "react-hot-toast";
+import { ArgentWebWallet } from "@argent/invisible-sdk";
 
 const useConnect = () => {
+  const getArgentWallet = () => {
+    const argentWebWallet = ArgentWebWallet.init({
+      appName: "SPL",
+      environment: "sepolia",
+      sessionParams: {
+        allowedMethods: [
+          {
+            contract: CONTRACT_ADDRESS,
+            selector: "register_user",
+          },
+          {
+            contract: CONTRACT_ADDRESS,
+            selector: "make_bulk_prediction",
+          },
+          // {
+          //   contract: CONTRACT_ADDRESS,
+          //   selector: "make_prediction",
+          // },
+        ],
 
+        validityDays: 30,
+      },
+
+      paymasterParams: {
+        apiKey: AVNU_API_KEY, // avnu paymasters API Key
+      },
+    });
+
+    return argentWebWallet;
+  };
 
   const dispatch = useAppDispatch();
 
-  const handleConnect = async (approvals?: any[], callbackData?: string) => {
+  const handleConnect = async (callbackData?: string) => {
     try {
-   
-        const { wallet } = await connect();
+      const argentWebWallet = getArgentWallet();
 
-        if (wallet && wallet.isConnected) {
-          const myFrontendProviderUrl =
-            "https://free-rpc.nethermind.io/sepolia-juno/v0_7";
+      const response = await argentWebWallet.requestConnection({
+        callbackData: callbackData,
+        approvalRequests: [
+          {
+            tokenAddress: TOKEN_ADDRESS,
+            amount: BigInt("100000000000000000000").toString(),
+            // Your dapp contract
+            spender: CONTRACT_ADDRESS,
+          },
+        ],
+      });
+      console.log(response);
 
-          const myWalletAccount = new WalletAccount(
-            { nodeUrl: myFrontendProviderUrl },
-            wallet as any
-          );
-          window.Wallet = {
-            Account: myWalletAccount as any,
-            IsConnected: true,
-          };
-          // Dispatch a custom event to notify about the change
-          const event = new Event("windowWalletClassChange");
-          window.dispatchEvent(event);
-        }
-      
+      if (response) {
+        window.Wallet = {
+          Account: response.account,
+          IsConnected: true,
+        };
+        // Dispatch a custom event to notify about the change
+        const event = new Event("windowWalletClassChange");
+        window.dispatchEvent(event);
+        return response.callbackData;
+      }
     } catch (error: any) {
-      toast.error(error.message || "error here");
-      console.log(error);
+      // toast.error(error.message || "error here");
+      // console.log(error);
+      throw error;
     }
   };
 
   const handleDisconnect = async () => {
-  
-      await disconnect();
-    
+    const argentWebWallet = getArgentWallet();
+    await argentWebWallet.clearSession();
+
     window.Wallet = {
       Account: undefined,
       IsConnected: false,
@@ -60,7 +96,7 @@ const useConnect = () => {
     window.dispatchEvent(event);
   };
 
-  return { handleConnect, handleDisconnect,  };
+  return { handleConnect, handleDisconnect, getArgentWallet };
 };
 
 export default useConnect;

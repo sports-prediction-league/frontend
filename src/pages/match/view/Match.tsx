@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
 // components
-import PredictionHero from "../components/PredictionHero";
-import PredictionCard from "../../../common/components/predictionCard/PredictionCard";
-import { Loader } from "lucide-react";
+import MatchHero from "../components/MatchHero";
+import MatchCard from "../../../common/components/MatchCard/MatchCard";
 
 // assets
 import FAV_ICON from "../../../assets/prediction/fav_icon.svg";
@@ -23,15 +22,53 @@ import {
   ConnectCalldata,
   MatchData,
   setShowRegisterModal,
-  updatePredictionState,
+  // updatePredictionState,
 } from "src/state/slices/appSlice";
 import { cairo, WalletAccount } from "starknet";
 import axios from "axios";
 import toast from "react-hot-toast";
 import useConnect from "src/lib/useConnect";
 import ComingSoonModal from "src/common/components/modal/ComingSoonModal";
+import HASHED_BACKGROUND from "../../../assets/scoringSystem/hashed_background.svg";
+import Button from "src/common/components/button/Button";
+import PredictionSlip from "../components/PredictionSlip";
 
-const Prediction = () => {
+
+
+const Leagues = [
+  {
+    id: 1,
+    league: "Premier League",
+    country: "England",
+    flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  },
+  {
+    "id": 2,
+    "league": "La Liga",
+    "country": "Spain",
+    flag: "🇪🇸"
+  },
+  {
+    "id": 3,
+    "league": "Serie A",
+    "country": "Italy",
+    flag: "🇮🇹"
+  },
+  {
+    "id": 4,
+    "league": "Bundesliga",
+    "country": "Germany",
+    flag: "🇩🇪"
+  },
+  {
+    "id": 5,
+    "league": "Ligue 1",
+    "country": "France",
+    flag: "🇫🇷"
+  }
+]
+
+const Match = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const {
@@ -47,95 +84,103 @@ const Prediction = () => {
     useContractInstance();
   const [activeRounds, setActiveRounds] = useState(current_round);
   const [predicting, setPredicting] = useState<any>(false);
-  const [predictions, setPredictions] = useState<Record<string, any>>({});
+  const [current_league, set_current_league] = useState<null | number>(null);
+  // const [predictions, setPredictions] = useState<Record<string, any>>({});
   const { handleConnect, handleDisconnect } = useConnect();
 
-  const onChangePrediction = (match_id: string, value: any) => {
-    setPredictions({
-      ...predictions,
-      [match_id]: {
-        ...predictions[match_id],
-        ...value,
-      },
-    });
-  };
+  // const onChangePrediction = (match_id: string, value: string) => {
+
+  //   if (predictions[match_id]) {
+  //     setPredictions({
+  //       ...predictions,
+  //       [match_id]: predictions[match_id].value === value ? undefined : { value }
+  //     })
+  //     return;
+  //   }
+  //   setPredictions({
+  //     ...predictions,
+  //     [match_id]: {
+  //       value
+  //     },
+  //   });
+  // };
 
   const [roundsMatches, setRoundsMatches] = useState<MatchData[][]>([]);
 
   let controller: AbortController | null = null;
 
-  const fetchRoundsMatches = async (round: string) => {
-    try {
-      if (loading && controller) {
-        controller.abort();
-      }
-      const contract = getWalletProviderContract();
+  // const fetchRoundsMatches = async (round: string) => {
+  //   try {
+  //     if (loading && controller) {
+  //       controller.abort();
+  //     }
+  //     const contract = getWalletProviderContract();
 
-      if (!contract) return;
-      setLoading(true);
+  //     if (!contract) return;
+  //     setLoading(true);
 
-      controller = new AbortController();
-      const response = await apiClient.get(`/matches?round=${round}`, {
-        signal: controller.signal,
-      });
-      if (response.data.success) {
-        let response_data: MatchData[] =
-          response.data?.data?.matches?.rows ?? [];
-        if (contract) {
-          const user_predictions: {
-            match_id: string;
-            home: number;
-            away: number;
-            stake: string;
-          }[] = await contract!.get_user_predictions(
-            cairo.uint256(Number(round.trim())),
-            connected_address
-          );
+  //     controller = new AbortController();
+  //     const response = await apiClient.get(`/matches?round=${round}`, {
+  //       signal: controller.signal,
+  //     });
+  //     if (response.data.success) {
+  //       let response_data: MatchData[] =
+  //         response.data?.data?.matches?.rows ?? [];
+  //       if (contract) {
+  //         const user_predictions: {
+  //           match_id: string;
+  //           home: number;
+  //           away: number;
+  //           stake: string;
+  //         }[] = await contract!.get_user_predictions(
+  //           cairo.uint256(Number(round.trim())),
+  //           connected_address
+  //         );
 
-          for (let i = 0; i < user_predictions.length; i++) {
-            const element = user_predictions[i];
-            const index = response_data.findIndex(
-              (fd: MatchData) =>
-                fd.details.fixture.id.toString() ===
-                element.match_id?.toString()
-            );
-            if (index !== -1) {
-              response_data[index] = {
-                ...response_data[index],
-                predicted: true,
-                predictions: [
-                  {
-                    prediction: {
-                      prediction: `${Number(element.home)}:${Number(
-                        element.away
-                      )}`,
-                      stake: element.stake,
-                    },
-                  },
-                ],
-              };
-            }
-          }
-        }
+  //         for (let i = 0; i < user_predictions.length; i++) {
+  //           const element = user_predictions[i];
+  //           const index = response_data.findIndex(
+  //             (fd: MatchData) =>
+  //               fd.details.fixture.id.toString() ===
+  //               element.match_id?.toString()
+  //           );
+  //           if (index !== -1) {
+  //             response_data[index] = {
+  //               ...response_data[index],
+  //               predicted: true,
+  //               predictions: [
+  //                 {
+  //                   prediction: {
+  //                     prediction: `${Number(element.home)}:${Number(
+  //                       element.away
+  //                     )}`,
+  //                     stake: element.stake,
+  //                   },
+  //                 },
+  //               ],
+  //             };
+  //           }
+  //         }
+  //       }
 
-        const groupedMatches = groupMatchesByDate(response_data);
+  //       const groupedMatches = groupMatchesByDate(response_data);
 
-        setRoundsMatches(groupedMatches);
-      }
+  //       setRoundsMatches(groupedMatches);
+  //     }
 
-      controller = null;
-    } catch (error) {
-      if (axios.isCancel(error)) {
-        /// TODO: NOTHING
-      } else {
-        toast.error("OOOPPPSS!! Something went wrong"); // Handle other errors
-      }
+  //     controller = null;
+  //   } catch (error) {
+  //     if (axios.isCancel(error)) {
+  //       /// TODO: NOTHING
+  //     } else {
+  //       toast.error("OOOPPPSS!! Something went wrong"); // Handle other errors
+  //     }
 
-      controller = null;
-    }
+  //     controller = null;
+  //   }
 
-    setLoading(false);
-  };
+  //   setLoading(false);
+  // };
 
   useEffect(() => {
     setActiveRounds(current_round);
@@ -357,9 +402,11 @@ const Prediction = () => {
 
   const [open_modal, set_open_modal] = useState(false);
 
+
+
   return (
     <React.Fragment>
-      <PredictionHero />
+      <MatchHero />
 
       <ComingSoonModal
         open_modal={open_modal}
@@ -368,7 +415,7 @@ const Prediction = () => {
         }}
       />
 
-      {isOpen && (
+      {/* {isOpen && (
         <div className="absolute z-50 right-0 w-48 mt-2 h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
           {Array.from({ length: total_rounds }).map((_, index) => {
             return (
@@ -390,88 +437,46 @@ const Prediction = () => {
             );
           })}
         </div>
-      )}
+      )} */}
 
-      <div className=" w-full flex flex-col md:gap-[90px] gap-[18px] lg:px-[90px] mt-[45px]">
-        {loading || loading_state ? (
-          <div className="flex items-center justify-center">
-            <Loader
-              size={40}
-              className="text-black dark:text-white mr-1.5 animate-spin"
-            />
-          </div>
-        ) : (
-          (activeRounds === current_round ? matches : roundsMatches).map(
-            (group, key) => {
-              return (
-                <div
-                  key={key}
-                  className="w-full flex flex-col md:gap-[71px] gap-[19px]"
-                >
-                  <div className="w-full px-3 flex justify-between items-center">
-                    {key === 0 ? (
-                      <div
-                        onClick={toggleDropdown}
-                        className="px-3 py-1 rounded dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-[#0000000D] flex items-center gap-2 justify-center"
-                      >
-                        <p className="dark:text-spl-white text-spl-black lg:text-xl text-sm font-[Lato]  font-bold">
-                          Round {activeRounds}
-                        </p>
 
-                        <img
-                          src={FAV_ICON}
-                          alt="ICON"
-                          className="lg:w-[20px] w-3 lg:h-[20px] h-3"
-                        />
-                      </div>
-                    ) : (
-                      <div />
-                    )}
+      <div className=" w-full flex flex-col md:gap-[90px] gap-[18px] mt-5 lg:px-[90px] ">
 
-                    <div className="px-3 py-1 rounded-lg dark:bg-spl-green-100 bg-spl-white dark:border-none border border-spl-[#0000000D] flex items-center justify-center">
-                      <p className="dark:text-spl-white text-spl-black  font-[Lato] lg:text-xl text-sm  font-bold">
-                        {formatDateNative(group[0]?.details.fixture.date)}
-                      </p>
-                    </div>
-                  </div>
+        <div
+          className={` w-full bg-spl-green-300 bg-cover bg-center px-3 py-3 rounded-lg bg-no-repeat flex items-center justify-between gap-2`}
+          style={{ backgroundImage: `url(${HASHED_BACKGROUND})` }}
+        >
 
-                  {group.map((match, _key) => {
-                    return (
-                      <div
-                        key={_key}
-                        className="w-full flex flex-col md:gap-[63px] gap-[24px] justify-center items-center"
-                      >
-                        <PredictionCard
-                          predicting={
-                            predicting[match.details.fixture.id.toString()]
-                          }
-                          keyIndex={_key}
-                          onChangePrediction={onChangePrediction}
-                          match={match}
-                          onStakeClick={() => {
-                            // handleBulkPredict(
-                            //   undefined,
-                            //   match.details.fixture.id.toString()
-                            // );
-                          }}
-                          onSeeStatsClick={() => {
-                            set_open_modal(true);
-                          }}
-                          onExplorePredictionsClick={() => {
-                            set_open_modal(true);
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            }
-          )
-        )}
+          <button onClick={() => set_current_league(null)} className={`[box-shadow:0px_4px_4px_0px_#00000040] w-full ${current_league === null ? "bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]" : "bg-white"} border-[#00644C] border-[1.34px] text-xs ${current_league === null ? "text-spl-white" : "text-black"} font-light py-1.5 px-4 rounded-lg pilat`}>All Matches</button>
+          {
+            Leagues.map((league, index) => {
+              return <button onClick={() => set_current_league(index)} key={index} className={`w-full [box-shadow:0px_4px_4px_0px_#00000040] ${current_league === index ? "bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]" : "bg-white"} border-[#00644C] border-[1.34px] text-xs ${current_league === index ? "text-spl-white" : "text-black"} font-light py-1 px-4 rounded-lg pilat flex items-center gap-1 justify-center`}><span className="text-sm">{league.flag}</span> <span>{league.country}</span></button>
+            })
+          }
+        </div>
       </div>
+
+
+
+      <div className=" w-full flex flex-col md:gap-[90px] gap-[18px] lg:px-[90px] ">
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-8">
+
+            {(current_league === null ? matches.virtual : matches.virtual.filter(ft => ft.league.toLowerCase() === Leagues[current_league].league.toLowerCase())).map((match, index) => {
+              return <MatchCard key={index} matches={match} active={Date.now() >= new Date(match.date).getTime()} />
+            })}
+          </div>
+          <div className="col-span-4">
+            <PredictionSlip />
+
+          </div>
+        </div>
+      </div>
+
+
+
     </React.Fragment>
   );
 };
 
-export default Prediction;
+export default Match;

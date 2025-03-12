@@ -10,14 +10,14 @@ import RootLayout from "../layout/RootLayout";
 
 // pages
 import Home from "../pages/home/view/Home";
-import Prediction from "../pages/prediction/view/Prediction";
+import Match from "../pages/match/view/Match";
 import LeaderBoard from "../pages/leaderboard/view/LeaderBoard";
 import Profile from "../pages/profile/view/Profile";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<RootLayout />}>
-      <Route index element={<Prediction />} />
+      <Route index element={<Match />} />
       <Route path="/home" element={<Home />} />
       {/* <Route path="/upcoming-matches" element={<Prediction />} /> */}
       <Route path="/leaderboard" element={<LeaderBoard />} />

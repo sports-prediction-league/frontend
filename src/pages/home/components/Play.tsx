@@ -8,7 +8,7 @@ type Position = {
 
 type GameEvent = {
     time: number;
-    type: 'move' | 'goal';
+    type: 'move' | 'goal' | 'second-half';
     position: Position;
     team?: 'home' | 'away';
 };
@@ -18,13 +18,163 @@ type ScoreTarget = {
     away: number;
 };
 
-// Game script generator function remains the same...
+
+function generateRealisticCommentary(event: GameEvent, gameTime: number, score: { home: number, away: number }): string {
+    const minuteStamp = `[${Math.floor(gameTime / 60)}:${(gameTime % 60).toString().padStart(2, '0')}]`;
+    const teamName = event.team === 'home' ? 'Blue Team' : 'Red Team';
+
+    const commentaryLibraries = {
+        ballMovement: [
+            "Probing pass across the midfield.",
+            "Tactical repositioning by the players.",
+            "Looking for an opening in the defense.",
+            "Careful buildup play developing.",
+            "Midfielders working to create space.",
+            "Intricate passing sequence underway.",
+            "Team maintaining possession smartly."
+        ],
+        goalSetup: [
+            "Dangerous attack building up!",
+            "Promising move developing...",
+            "Attackers pressing high up the pitch!",
+            "Midfield creating some real pressure now!",
+            "Sensing a potential breakthrough...",
+            "Attacking momentum gathering steam!"
+        ],
+        goalScored: [
+            "GOOOAAAALLL! ABSOLUTELY MAGNIFICENT!",
+            "STUNNING FINISH! THE CROWD IS ERUPTING!",
+            "WHAT A GOAL! PURE FOOTBALLING MAGIC!",
+            "INCREDIBLE STRIKE! SIMPLY WORLD-CLASS!",
+            "BREAKTHROUGH! THE GOALKEEPER HAD NO CHANCE!",
+            "SENSATIONAL! A GOAL THAT WILL BE REMEMBERED!"
+        ]
+    };
+
+    // Commentary based on ball position and game context
+    const x = event.position.x;
+    const y = event.position.y;
+
+    const getPositionalContext = () => {
+        if (x < 20) return "Defending deep in their own half";
+        if (x < 40) return "Building from the back";
+        if (x < 60) return "Midfield battle intensifying";
+        if (x < 80) return "Pushing into the attacking third";
+        return "Threatening the goal area!";
+    };
+
+    switch (event.type) {
+        case 'move':
+            // More nuanced movement commentary
+            if (x > 70 && y > 30 && y < 70) {
+                return `${minuteStamp} ${commentaryLibraries.goalSetup[Math.floor(Math.random() * commentaryLibraries.goalSetup.length)]} ${getPositionalContext()}`;
+            }
+            return `${minuteStamp} ${commentaryLibraries.ballMovement[Math.floor(Math.random() * commentaryLibraries.ballMovement.length)]} ${getPositionalContext()}`;
+
+        case 'goal':
+            const scoreDifference = Math.abs(score.home - score.away);
+            const scoringMomentComments = [
+                `${teamName} breaks the deadlock!`,
+                scoreDifference === 0 ? "Scores to level the match!" :
+                    (scoreDifference === 1 ? "Narrows the gap!" : "Extending their lead convincingly!"),
+                "A moment of individual brilliance!"
+            ];
+
+            return `${minuteStamp} ${commentaryLibraries.goalScored[Math.floor(Math.random() * commentaryLibraries.goalScored.length)]} ${scoringMomentComments[Math.floor(Math.random() * scoringMomentComments.length)]}`;
+
+        default:
+            return `${minuteStamp} Interesting development on the pitch.`;
+    }
+}
+
+
+interface PredictionOdds {
+    homeWin: number;
+    awayWin: number;
+    draw: number;
+    totalGoals: { under: number, over: number };
+}
+
+function calculatePredictionOdds(): PredictionOdds {
+    // Generate random odds within a realistic range
+    const getRandomOdd = (min = 1.1, max = 6.0) => {
+        return parseFloat((min + Math.random() * (max - min)).toFixed(2));
+    };
+
+    // Basic match result odds
+    const odds = {
+        homeWin: getRandomOdd(),
+        awayWin: getRandomOdd(),
+        draw: getRandomOdd(),
+        totalGoals: {
+            under: getRandomOdd(),
+            over: getRandomOdd()
+        },
+        bothTeamsToScore: {
+            yes: getRandomOdd(1.5, 2.5), // Odds for both teams scoring
+            no: getRandomOdd(1.5, 2.5)   // Odds for a clean sheet
+        },
+        firstTeamToScore: {
+            home: getRandomOdd(1.5, 2.5),
+            away: getRandomOdd(1.5, 2.5),
+            noGoal: getRandomOdd(3.0, 5.0) // If no team scores
+        },
+        halftimeFulltime: {
+            homeHome: getRandomOdd(2.0, 4.5),  // Home leads at HT and wins FT
+            homeDraw: getRandomOdd(4.0, 6.5), // Home leads HT but Draw FT
+            homeAway: getRandomOdd(7.0, 12.0),// Home leads HT, Away wins FT
+            drawHome: getRandomOdd(3.5, 5.5), // Draw HT, Home wins FT
+            drawDraw: getRandomOdd(3.0, 4.5), // Draw HT, Draw FT
+            drawAway: getRandomOdd(3.5, 5.5), // Draw HT, Away wins FT
+            awayHome: getRandomOdd(7.0, 12.0),// Away leads HT, Home wins FT
+            awayDraw: getRandomOdd(4.0, 6.5), // Away leads HT, Draw FT
+            awayAway: getRandomOdd(2.0, 4.5)  // Away leads HT and wins FT
+        },
+        handicap: {
+            homeMinus1: getRandomOdd(2.0, 3.5), // Home wins by 2+ goals
+            awayPlus1: getRandomOdd(1.8, 3.2),  // Away loses by max 1 goal
+            homeMinus2: getRandomOdd(3.5, 5.5), // Home wins by 3+ goals
+            awayPlus2: getRandomOdd(2.5, 4.5)   // Away loses by max 2 goals
+        }
+    };
+
+    return odds;
+}
+
 function generateGameScript(
+    duration: number = 120,
+    scores: ScoreTarget = { home: 2, away: 2 }
+): {
+    events: GameEvent[],
+    odds: PredictionOdds
+} {
+    const script = generateBaseGameScript(duration, scores);
+    const odds = calculatePredictionOdds();
+
+    return {
+        events: script,
+        odds
+    };
+}
+
+// Game script generator function remains the same...
+function generateBaseGameScript(
     duration: number = 120,
     scores: ScoreTarget = { home: 2, away: 2 }
 ): GameEvent[] {
     const script: GameEvent[] = [];
     const totalGoals = scores.home + scores.away;
+    const halfTime = duration / 2;
+
+    // Add second half event
+    script.push({
+        time: halfTime,
+        type: 'second-half',
+        position: {
+            x: 50,
+            y: 50
+        }
+    });
 
     function createSequence(
         startTime: number,
@@ -130,6 +280,11 @@ function generateGameScript(
             const homeTeamAttacks = Math.random() < homeGoalsLeft / (homeGoalsLeft + awayGoalsLeft);
             const isLastScore = homeGoalsLeft + awayGoalsLeft === 1;
 
+            // If we're approaching half time, delay the sequence to after half time
+            if (currentTime < halfTime && currentTime + 15 > halfTime) {
+                currentTime = halfTime + 5;
+            }
+
             const sequence = createSequence(
                 currentTime,
                 homeTeamAttacks,
@@ -150,6 +305,12 @@ function generateGameScript(
     while (currentTime < duration) {
         const isHome = Math.random() < 0.5;
         const remainingTime = duration - currentTime;
+
+        // If we're approaching half time, delay the sequence to after half time
+        if (currentTime < halfTime && currentTime + 10 > halfTime) {
+            currentTime = halfTime + 5;
+            continue;
+        }
 
         if (remainingTime < 3) {
             script.push({
@@ -177,6 +338,7 @@ const SoccerGame = () => {
     const [gameLog, setGameLog] = useState<string[]>([]);
     const [ball, setBall] = useState({ x: 50, y: 50 });
     const [showGoal, setShowGoal] = useState(false);
+    const [showHalfTime, setShowHalfTime] = useState(false);
     const [scoringTeam, setScoringTeam] = useState<'home' | 'away' | null>(null);
     const [isGameOver, setIsGameOver] = useState(false);
     const [gameEvents, setGameEvents] = useState<GameEvent[]>([]);
@@ -187,13 +349,13 @@ const SoccerGame = () => {
     // Initialize game events
     useEffect(() => {
         const targetScore = {
-            home: Math.floor(Math.random() * 4),
-            away: Math.floor(Math.random() * 4)
+            home: Math.floor(Math.random() * 7),
+            away: Math.floor(Math.random() * 7)
         };
         const script = generateGameScript(120, targetScore);
         console.log(targetScore)
         console.log(script)
-        setGameEvents(script);
+        setGameEvents(script.events);
     }, []);
 
     // Game loop with precise event handling
@@ -220,6 +382,16 @@ const SoccerGame = () => {
                     eventsAtTime.forEach(event => {
                         // Update ball position
                         setBall(event.position);
+                        const commentaryLine = generateRealisticCommentary(event, newTime, score);
+                        setGameLog(prev => [...prev.slice(-5), commentaryLine]);
+
+                        // Handle second half
+                        if (event.type === 'second-half') {
+                            setShowHalfTime(true);
+                            setTimeout(() => {
+                                setShowHalfTime(false);
+                            }, 3000);
+                        }
 
                         // Handle goals
                         if (event.type === 'goal' && event.team && !isProcessingGoal.current) {
@@ -230,21 +402,12 @@ const SoccerGame = () => {
                             }));
                             setShowGoal(true);
                             setScoringTeam(event.team);
-                            setGameLog(prev => [...prev,
-                            `${time}s: GOAL! ${event.team!.toUpperCase()} team scores!`
-                            ]);
 
-                            // Reset goal animation after 2 seconds
                             setTimeout(() => {
                                 setShowGoal(false);
                                 setScoringTeam(null);
                                 isProcessingGoal.current = false;
                             }, 2000);
-                        } else if (event.type === 'move') {
-                            setGameLog(prev => [
-                                ...prev,
-                                `${time}s: Ball moved to position (${Math.round(event.position.x)}, ${Math.round(event.position.y)})`
-                            ]);
                         }
                     });
                 }
@@ -259,13 +422,13 @@ const SoccerGame = () => {
 
     const resetGame = () => {
         const targetScore = {
-            home: Math.floor(Math.random() * 4),
-            away: Math.floor(Math.random() * 4)
+            away: Math.floor(Math.random() * 7),
+            home: Math.floor(Math.random() * 7),
         };
         const script = generateGameScript(120, targetScore);
         console.log(targetScore)
         console.log(script)
-        setGameEvents(script);
+        setGameEvents(script.events);
         setGameTime(0);
         setScore({ home: 0, away: 0 });
         setGameLog([]);
@@ -279,7 +442,7 @@ const SoccerGame = () => {
     };
 
     return (
-        <div className="w-1/2 max-w-4xl mx-auto p-4">
+        <div className="w-full md:w-1/2 max-w-4xl mx-auto p-4">
             <div className="bg-[#1B4D3E] relative w-full aspect-[3/2] rounded-lg overflow-hidden">
                 {/* Field markings */}
                 <div className="absolute inset-0">
@@ -290,6 +453,15 @@ const SoccerGame = () => {
                     <div className="absolute left-0 top-1/2 w-16 h-32 border-4 border-white -translate-y-1/2" />
                     <div className="absolute right-0 top-1/2 w-16 h-32 border-4 border-white -translate-y-1/2" />
                 </div>
+
+                {/* Second Half Animation */}
+                {showHalfTime && (
+                    <div className="absolute inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                        <div className="text-6xl font-bold text-white animate-fade-in-out">
+                            SECOND HALF
+                        </div>
+                    </div>
+                )}
 
                 {/* Goal Animation */}
                 {showGoal && (

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MatchData } from "src/state/slices/appSlice";
+import { GroupedVirtualMatches, MatchData } from "src/state/slices/appSlice";
 
 export const apiClient = axios.create({
   baseURL: process.env.REACT_APP_RENDER_ENDPOINT,
@@ -66,6 +66,33 @@ export function groupMatchesByDate(matches: MatchData[]): MatchData[][] {
 
   // Convert the map values (arrays of matches) into a two-dimensional array
   return Array.from(groupedMatches.values());
+}
+
+export function groupVirtualMatches(
+  matches: MatchData[]
+): GroupedVirtualMatches[] {
+  const groupedMatches = matches.reduce((groups, match) => {
+    const date = match.details.fixture.date; // Extract date (ignore time)
+    const key = `${date}-${match.details.league.league}`; // Unique key for each date-league group
+
+    if (!groups[key]) {
+      groups[key] = {
+        date: new Date(date).toISOString(),
+        league: match.details.league.league,
+        matches: [],
+      };
+    }
+
+    groups[key].matches.push(match);
+    return groups;
+  }, {} as Record<string, { date: string; league: string; matches: MatchData[] }>);
+
+  // Step 2: Convert to Array & Sort by Date
+  const sortedGroups = Object.values(groupedMatches).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  return sortedGroups;
 }
 
 export function formatDateNative(dateString: string): string {
@@ -192,5 +219,6 @@ export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
 export const TOKEN_ADDRESS = process.env.REACT_APP_TOKEN_ADDRESS!;
+export const AVNU_API_KEY = process.env.REACT_APP_AVNU_API_KEY!;
 export const TOKEN_DECIMAL = 18;
 export const MINI_APP_URL = "https://t.me/SPLBot/SPL";

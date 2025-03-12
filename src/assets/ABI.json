@@ -415,7 +415,7 @@
     },
     {
       "type": "event",
-      "name": "contract::spl_token::spl_token::Event",
+      "name": "spl::mods::tokens::erc20::spl_token::Event",
       "kind": "enum",
       "variants": [
         {
@@ -437,10 +437,14 @@
     }
   ],
   "spl": [
-    { "type": "impl", "name": "SPLImpl", "interface_name": "contract::ISPL" },
+    {
+      "type": "impl",
+      "name": "SPLImpl",
+      "interface_name": "spl::mods::interfaces::ispl::ISPL"
+    },
     {
       "type": "struct",
-      "name": "contract::User",
+      "name": "spl::mods::types::User",
       "members": [
         { "name": "id", "type": "core::felt252" },
         { "name": "username", "type": "core::felt252" },
@@ -460,9 +464,9 @@
     },
     {
       "type": "struct",
-      "name": "contract::Leaderboard",
+      "name": "spl::mods::types::Leaderboard",
       "members": [
-        { "name": "user", "type": "contract::User" },
+        { "name": "user", "type": "spl::mods::types::User" },
         { "name": "total_score", "type": "core::integer::u256" }
       ]
     },
@@ -475,18 +479,38 @@
       ]
     },
     {
-      "type": "struct",
-      "name": "contract::Match",
-      "members": [
-        { "name": "inputed", "type": "core::bool" },
-        { "name": "id", "type": "core::felt252" },
-        { "name": "timestamp", "type": "core::integer::u64" },
-        { "name": "round", "type": "core::integer::u256" }
+      "type": "enum",
+      "name": "core::option::Option::<core::integer::u256>",
+      "variants": [
+        { "name": "Some", "type": "core::integer::u256" },
+        { "name": "None", "type": "()" }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "spl::mods::types::MatchType",
+      "variants": [
+        { "name": "Virtual", "type": "()" },
+        { "name": "Live", "type": "()" }
       ]
     },
     {
       "type": "struct",
-      "name": "contract::Score",
+      "name": "spl::mods::types::Match",
+      "members": [
+        { "name": "inputed", "type": "core::bool" },
+        { "name": "id", "type": "core::felt252" },
+        { "name": "timestamp", "type": "core::integer::u64" },
+        {
+          "name": "round",
+          "type": "core::option::Option::<core::integer::u256>"
+        },
+        { "name": "match_type", "type": "spl::mods::types::MatchType" }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "spl::mods::types::Score",
       "members": [
         { "name": "inputed", "type": "core::bool" },
         { "name": "match_id", "type": "core::felt252" },
@@ -496,61 +520,60 @@
     },
     {
       "type": "struct",
-      "name": "contract::Reward",
+      "name": "spl::mods::types::Reward",
       "members": [
         {
           "name": "user",
           "type": "core::starknet::contract_address::ContractAddress"
         },
-        { "name": "reward", "type": "core::integer::u256" }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "contract::Prediction",
-      "members": [
-        { "name": "inputed", "type": "core::bool" },
-        { "name": "match_id", "type": "core::felt252" },
-        { "name": "home", "type": "core::integer::u256" },
-        { "name": "away", "type": "core::integer::u256" },
-        { "name": "stake", "type": "core::integer::u256" }
+        { "name": "reward", "type": "core::integer::u256" },
+        { "name": "point", "type": "core::integer::u256" },
+        { "name": "match_id", "type": "core::felt252" }
       ]
     },
     {
       "type": "enum",
-      "name": "core::option::Option::<contract::Leaderboard>",
+      "name": "core::option::Option::<core::felt252>",
       "variants": [
-        { "name": "Some", "type": "contract::Leaderboard" },
+        { "name": "Some", "type": "core::felt252" },
         { "name": "None", "type": "()" }
       ]
     },
     {
       "type": "struct",
-      "name": "contract::PredictionDetails",
+      "name": "spl::mods::types::Prediction",
       "members": [
-        { "name": "user", "type": "contract::User" },
-        { "name": "prediction", "type": "contract::Prediction" }
+        { "name": "inputed", "type": "core::bool" },
+        { "name": "match_id", "type": "core::felt252" },
+        { "name": "id", "type": "core::felt252" },
+        { "name": "stake", "type": "core::integer::u256" },
+        { "name": "pair", "type": "core::option::Option::<core::felt252>" }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "core::option::Option::<spl::mods::types::Leaderboard>",
+      "variants": [
+        { "name": "Some", "type": "spl::mods::types::Leaderboard" },
+        { "name": "None", "type": "()" }
       ]
     },
     {
       "type": "struct",
-      "name": "contract::MatchPrediction",
+      "name": "spl::mods::types::PredictionDetails",
       "members": [
-        {
-          "name": "predictions",
-          "type": "core::array::Array::<contract::PredictionDetails>"
-        },
-        { "name": "match_pool", "type": "core::integer::u256" }
+        { "name": "user", "type": "spl::mods::types::User" },
+        { "name": "prediction", "type": "spl::mods::types::Prediction" }
       ]
     },
     {
       "type": "interface",
-      "name": "contract::ISPL",
+      "name": "spl::mods::interfaces::ispl::ISPL",
       "items": [
         {
           "type": "function",
           "name": "register_user",
-          "inputs": [{ "name": "user", "type": "contract::User" }],
+          "inputs": [{ "name": "user", "type": "spl::mods::types::User" }],
           "outputs": [],
           "state_mutability": "external"
         },
@@ -558,7 +581,7 @@
           "type": "function",
           "name": "get_user_by_id",
           "inputs": [{ "name": "id", "type": "core::felt252" }],
-          "outputs": [{ "type": "contract::User" }],
+          "outputs": [{ "type": "spl::mods::types::User" }],
           "state_mutability": "view"
         },
         {
@@ -570,7 +593,7 @@
               "type": "core::starknet::contract_address::ContractAddress"
             }
           ],
-          "outputs": [{ "type": "contract::User" }],
+          "outputs": [{ "type": "spl::mods::types::User" }],
           "state_mutability": "view"
         },
         {
@@ -601,8 +624,38 @@
             { "name": "round", "type": "core::integer::u256" }
           ],
           "outputs": [
-            { "type": "core::array::Array::<contract::Leaderboard>" }
+            { "type": "core::array::Array::<spl::mods::types::Leaderboard>" }
           ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_erc20",
+          "inputs": [],
+          "outputs": [
+            { "type": "core::starknet::contract_address::ContractAddress" }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_user_by_index",
+          "inputs": [{ "name": "index", "type": "core::integer::u256" }],
+          "outputs": [{ "type": "spl::mods::types::User" }],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_match_by_id",
+          "inputs": [{ "name": "id", "type": "core::felt252" }],
+          "outputs": [{ "type": "spl::mods::types::Match" }],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_match_index",
+          "inputs": [{ "name": "id", "type": "core::felt252" }],
+          "outputs": [{ "type": "core::integer::u256" }],
           "state_mutability": "view"
         },
         {
@@ -613,7 +666,7 @@
             { "name": "size", "type": "core::integer::u256" }
           ],
           "outputs": [
-            { "type": "core::array::Array::<contract::Leaderboard>" }
+            { "type": "core::array::Array::<spl::mods::types::Leaderboard>" }
           ],
           "state_mutability": "view"
         },
@@ -623,7 +676,7 @@
           "inputs": [
             {
               "name": "matches",
-              "type": "core::array::Array::<contract::Match>"
+              "type": "core::array::Array::<spl::mods::types::Match>"
             }
           ],
           "outputs": [],
@@ -635,11 +688,11 @@
           "inputs": [
             {
               "name": "scores",
-              "type": "core::array::Array::<contract::Score>"
+              "type": "core::array::Array::<spl::mods::types::Score>"
             },
             {
               "name": "rewards",
-              "type": "core::array::Array::<contract::Reward>"
+              "type": "core::array::Array::<spl::mods::types::Reward>"
             }
           ],
           "outputs": [],
@@ -655,14 +708,36 @@
               "type": "core::starknet::contract_address::ContractAddress"
             }
           ],
-          "outputs": [{ "type": "core::array::Array::<contract::Prediction>" }],
+          "outputs": [
+            { "type": "core::array::Array::<spl::mods::types::Prediction>" }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_user_matches_predictions",
+          "inputs": [
+            {
+              "name": "matches",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "user",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            { "type": "core::array::Array::<spl::mods::types::Prediction>" }
+          ],
           "state_mutability": "view"
         },
         {
           "type": "function",
           "name": "get_match_scores",
           "inputs": [{ "name": "round", "type": "core::integer::u256" }],
-          "outputs": [{ "type": "core::array::Array::<contract::Score>" }],
+          "outputs": [
+            { "type": "core::array::Array::<spl::mods::types::Score>" }
+          ],
           "state_mutability": "view"
         },
         {
@@ -701,7 +776,7 @@
           "name": "get_first_position",
           "inputs": [],
           "outputs": [
-            { "type": "core::option::Option::<contract::Leaderboard>" }
+            { "type": "core::option::Option::<spl::mods::types::Leaderboard>" }
           ],
           "state_mutability": "view"
         },
@@ -711,7 +786,7 @@
           "inputs": [
             {
               "name": "predictions",
-              "type": "core::array::Array::<contract::Prediction>"
+              "type": "core::array::Array::<spl::mods::types::Prediction>"
             }
           ],
           "outputs": [],
@@ -720,7 +795,9 @@
         {
           "type": "function",
           "name": "make_prediction",
-          "inputs": [{ "name": "prediction", "type": "contract::Prediction" }],
+          "inputs": [
+            { "name": "prediction", "type": "spl::mods::types::Prediction" }
+          ],
           "outputs": [],
           "state_mutability": "external"
         },
@@ -740,7 +817,27 @@
           "type": "function",
           "name": "get_match_predictions",
           "inputs": [{ "name": "match_id", "type": "core::felt252" }],
-          "outputs": [{ "type": "contract::MatchPrediction" }],
+          "outputs": [
+            {
+              "type": "core::array::Array::<spl::mods::types::PredictionDetails>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_matches_predictions",
+          "inputs": [
+            {
+              "name": "match_ids",
+              "type": "core::array::Array::<core::felt252>"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::array::Array::<spl::mods::types::PredictionDetails>"
+            }
+          ],
           "state_mutability": "view"
         },
         {
@@ -780,7 +877,7 @@
     },
     {
       "type": "event",
-      "name": "contract::SPL::Upgraded",
+      "name": "spl::SPL::Upgraded",
       "kind": "struct",
       "members": [
         {
@@ -792,14 +889,10 @@
     },
     {
       "type": "event",
-      "name": "contract::SPL::Event",
+      "name": "spl::SPL::Event",
       "kind": "enum",
       "variants": [
-        {
-          "name": "Upgraded",
-          "type": "contract::SPL::Upgraded",
-          "kind": "nested"
-        }
+        { "name": "Upgraded", "type": "spl::SPL::Upgraded", "kind": "nested" }
       ]
     }
   ]
