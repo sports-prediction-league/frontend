@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 // assets
 import DEFAULT_PROFILE from "../../../assets/leaderboard/default_profile.svg";
-import BADGE from "../../../assets/leaderboard/badge.svg";
+// import BADGE from "../../../assets/leaderboard/badge.svg";
 import LEADER_1 from "../../../assets/leaderboard/leader_1.svg";
 import LEADER_2 from "../../../assets/leaderboard/leader_2.svg";
 import LEADER_3 from "../../../assets/leaderboard/leader_3.svg";
@@ -71,13 +71,13 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
                     : null}
                 </p>
 
-                {(filter ? filter_result : data).length > 1 ? (
+                {/* {(filter ? filter_result : data).length > 1 ? (
                   <img
                     src={BADGE}
                     alt="ICON"
                     className="mx-auto mt-3 lg:w-[25px] w-[11px] md:w-[18px] md:h-[18px] lg:h-[25px] h-[11px]"
                   />
-                ) : null}
+                ) : null} */}
               </div>
             </div>
           </div>
@@ -133,11 +133,11 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
                         : null}
                     </p>
 
-                    <img
+                    {/* <img
                       src={BADGE}
                       alt="ICON"
                       className="mx-auto mt-3 lg:w-[35px] w-[15px] md:w-[22px] md:h-[22px] lg:h-[35px] h-[15px]"
-                    />
+                    /> */}
                   </div>
                 </div>
               </div>
@@ -190,13 +190,13 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
                     : null}
                 </p>
 
-                {(filter ? filter_result : data).length > 2 ? (
+                {/* {(filter ? filter_result : data).length > 2 ? (
                   <img
                     src={BADGE}
                     alt="ICON"
                     className="mx-auto mt-3 lg:w-[25px] w-[11px] md:w-[18px] md:h-[18px] lg:h-[25px] h-[11px]"
                   />
-                ) : null}
+                ) : null} */}
               </div>
             </div>
           </div>

@@ -1,34 +1,54 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface ThemeContextType {
-  mode: string;
-  toggleMode: () => void;
-}
+type ThemeContextType = {
+  isDark: boolean;
+  toggleTheme: () => void;
+};
 
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({
+  isDark: false,
+  toggleTheme: () => { },
+});
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.theme === "dark" || 
-           (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+export const useTheme = () => useContext(ThemeContext);
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return savedTheme ? savedTheme === 'dark' : prefersDark;
+    }
+    return false;
   });
 
-  const toggleMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
+  const toggleTheme = () => {
+    const mask = document.querySelector('.theme-mask');
 
-    if (newMode) {
-      localStorage.theme = "dark";
-      document.documentElement.classList.add("dark");
-    } else {
-      localStorage.theme = "light";
-      document.documentElement.classList.remove("dark");
+    if (mask) {
+      mask.classList.add('expanding');
+
+      setIsDark(!isDark);
+      mask.classList.remove('expanding');
     }
   };
 
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
   return (
-    <ThemeContext.Provider value={{ mode: isDarkMode ? 'dark' : 'light', toggleMode }}>
-      {children}
+    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+      <div className="relative">
+        {children}
+        <div className={`theme-mask ${isDark ? 'dark' : 'light'}`} />
+      </div>
     </ThemeContext.Provider>
   );
-}; 
+}

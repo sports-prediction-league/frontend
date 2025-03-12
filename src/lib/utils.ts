@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MatchData } from "src/state/slices/appSlice";
+import { GroupedVirtualMatches, MatchData } from "src/state/slices/appSlice";
 
 export const apiClient = axios.create({
   baseURL: process.env.REACT_APP_RENDER_ENDPOINT,
@@ -7,6 +7,34 @@ export const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+export const parseUnits = (value: string, decimals: number = 18): bigint => {
+  const [integerPart, fractionalPart = ""] = value.split(".");
+
+  // Pad fractional part to the right with zeros up to `decimals`
+  const paddedFraction = fractionalPart
+    .padEnd(decimals, "0")
+    .slice(0, decimals);
+
+  // Combine integer and fractional parts and convert to BigInt
+  return BigInt(integerPart + paddedFraction);
+};
+
+export const formatUnits = (
+  value: string | bigint,
+  decimals: number = 18
+): string => {
+  const bigValue = BigInt(value); // Convert to BigInt for precision
+  const divisor = BigInt(10 ** decimals); // 10^decimals
+  const integerPart = bigValue / divisor;
+  const fractionalPart = bigValue % divisor;
+
+  // Pad fractional part with leading zeros
+  const fractionalString = fractionalPart.toString().padStart(decimals, "0");
+
+  // Remove trailing zeros and return
+  return `${integerPart}.${fractionalString}`.replace(/\.?0+$/, "");
+};
 
 export function groupMatchesByDate(matches: MatchData[]): MatchData[][] {
   // Use a Map to group matches by the same date
@@ -38,6 +66,33 @@ export function groupMatchesByDate(matches: MatchData[]): MatchData[][] {
 
   // Convert the map values (arrays of matches) into a two-dimensional array
   return Array.from(groupedMatches.values());
+}
+
+export function groupVirtualMatches(
+  matches: MatchData[]
+): GroupedVirtualMatches[] {
+  const groupedMatches = matches.reduce((groups, match) => {
+    const date = match.details.fixture.date; // Extract date (ignore time)
+    const key = `${date}-${match.details.league.league}`; // Unique key for each date-league group
+
+    if (!groups[key]) {
+      groups[key] = {
+        date: new Date(date).toISOString(),
+        league: match.details.league.league,
+        matches: [],
+      };
+    }
+
+    groups[key].matches.push(match);
+    return groups;
+  }, {} as Record<string, { date: string; league: string; matches: MatchData[] }>);
+
+  // Step 2: Convert to Array & Sort by Date
+  const sortedGroups = Object.values(groupedMatches).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  return sortedGroups;
 }
 
 export function formatDateNative(dateString: string): string {
@@ -88,7 +143,7 @@ export function calculateScore(
   goals: { home: string; away: string },
   prediction: string
 ): number {
-  if (!goals.away || !goals.away) return 0;
+  if (!goals.home || !goals.away) return 0;
   let point = 0;
   const home = prediction.split(":")[0];
   const away = prediction.split(":")[1];
@@ -114,8 +169,8 @@ export function calculateScore(
 
   // 5 Points: Exact score match and correct goal range
   if (
-    goals.home === home &&
-    goals.away === away &&
+    goals?.home?.toString()?.trim() === home?.trim() &&
+    goals?.away?.toString()?.trim() === away?.trim() &&
     actualGoalRange === predictedGoalRange
   ) {
     point = 5; // Exact match
@@ -164,3 +219,6 @@ export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
 export const TOKEN_ADDRESS = process.env.REACT_APP_TOKEN_ADDRESS!;
+export const AVNU_API_KEY = process.env.REACT_APP_AVNU_API_KEY!;
+export const TOKEN_DECIMAL = 18;
+export const MINI_APP_URL = "https://t.me/SPLBot/SPL";

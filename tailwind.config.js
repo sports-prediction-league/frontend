@@ -21,6 +21,8 @@ module.exports = {
         "gradient-green":
           "linear-gradient(0deg, #0E131E, #0E131E), radial-gradient(176.68% 982.5% at 0% 0%, rgba(0, 202, 154, 0.6) 0%, rgba(0, 100, 76, 0.6) 100%)",
         "button-gradient": "linear-gradient(to right, #0E131E, #4EFFD51A)",
+        "input-gradient":
+          "linear-gradient(219.65deg, #757575 3.77%, #DBDBDB 49.02%, #B7B7B7 67.48%, #B7B7B7 71.75%, #B7B7B7 98.1%)",
       },
     },
 

@@ -1,7 +1,7 @@
 // assets
 import PREDICTION_HERO_BOY from "../../../assets/prediction/prediction_hero_boy.svg";
 
-const PredictionHero = () => {
+const MatchHero = () => {
   return (
     <div className="w-full lg:px-[90px] px-[16px] mt-[45px]">
       <div className="w-full md:h-[614px] h-fit bg-spl-green-100 rounded-[20px] bg-no-repeat bg-center bg-cover lg:px-[110px] px-[31px] md:py-[51px] py-[14px] relative prediction-hero-container-bg">
@@ -28,4 +28,4 @@ const PredictionHero = () => {
   );
 };
 
-export default PredictionHero;
+export default MatchHero;

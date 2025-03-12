@@ -1,7 +1,7 @@
 // assets
 import { LeaderboardProp } from "src/state/slices/appSlice";
-import badge from "../../../assets/leaderboard/badge.svg";
-import DEFAULT_PROFILE from "../../../assets/leaderboard/default_profile.svg";
+// import badge from "../../../assets/leaderboard/badge.svg";
+// import DEFAULT_PROFILE from "../../../assets/leaderboard/default_profile.svg";
 
 const PointCard = ({
   active,
@@ -41,11 +41,11 @@ const PointCard = ({
             }
             className="md:w-[69px] md:h-[69px] w-[42px] h-[42px] rounded-full bg-[#C4C4C4] relative"
           >
-            <img
+            {/* <img
               src={badge}
               alt="badge"
               className="absolute -bottom-[3px] md:bottom-1 md:-right-1 -right-0.5 md:w-[22px] md:h-[22px] w-[14px] h-[14px]"
-            />
+            /> */}
           </div>
           <div className="flex flex-col gap-0.5">
             <p className="md:text-[24px] capitalize  font-medium font-[Rubik]">

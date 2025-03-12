@@ -1,4 +1,5 @@
 // interfaces
+import { Loader } from "lucide-react";
 import { IButtonProps } from "../../../interfaces";
 
 const Button = ({
@@ -7,12 +8,14 @@ const Button = ({
   height = "h-[34px]",
   fontSize = "text-[14px]",
   onClick,
+  loading,
   disabled,
   leftIcon,
   rounded = "rounded-[12px]",
   background,
   hoverBackground,
   textColor,
+  icon,
   fontWeight = "font-bold",
 }: IButtonProps) => {
   return (
@@ -28,10 +31,14 @@ const Button = ({
         } as React.CSSProperties
       }
     >
-      {leftIcon && (
+      {!loading && leftIcon && (
         <img src={leftIcon} alt="ICON" className="w-[16px] h-[16px]" />
       )}
-      {text}
+      {!loading ? text : null}
+      {icon}
+      {loading ? (
+        <Loader size={22} color="white" className="mr-1.5 animate-spin" />
+      ) : null}
     </button>
   );
 };
