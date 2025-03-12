@@ -1,5 +1,5 @@
 import { Modal } from "antd";
-import { IoClose } from "react-icons/io5";
+import { X } from "lucide-react";
 import COMING_SOON from "../../../assets/coming_soon.png";
 interface Props {
   onClose: () => void;
@@ -25,7 +25,7 @@ const ComingSoonModal = ({ onClose, open_modal }: Props) => {
       }}
       closeIcon={
         <div className="border-[1.78px] border-[#00000080] p-2 rounded-lg">
-          <IoClose color="#00000080" />
+          <X color="#00000080" />
         </div>
       }
       okButtonProps={{ hidden: true }}
