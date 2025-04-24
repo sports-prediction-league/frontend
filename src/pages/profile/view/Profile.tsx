@@ -13,18 +13,20 @@ import { useAppSelector } from "src/state/store";
 import useConnect from "src/lib/useConnect";
 import { Share2 } from "lucide-react";
 import ShareModal from "src/common/components/modal/ShareModal";
-import { MINI_APP_URL } from "src/lib/utils";
+import { generateAvatarFromAddress, MINI_APP_URL } from "src/lib/utils";
 import ThemeToggle from "src/common/components/theme/ThemeToggle";
 
 const Profile = () => {
   const [progress, setProgress] = useState(10);
   const { handleDisconnect, handleConnect } = useConnect();
-  const { profile, connected_address, reward } = useAppSelector(
+  const { profile, connected_address, reward, leaderboard } = useAppSelector(
     (state) => state.app
   );
   const updateProgress = (newProgress: number) => {
     setProgress(newProgress);
   };
+
+  const [rankAndPoint, setRankAndPoint] = useState<null | { rank: number, point: number }>(null);
 
   const [open_modal, set_open_modal] = useState(false);
 
@@ -32,13 +34,24 @@ const Profile = () => {
     updateProgress(50);
   }, []);
 
+
+  useEffect(() => {
+    (function () {
+      if (!connected_address) return;
+      const user = leaderboard.find(fd => parseInt(fd.user.address!, 16) === parseInt(connected_address ?? "0x0", 16))
+      if (!user) return;
+      const index = leaderboard.findIndex(fd => parseInt(fd.user.address!, 16) === parseInt(connected_address ?? "0x0", 16));
+      setRankAndPoint({ point: user.totalPoints, rank: index + 1 })
+    }())
+  }, [leaderboard])
+
   return (
     <div className="">
       <ShareModal
         modal_title="Share your progress"
         content={{
-          message: `🚀 I'm crushing it at #${profile?.point?.rank} on the @HQ_SPL Leaderboard! 🏆 Can you dethrone me? 💪 Prove your prediction skills and take me on in the ultimate sports showdown! ⚽🏀🔥 #PredictPlayWin #SPL`,
-          url: MINI_APP_URL,
+          message: `🚀 I'm crushing it at #${rankAndPoint?.rank} on the @HQ_SPL Leaderboard! 🏆 Can you dethrone me? 💪 Prove your prediction skills and take me on in the ultimate sports showdown! ⚽🏀🔥 #PredictPlayWin #SPL`,
+          url: window.location.origin,
         }}
         open_modal={open_modal}
         onClose={() => {
@@ -55,12 +68,9 @@ const Profile = () => {
       <div className="flex flex-col items-center justify-center">
         <div className="flex items-end justify-center w-[184px] h-[184px] rounded-full bg-gray-400 overflow-hidden">
           <img
-            className="w-full h-full rounded-full"
-            src={profile?.profile_picture || PROFILE}
-            onError={(e) => {
-              (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
-              (e.target as HTMLImageElement).src = PROFILE;
-            }}
+            className="w-full h-full bg-[#C9F2E9] rounded-full"
+            src={generateAvatarFromAddress(profile?.address)}
+
             alt="profile"
           />
         </div>
@@ -84,7 +94,7 @@ const Profile = () => {
         </div> */}
       </div>
 
-      <div className="flex flex-col items-center justify-center mt-[70px]">
+      <div className="flex flex-col items-center justify-center mt-">
         {/* <Button text="See all badges" fontSize="text-[10px]" /> */}
 
         <p className="mt-[38px] md:text-[36px] text-[20px] font-[Rubik] font-medium dark:text-spl-white">
@@ -113,7 +123,7 @@ const Profile = () => {
                   POINTS
                 </p>
                 <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                  {profile?.point?.point ?? "--"}
+                  {rankAndPoint?.point ?? "--"}
                 </p>
               </div>
             </div>
@@ -128,23 +138,23 @@ const Profile = () => {
                   LOCAL RANK
                 </p>
                 <p className="text-[#FFFFFF] font-[Rubik] font-medium md:text-[36px] text-[15px]">
-                  #{profile?.point?.rank ?? "--"}
+                  #{rankAndPoint?.rank ?? "--"}
                 </p>
               </div>
             </div>
           </div>
 
-          {profile?.point?.rank && profile?.point?.rank > 0 ? (
+          {rankAndPoint?.rank && rankAndPoint.rank > 0 ? (
             <div className="flex items-center mt-10 justify-center">
               <Button
                 onClick={() => {
                   set_open_modal(true);
                 }}
                 text="Share your progress"
-                icon={<Share2 />}
-                fontSize="md:text-[24px] text-xs rounded-[5px]"
-                height="md:h-[76px] h-[33px]"
-                width="md:w-[484px] w-[209px]"
+                icon={<Share2 size={15} />}
+                fontSize="md:text-[20px] text-xs rounded-[5px]"
+                height="md:h-[76px] h-[43px]"
+                width="md:w-[484px] w-[219px]"
               />
             </div>
           ) : null}
@@ -155,20 +165,20 @@ const Profile = () => {
             Available for withdrawal
           </p>
           <p className="text-spl-white font-bold md:text-[30px] text-[15px] md:mt-5 mt-2">
-            {Number(reward).toFixed(3)}
+            {Number(reward).toFixed(3)} <span className="text-[10px]">USDC</span>
           </p>
 
           <div className="md:mt-[60px] mt-[20px]">
             <Button
               text="Withdraw"
-              fontSize="md:text-[24px] text-[15px] rounded-[5px]"
-              height="md:h-[76px] h-[33px]"
-              width="md:w-[484px] w-[209px]"
+              fontSize="md:text-[20px] text-xs rounded-[5px]"
+              height="md:h-[76px] h-[43px]"
+              width="md:w-[484px] w-[219px]"
             />
           </div>
         </div>
 
-        <div className="mt-[57px] flex justify-center items-center w-full">
+        <div className=" flex justify-center items-center w-full">
           {connected_address ? (
             <button
               onClick={handleDisconnect}

@@ -30,10 +30,10 @@ const useConnect = () => {
             contract: CONTRACT_ADDRESS,
             selector: "make_bulk_prediction",
           },
-          // {
-          //   contract: CONTRACT_ADDRESS,
-          //   selector: "make_prediction",
-          // },
+          {
+            contract: CONTRACT_ADDRESS,
+            selector: "make_prediction",
+          },
         ],
 
         validityDays: 30,
@@ -52,7 +52,6 @@ const useConnect = () => {
   const handleConnect = async (callbackData?: string) => {
     try {
       const argentWebWallet = getArgentWallet();
-
       const response = await argentWebWallet.requestConnection({
         callbackData: callbackData,
         approvalRequests: [

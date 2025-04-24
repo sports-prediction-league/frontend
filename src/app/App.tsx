@@ -160,63 +160,62 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    (async function () {
-      try {
-        const contract = connected_address
-          ? getWalletProviderContract()
-          : getRPCProviderContract();
-        const tx = await contract!.get_leaderboard(
-          cairo.uint256(0),
+
+  async function fetchLeaderboardAndUserReward() {
+    try {
+      const contract = connected_address
+        ? getWalletProviderContract()
+        : getRPCProviderContract();
+      const [leaderboard, reward] = await Promise.all([
+        contract!.get_leaderboard(
+          cairo.uint256(1),
           cairo.uint256(1000)
-        );
+        ),
+        connected_address ? contract!.get_user_reward(connected_address) : undefined
+      ]);
 
-        let structured_data: LeaderboardProp[] = [];
-
-        for (let i = 0; i < tx.length; i++) {
-          const element = tx[i];
-          structured_data.push({
-            user: {
-              username: feltToString(element.user.username),
-              address: `0x0${element.user?.address?.toString(16)}`,
-              id: Number(element.user?.id),
-            },
-            totalPoints: Number(element.total_score),
-          });
-        }
-        dispatch(bulkAddLeaderboard(structured_data));
-
-        // const response = await apiClient.get("/leaderboard_images");
-
-        // if (response.data.success) {
-        //   dispatch(updateLeaderboardImages(response.data.data));
-        // }
-      } catch (error) {
-        console.log({ error });
+      if (connected_address && reward) {
+        dispatch(setReward(formatUnits(reward)))
       }
-    })();
+      let structured_data: LeaderboardProp[] = [];
+
+      for (let i = 0; i < leaderboard.length; i++) {
+        const element = leaderboard[i];
+        const construct = {
+          user: {
+            username: feltToString(element.user.username),
+            address: `0x0${element.user?.address?.toString(16)}`,
+            id: Number(element.user?.id),
+          },
+          totalPoints: Number(element.total_score) / 100,
+        };
+        structured_data.push(construct);
+      }
+      dispatch(bulkAddLeaderboard(structured_data));
+
+
+    } catch (error) {
+      console.log({ error });
+    }
+  }
+
+  useEffect(() => {
+    fetchLeaderboardAndUserReward();
   }, []);
 
-  const check_if_registered = async (address: string) => {
+  const get_user_details = async (address: string) => {
     try {
       const contract = getWalletProviderContract();
-      const result = await contract!.is_address_registered(address);
-      if (!result) {
+      const result = await contract!.get_user_by_address(address);
+      if (Number(result.address) === 0) {
         if (!show_register_modal) {
           dispatch(setShowRegisterModal(true));
         }
       } else {
         dispatch(setIsRegistered(true));
-        // if (!is_mini_app) {
-        //   const user = await contract!.get_user_by_address(address);
-        //   dispatch(
-        //     update_profile({
-        //       username: feltToString(user.username),
-        //       address: `0x0${user.address.toString(16)}`,
-        //     })
-        //   );
-        // }
+        dispatch(update_profile({ username: feltToString(result.username), id: feltToString(result.id), address: `0x0${BigInt(result.address).toString(16)}` }))
       }
+
     } catch (error) {
       console.log(error);
     }
@@ -224,7 +223,7 @@ function App() {
 
   useEffect(() => {
     if (connected_address) {
-      check_if_registered(connected_address);
+      get_user_details(connected_address);
     }
   }, [connected_address]);
 
@@ -339,52 +338,52 @@ function App() {
 
       const account = window.Wallet.Account;
 
-      const tx = await account.execute(call);
-      const receipt = await account.waitForTransaction(tx.transaction_hash);
-      console.log(receipt);
+      // const tx = await account.execute(call);
+      // const receipt = await account.waitForTransaction(tx.transaction_hash);
+      // console.log(receipt);
 
 
       // const oi = await account.getDeploymentPayload();
       // setRes(JSON.stringify(oi));
 
-      // const outsideExecutionPayload = await account.getOutsideExecutionPayload({
-      //   calls: [call],
-      // });
+      const outsideExecutionPayload = await account.getOutsideExecutionPayload({
+        calls: [call],
+      });
 
 
       // console.log(outsideExecutionPayload)
 
       // setPl(JSON.stringify(outsideExecutionPayload));
-      // if (!outsideExecutionPayload) {
-      //   set_registering(false);
-      //   toast.error("error processing outside payload");
-      //   return;
-      // }
+      if (!outsideExecutionPayload) {
+        set_registering(false);
+        toast.error("error processing outside payload");
+        return;
+      }
 
-      // const response = await apiClient.post(
-      //   "/execute",
-      //   outsideExecutionPayload
-      // );
-
-      // if (response.data.success) {
-      dispatch(
-        addLeaderboard({
-          totalPoints: 0,
-          user: {
-            id: Number(id),
-            username: user_name.trim().toLowerCase(),
-            address: connected_address,
-          },
-        })
+      const response = await apiClient.post(
+        "/execute",
+        outsideExecutionPayload
       );
-      dispatch(setShowRegisterModal(false));
-      dispatch(setIsRegistered(true));
-      toast.success("Username set!");
-      // } else {
-      //   toast.error(
-      //     response.data?.message ?? "OOOPPPSSS!! Something went wrong"
-      //   );
-      // }
+
+      if (response.data.success) {
+        dispatch(
+          addLeaderboard({
+            totalPoints: 0,
+            user: {
+              id: Number(id),
+              username: user_name.trim().toLowerCase(),
+              address: connected_address,
+            },
+          })
+        );
+        dispatch(setShowRegisterModal(false));
+        dispatch(setIsRegistered(true));
+        toast.success("Username set!");
+      } else {
+        toast.error(
+          response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+        );
+      }
 
       set_registering(false);
     } catch (error: any) {
@@ -481,10 +480,11 @@ function App() {
     });
 
 
-    socket.on("new-matches", (new_matches: MatchData[]) => {
+    socket.on("new-matches", async (new_matches: MatchData[]) => {
       console.log({ new_matches });
 
       dispatch(bulkAddVirtualMatches(groupVirtualMatches(new_matches)));
+      await fetchLeaderboardAndUserReward();
     });
 
     socket.on("match-events-response", (response: MatchData[]) => {
