@@ -383,7 +383,7 @@ export const appSlice = createSlice({
 
           if (matchIndex !== -1) {
             // Update existing match
-            console.log("updated haha");
+            // console.log("updated haha");
             existingGroup.matches[matchIndex] = {
               ...existingGroup.matches[matchIndex],
               prediction: {
@@ -404,6 +404,19 @@ export const appSlice = createSlice({
         .map((mp) => mp.matches)
         .flat()
         .map((mp) => ({ ...mp, prediction: undefined }));
+      state.matches.virtual = groupVirtualMatches(matches);
+    },
+
+    submitPrediction: (state) => {
+      const matches = state.matches.virtual
+        .map((mp) => mp.matches)
+        .flat()
+        .map((mp) => {
+          if (mp.prediction) {
+            return { ...mp, predicted: true };
+          }
+          return mp;
+        });
       state.matches.virtual = groupVirtualMatches(matches);
     },
 
@@ -550,6 +563,7 @@ export const {
   setCalldata,
   clearPredictions,
   removePredictions,
+  submitPrediction,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type
