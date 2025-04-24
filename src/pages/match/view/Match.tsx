@@ -32,6 +32,8 @@ import ComingSoonModal from "src/common/components/modal/ComingSoonModal";
 import HASHED_BACKGROUND from "../../../assets/scoringSystem/hashed_background.svg";
 import Button from "src/common/components/button/Button";
 import PredictionSlip from "../components/PredictionSlip";
+import { Circle, X } from "lucide-react";
+import { Modal } from "antd";
 
 
 
@@ -84,7 +86,7 @@ const Match = () => {
     useContractInstance();
   const [activeRounds, setActiveRounds] = useState(current_round);
   const [predicting, setPredicting] = useState<any>(false);
-  const [current_league, set_current_league] = useState<null | number>(null);
+  const [current_league, set_current_league] = useState<number>(0);
   // const [predictions, setPredictions] = useState<Record<string, any>>({});
   const { handleConnect, handleDisconnect } = useConnect();
 
@@ -208,6 +210,22 @@ const Match = () => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+
+  const [showSlipIcon, setShowSlipIcon] = useState(false);
+
+  useEffect(() => {
+    // console.log("changed", matches.virtual.flat())
+    if (matches.virtual.map(mp => mp.matches).flat()
+      .filter(
+        (ft) =>
+          Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+      ).length > 0) {
+      setShowSlipIcon(true)
+    } else {
+      setShowSlipIcon(false)
+      set_slip_open(false);
+    }
+  }, [matches])
 
   // const handleBulkPredict = async (
   //   _pred?: Record<string, any>,
@@ -401,12 +419,42 @@ const Match = () => {
 
 
   const [open_modal, set_open_modal] = useState(false);
-
+  const [slip_open, set_slip_open] = useState(false);
 
 
   return (
-    <React.Fragment>
+    <div className="xl:px-48 px-3" >
       <MatchHero />
+      <Modal
+
+        open={slip_open}
+        onCancel={() => {
+          set_slip_open(false);
+        }}
+
+        styles={{
+          content: {
+            background: "#042822",
+            border: "none",
+            borderRadius: "10px",
+            padding: "15px 2px"
+          },
+          // header: { background: "white", color: "white", padding: "2px" },
+
+        }}
+        destroyOnClose
+
+        closeIcon={<X color="white" />}
+
+        okButtonProps={{ hidden: true }}
+        cancelButtonProps={{ hidden: true }}
+
+      >
+        <div className="p-2">
+          <PredictionSlip />
+        </div>
+      </Modal>
+
 
       <ComingSoonModal
         open_modal={open_modal}
@@ -440,17 +488,18 @@ const Match = () => {
       )} */}
 
 
-      <div className=" w-full flex flex-col md:gap-[90px] gap-[18px] mt-5 lg:px-[90px] ">
+      <div className=" w-full flex flex-col md:gap-[90px] gap-[18px] mt-5">
 
         <div
-          className={` w-full bg-spl-green-300 bg-cover bg-center px-3 py-3 rounded-lg bg-no-repeat flex items-center justify-between gap-2`}
+          className={` w-full overflow-x-auto bg-spl-green-300 bg-cover bg-center px-3 py-3 rounded-lg bg-no-repeat flex items-center justify-between gap-2`}
           style={{ backgroundImage: `url(${HASHED_BACKGROUND})` }}
         >
 
-          <button onClick={() => set_current_league(null)} className={`[box-shadow:0px_4px_4px_0px_#00000040] w-full ${current_league === null ? "bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]" : "bg-white"} border-[#00644C] border-[1.34px] text-xs ${current_league === null ? "text-spl-white" : "text-black"} font-light py-1.5 px-4 rounded-lg pilat`}>All Matches</button>
+          <button onClick={() => set_current_league(0)} className={`[box-shadow:0px_4px_4px_0px_#00000040] whitespace-nowrap w-full ${current_league === 0 ? "bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]" : "bg-white"} border-[#00644C] border-[1.34px] text-xs ${current_league === 0 ? "text-spl-white" : "text-black"} font-light py-1.5 px-4 rounded-lg pilat`}>All Matches</button>
+          <button onClick={() => set_current_league(1)} className={`[box-shadow:0px_4px_4px_0px_#00000040] whitespace-nowrap w-full ${current_league === 1 ? "bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]" : "bg-white"} border-[#00644C] border-[1.34px] text-xs ${current_league === 1 ? "text-spl-white" : "text-black"} font-light py-1.5 px-4 rounded-lg pilat`}>Upcoming Matches</button>
           {
             Leagues.map((league, index) => {
-              return <button onClick={() => set_current_league(index)} key={index} className={`w-full [box-shadow:0px_4px_4px_0px_#00000040] ${current_league === index ? "bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]" : "bg-white"} border-[#00644C] border-[1.34px] text-xs ${current_league === index ? "text-spl-white" : "text-black"} font-light py-1 px-4 rounded-lg pilat flex items-center gap-1 justify-center`}><span className="text-sm">{league.flag}</span> <span>{league.country}</span></button>
+              return <button onClick={() => set_current_league(index + 2)} key={index + 2} className={`w-full [box-shadow:0px_4px_4px_0px_#00000040] ${current_league === index + 2 ? "bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]" : "bg-white"} border-[#00644C] border-[1.34px] text-xs ${current_league === index + 2 ? "text-spl-white" : "text-black"} font-light py-1 px-4 rounded-lg pilat flex items-center gap-1 justify-center`}><span className="text-sm">{league.flag}</span> <span>{league.country}</span></button>
             })
           }
         </div>
@@ -458,24 +507,32 @@ const Match = () => {
 
 
 
-      <div className=" w-full flex flex-col md:gap-[90px] gap-[18px] lg:px-[90px] ">
-        <div className="grid grid-cols-12 gap-3">
-          <div className="col-span-8">
+      <div className=" w-full flex flex-col md:gap-[90px] gap-[18px]">
+        <div className="grid grid-cols-12 w-full gap-3">
+          <div className="md:col-span-8 col-span-12 w-full">
 
-            {(current_league === null ? matches.virtual : matches.virtual.filter(ft => ft.league.toLowerCase() === Leagues[current_league].league.toLowerCase())).map((match, index) => {
+            {(current_league < 2 ? matches.virtual : matches.virtual.filter(ft => ft.league.toLowerCase() === Leagues[current_league - 2].league.toLowerCase())).map((match, index) => {
               return <MatchCard key={index} matches={match} active={Date.now() >= new Date(match.date).getTime()} />
             })}
           </div>
-          <div className="col-span-4">
+          <div className="col-span-4 md:block hidden">
             <PredictionSlip />
 
           </div>
         </div>
       </div>
 
+      {
+        showSlipIcon ?
+          <div className="md:hidden fixed bottom-10 right-10">
+            <button onClick={() => {
+              set_slip_open(!slip_open)
+            }} className="bg-spl-green-100 p-3 shadow-xl rounded-full"><Circle color="white" /></button>
 
-
-    </React.Fragment>
+          </div>
+          : null
+      }
+    </div>
   );
 };
 

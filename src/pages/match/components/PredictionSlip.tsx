@@ -3,15 +3,16 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import useConnect from "src/lib/useConnect";
 import useContractInstance from "src/lib/useContractInstance";
-import { parseUnits } from "src/lib/utils";
+import { apiClient, parse_error, parseUnits } from "src/lib/utils";
 import {
     clearPredictions,
     MatchData,
     PredictionOdds,
     removePredictions,
+    submitPrediction,
 } from "src/state/slices/appSlice";
 import { useAppDispatch, useAppSelector } from "src/state/store";
-import { cairo, CairoOption, CairoOptionVariant } from "starknet";
+import { cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
 interface Props { }
 const PredictionSlip = ({ }: Props) => {
     const [slipType, setSlipType] = useState<"Single" | "Multiple">("Multiple");
@@ -24,26 +25,58 @@ const PredictionSlip = ({ }: Props) => {
     const { getWalletProviderContract } = useContractInstance();
     const [predicting, setPredicting] = useState(false);
     const { handleConnect } = useConnect();
-    function validateStake(stakeFee: string) {
-        if (stakeFee.trim().length === 0) {
-            return 0
+    /**
+     * Validates a stake fee input and ensures it can be evenly divided among predictions
+     * @param stakeFee The stake fee as a string input
+     * @param predictionsLength The number of predictions the stake will be divided across
+     * @returns The validated stake as bigint in proper units or 0n if no stake
+     * @throws Error if the stake is invalid, below minimum, or can't be evenly divided
+     */
+    function validateStake(stakeFee: string, predictionsLength: number): {
+        totalStake: bigint,
+        perPredictionStake: bigint,
+    } {
+        const normalizedStake = stakeFee.trim();
+
+        if (!normalizedStake) {
+            return {
+                totalStake: BigInt(0),
+                perPredictionStake: BigInt(0),
+            };
         }
 
-        if (isNaN(Number(stakeFee.trim()))) {
-            throw new Error("Invalid input")
+        const numericStake = Number(normalizedStake);
+        if (isNaN(numericStake) || numericStake < 0) {
+            throw new Error("Invalid stake amount: must be a valid positive number");
+        }
+        if (numericStake === 0) {
+            return {
+                totalStake: BigInt(0),
+                perPredictionStake: BigInt(0),
+            };
         }
 
-        if (Number(stakeFee.trim()) === 0) {
-            return 0
+        if (predictionsLength <= 0) {
+            throw new Error("Number of predictions must be greater than 0");
         }
 
-        if (Number(parseUnits(stakeFee.trim())) < 1) {
-            throw new Error("Minimum stake fee reached");
+        const perPrediction = numericStake / predictionsLength;
 
+        // Convert total and per prediction to BigInt
+        const totalStake = parseUnits(numericStake.toFixed(18));
+        const perPredictionStake = parseUnits(perPrediction.toFixed(18));
+
+        if (perPredictionStake < BigInt(1)) {
+            throw new Error("Each prediction must be at least 1 unit (wei)");
         }
 
-        return parseUnits(stakeFee.trim());
+        return {
+            totalStake,
+            perPredictionStake,
+        };
     }
+
+
     const submit = async () => {
         try {
             if (predicting) return;
@@ -55,46 +88,96 @@ const PredictionSlip = ({ }: Props) => {
                 await handleConnect()
             }
 
-            const stake = validateStake(stakeRef.current!.value)
-
-            const pairId = Math.random().toString(36).substring(2, 12);
             const predictions = matches.filter(
                 (ft) =>
-                    Boolean(ft.prediction) && ft.details.fixture.date > Date.now()
+                    Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
             )
 
+            if (predictions.length < 1) {
+                toast.error("No predictions");
+                setPredicting(false);
 
-            const construct = predictions.map(mp => {
-                return {
-                    inputed: true,
-                    match_id: cairo.felt(mp.details.fixture.id),
-                    id: cairo.felt(mp.prediction!.id!),
-                    stake: cairo.uint256(stake),
-                    pair: slipType === "Single" && predictions.length > 1 ? new CairoOption(CairoOptionVariant.Some, cairo.felt(pairId)) : new CairoOption(CairoOptionVariant.None)
-                }
-            })
+                return;
+            }
+            const stake = validateStake(stakeRef.current!.value, predictions.length)
+            // console.log({ stake })
+
+            const pairId = Math.random().toString(36).substring(2, 12);
+
             const contract = getWalletProviderContract();
+            let call;
 
-            const tx = await contract!.make_bulk_prediction(construct);
-            const receipt = await account?.waitForTransaction(tx.transaction_hash);
-            console.log(receipt)
+            if (slipType === "Single") {
+
+                const construct = predictions.map(mp => {
+                    return {
+                        stake: cairo.uint256(stake.perPredictionStake),
+                        prediction_type: new CairoCustomEnum({ Single: { match_id: cairo.felt(mp.details.fixture.id), odd: cairo.felt(mp.prediction!.id!) } }),
+                        pair: new CairoOption(CairoOptionVariant.None)
+                    }
+                })
+
+                call = contract?.populate("make_bulk_prediction", [
+                    construct
+                ])
+            } else {
+                const construct = {
+                    oi: stake.totalStake,
+                    stake: cairo.uint256(stake.totalStake),
+                    prediction_type: predictions.length === 1 ? new CairoCustomEnum({ Single: { match_id: cairo.felt(predictions[0].details.fixture.id), odd: cairo.felt(predictions[0].prediction?.id!) } }) : new CairoCustomEnum({ Multiple: predictions.map(mp => ({ match_id: cairo.felt(mp.details.fixture.id), odd: cairo.felt(mp.prediction?.id!) })) }),
+                    pair: new CairoOption(CairoOptionVariant.Some, cairo.felt(pairId))
+                }
+                call = contract?.populate("make_prediction", [
+                    construct
+                ])
+            }
+
+
+
+            if (!call) {
+                setPredicting(false);
+
+                toast.error("Invalid call construct");
+                return;
+            }
+            // await account?.execute([call!]);
+            const outsideExecutionPayload = await account?.getOutsideExecutionPayload({ calls: [call] });
+
+            const response = await apiClient.post(
+                "/execute",
+                outsideExecutionPayload
+            );
+            console.log(response.data)
+            if (response.data.success) {
+                dispatch(submitPrediction());
+                toast.success("Prediction Successful")
+
+            } else {
+                toast.error(
+                    response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+                );
+            }
             setPredicting(false);
         } catch (error: any) {
             console.log(error);
-            toast.error(error.message || "An error occurred");
+            toast.error(
+                error.response?.data?.message
+                    ? parse_error(error.response?.data?.message)
+                    : error.message || "An error occurred"
+            );
             setPredicting(false);
         }
     };
 
     return (
-        <div className="border-2 sticky overflow-y-auto max-h-[calc(100vh-100px)] top-24 dark:border-[#007332] border-[#0000000D] mt-8 rounded-lg p-2">
+        <div className="border-2 md:sticky static overflow-y-auto max-h-[calc(100vh-100px)] top-24 dark:border-[#007332] border-[#0000000D] mt-8 rounded-lg p-2">
             <div className="text-white flex items-center justify-center gap-1 my-2">
                 <p className="text-sm dark:text-white text-black/80">Prediction Slip</p>
                 <div className="bg-[#00644C] w-4 h-4 rounded-full flex justify-center text-[7px] items-center">
                     {
                         matches.filter(
                             (ft) =>
-                                Boolean(ft.prediction) && ft.details.fixture.date > Date.now()
+                                Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
                         ).length
                     }
                 </div>
@@ -103,7 +186,7 @@ const PredictionSlip = ({ }: Props) => {
                 {matches
                     .filter(
                         (ft) =>
-                            Boolean(ft.prediction) && ft.details.fixture.date > Date.now()
+                            Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
                     )
                     .map((mp, index) => {
                         return (
@@ -116,7 +199,7 @@ const PredictionSlip = ({ }: Props) => {
                     })}
 
                 {matches.filter(
-                    (ft) => Boolean(ft.prediction) && ft.details.fixture.date > Date.now()
+                    (ft) => Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
                 ).length ? (
                     <div className="flex items-center justify-end">
                         <button
@@ -132,7 +215,7 @@ const PredictionSlip = ({ }: Props) => {
             </div>
 
             {matches.filter(
-                (ft) => Boolean(ft.prediction) && ft.details.fixture.date > Date.now()
+                (ft) => Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
             ).length ? (
                 <div className="border-[0.5px] my-2 space-y-7 border-[#007332]  p-2 rounded-lg mt-10">
                     <div className="flex items-center justify-between">
@@ -168,7 +251,7 @@ const PredictionSlip = ({ }: Props) => {
                                     .filter(
                                         (ft) =>
                                             Boolean(ft.prediction) &&
-                                            ft.details.fixture.date > Date.now()
+                                            ft.details.fixture.date > Date.now() && !ft.predicted
                                     )
                                     .map((mp) =>
                                         Number((mp.details.odds as any)[mp.prediction!.key!].odd)

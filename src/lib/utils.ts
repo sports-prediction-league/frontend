@@ -1,3 +1,5 @@
+import { adventurer } from "@dicebear/collection";
+import { createAvatar } from "@dicebear/core";
 import axios from "axios";
 import { GroupedVirtualMatches, MatchData } from "src/state/slices/appSlice";
 
@@ -213,6 +215,22 @@ export function parse_error(error?: string): string {
   } else {
     return error;
   }
+}
+
+export function generateAvatarFromAddress(
+  address?: string,
+  toString?: boolean
+) {
+  const avatar = createAvatar(adventurer, {
+    seed: `address-${address?.toLowerCase()}`,
+  });
+
+  if (toString) {
+    return avatar.toString();
+  }
+  const svg = avatar.toDataUri();
+
+  return svg;
 }
 
 export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;

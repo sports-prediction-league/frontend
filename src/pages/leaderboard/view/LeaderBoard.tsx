@@ -133,8 +133,8 @@ const LeaderBoard = () => {
                 active={
                   _data.user?.username?.toLowerCase() ===
                     profile?.username?.toLowerCase() ||
-                  (connected_address &&
-                    _data?.user?.address?.toLowerCase() ===
+                    (connected_address &&
+                      _data?.user?.address?.toLowerCase() ===
                       connected_address.toLowerCase())
                     ? true
                     : false
