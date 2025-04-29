@@ -1,18 +1,11 @@
-import { useAppDispatch, useAppSelector } from "src/state/store";
-import { WalletAccount } from "starknet";
-import {
-  ConnectCalldata,
-  setConnectedAddress,
-} from "src/state/slices/appSlice";
+import { useAppDispatch } from "../state/store";
+import { setConnectedAddress } from "../state/slices/appSlice";
 import {
   AVNU_API_KEY,
   CONTRACT_ADDRESS,
-  MINI_APP_URL,
   parseUnits,
   TOKEN_ADDRESS,
-  TOKEN_DECIMAL,
 } from "./utils";
-import toast from "react-hot-toast";
 import { ArgentWebWallet } from "@argent/invisible-sdk";
 
 const useConnect = () => {
@@ -49,17 +42,23 @@ const useConnect = () => {
 
   const dispatch = useAppDispatch();
 
-  const handleConnect = async (callbackData?: string) => {
+  const handleConnect = async ({
+    callbackData,
+    approval = parseUnits("100").toString(),
+  }: {
+    callbackData?: string;
+    approval?: string;
+  }) => {
     try {
       const argentWebWallet = getArgentWallet();
       const response = await argentWebWallet.requestConnection({
         callbackData: callbackData,
         approvalRequests: [
           {
-            tokenAddress: TOKEN_ADDRESS,
-            amount: BigInt("100000000000000000000").toString(),
+            tokenAddress: TOKEN_ADDRESS as any,
+            amount: approval.toString(),
             // Your dapp contract
-            spender: CONTRACT_ADDRESS,
+            spender: CONTRACT_ADDRESS as any,
           },
         ],
       });
@@ -82,6 +81,27 @@ const useConnect = () => {
     }
   };
 
+  const approveToken = async (amount: string) => {
+    try {
+      const argentWebWallet = getArgentWallet();
+      const response = await argentWebWallet.requestApprovals([
+        {
+          tokenAddress: TOKEN_ADDRESS as any,
+          amount: parseUnits(amount).toString(),
+          // Your dapp contract
+          spender: CONTRACT_ADDRESS as any,
+        },
+      ]);
+      console.log(response);
+
+      return response;
+    } catch (error: any) {
+      // toast.error(error.message || "error here");
+      // console.log(error);
+      throw error;
+    }
+  };
+
   const handleDisconnect = async () => {
     const argentWebWallet = getArgentWallet();
     await argentWebWallet.clearSession();
@@ -95,7 +115,7 @@ const useConnect = () => {
     window.dispatchEvent(event);
   };
 
-  return { handleConnect, handleDisconnect, getArgentWallet };
+  return { handleConnect, handleDisconnect, getArgentWallet, approveToken };
 };
 
 export default useConnect;

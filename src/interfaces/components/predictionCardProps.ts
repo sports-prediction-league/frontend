@@ -1,4 +1,4 @@
-import { MatchData } from "src/state/slices/appSlice";
+import { MatchData } from "../../state/slices/appSlice";
 
 export interface IPredictionCardProps {
   match: MatchData;

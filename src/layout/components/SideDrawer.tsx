@@ -2,8 +2,8 @@ import React from "react";
 import Button from "../../common/components/button/Button";
 import { X } from "lucide-react"; // Import the close icon
 import { useLocation } from "react-router";
-import { useAppSelector } from "src/state/store";
-import useConnect from "src/lib/useConnect";
+import { useAppSelector } from "../../state/store";
+import useConnect from "../../lib/useConnect";
 
 interface SideDrawerProps {
   isOpen: boolean;
@@ -17,8 +17,6 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
   isOpen,
   onClose,
   handleNavigation,
-  mode,
-  toggleMode,
 }) => {
   const location = useLocation();
   const connected_address = useAppSelector(

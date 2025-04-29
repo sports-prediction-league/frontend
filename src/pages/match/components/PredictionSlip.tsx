@@ -1,28 +1,28 @@
-import { Loader, Loader2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Loader, X } from "lucide-react";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-import useConnect from "src/lib/useConnect";
-import useContractInstance from "src/lib/useContractInstance";
-import { apiClient, parse_error, parseUnits } from "src/lib/utils";
+import useConnect from "../../../lib/useConnect";
+import useContractInstance from "../../../lib/useContractInstance";
+import { apiClient, CONTRACT_ADDRESS, parse_error, parseUnits } from "../../../lib/utils";
 import {
     clearPredictions,
     MatchData,
-    PredictionOdds,
     removePredictions,
     submitPrediction,
-} from "src/state/slices/appSlice";
-import { useAppDispatch, useAppSelector } from "src/state/store";
+} from "../../../state/slices/appSlice";
+import { useAppDispatch, useAppSelector } from "../../../state/store";
 import { cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
 interface Props { }
 const PredictionSlip = ({ }: Props) => {
-    const [slipType, setSlipType] = useState<"Single" | "Multiple">("Multiple");
+    const [slipType, setSlipType] = useState<"Single" | "Multiple">("Single");
 
     const matches = useAppSelector((state) => state.app.matches.virtual)
         .map((mp) => mp.matches)
         .flat();
+    const { connected_address } = useAppSelector((state) => state.app);
     const dispatch = useAppDispatch();
     const stakeRef = useRef<HTMLInputElement>(null);
-    const { getWalletProviderContract } = useContractInstance();
+    const { getWalletProviderContract, getWalletProviderContractERC20 } = useContractInstance();
     const [predicting, setPredicting] = useState(false);
     const { handleConnect } = useConnect();
     /**
@@ -83,16 +83,10 @@ const PredictionSlip = ({ }: Props) => {
             if (!stakeRef.current) return;
             const account = window.Wallet?.Account;
 
-            setPredicting(true);
-            if (!account) {
-                await handleConnect()
-            }
-
             const predictions = matches.filter(
                 (ft) =>
                     Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
             )
-
             if (predictions.length < 1) {
                 toast.error("No predictions");
                 setPredicting(false);
@@ -100,6 +94,25 @@ const PredictionSlip = ({ }: Props) => {
                 return;
             }
             const stake = validateStake(stakeRef.current!.value, predictions.length)
+
+
+            setPredicting(true);
+            if (!account) {
+                await handleConnect({ approval: Number(stake.totalStake) > 100 ? (Number(stake.totalStake) + 100).toString() : undefined })
+            } else {
+                const erc20Contract = getWalletProviderContractERC20();
+                const getAllowance = await erc20Contract!.allowance(connected_address, CONTRACT_ADDRESS!);
+                if (Number(getAllowance) < Number(stake.totalStake)) {
+                    console.log({ getAllowance, stake })
+                    await handleConnect({ approval: (Number(stake.totalStake) + 100).toString() })
+
+                    // await approveToken(((Number(stake.totalStake) - Number(getAllowance)) + 100).toString())
+                }
+            }
+
+
+
+            // const getAllowance = await getERC
             // console.log({ stake })
 
             const pairId = Math.random().toString(36).substring(2, 12);
@@ -122,7 +135,6 @@ const PredictionSlip = ({ }: Props) => {
                 ])
             } else {
                 const construct = {
-                    oi: stake.totalStake,
                     stake: cairo.uint256(stake.totalStake),
                     prediction_type: predictions.length === 1 ? new CairoCustomEnum({ Single: { match_id: cairo.felt(predictions[0].details.fixture.id), odd: cairo.felt(predictions[0].prediction?.id!) } }) : new CairoCustomEnum({ Multiple: predictions.map(mp => ({ match_id: cairo.felt(mp.details.fixture.id), odd: cairo.felt(mp.prediction?.id!) })) }),
                     pair: new CairoOption(CairoOptionVariant.Some, cairo.felt(pairId))

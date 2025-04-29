@@ -3,21 +3,19 @@ import Title from "../../../common/components/tittle/Title";
 import { useState, useEffect } from "react";
 
 // assets
-import PROFILE from "../../../assets/profile/profile.svg";
-// import BADGE from "../../../assets/leaderboard/badge.svg";
 import STAR_ICON from "../../../assets/profile/star_icon.svg";
 import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 
 import Button from "../../../common/components/button/Button";
-import { useAppSelector } from "src/state/store";
-import useConnect from "src/lib/useConnect";
-import { Share2 } from "lucide-react";
-import ShareModal from "src/common/components/modal/ShareModal";
-import { generateAvatarFromAddress, MINI_APP_URL } from "src/lib/utils";
-import ThemeToggle from "src/common/components/theme/ThemeToggle";
+import { useAppSelector } from "../../../state/store";
+import useConnect from "../../../lib/useConnect";
+import { Clipboard, Share2 } from "lucide-react";
+import ShareModal from "../../../common/components/modal/ShareModal";
+import { generateAvatarFromAddress } from "../../../lib/utils";
+import toast from "react-hot-toast";
 
 const Profile = () => {
-  const [progress, setProgress] = useState(10);
+  const [_, setProgress] = useState(10);
   const { handleDisconnect, handleConnect } = useConnect();
   const { profile, connected_address, reward, leaderboard } = useAppSelector(
     (state) => state.app
@@ -58,9 +56,9 @@ const Profile = () => {
           set_open_modal(false);
         }}
       />
-      <div className="flex items-center justify-end my-5 mx-3">
+      {/* <div className="flex items-center justify-end my-5 mx-3">
         <ThemeToggle />
-      </div>
+      </div> */}
       <div className="md:my-10 my-5">
         <Title title="Profile" />
       </div>
@@ -97,16 +95,24 @@ const Profile = () => {
       <div className="flex flex-col items-center justify-center mt-">
         {/* <Button text="See all badges" fontSize="text-[10px]" /> */}
 
-        <p className="mt-[38px] md:text-[36px] text-[20px] font-[Rubik] font-medium dark:text-spl-white">
+        <p className="mt-[38px] md:text-[36px] capitalize text-[20px] font-[Rubik] font-medium dark:text-spl-white">
           {profile?.username}
         </p>
-        <p className="mt-[10px] md:text-[24px] text-[15px] dark:text-spl-white">
-          {connected_address
-            ? `${connected_address.slice(0, 6)}... ${connected_address.slice(
-              -4
-            )}`
-            : ""}
-        </p>
+        <div className="flex mt-[10px] items-center gap-1">
+          <p className=" md:text-[24px] text-[15px] dark:text-spl-white">
+            {connected_address
+              ? `${connected_address.slice(0, 6)}... ${connected_address.slice(
+                -4
+              )}`
+              : ""}
+          </p>
+          <button onClick={async () => {
+            await navigator.clipboard.writeText(connected_address ?? "")
+            toast.success("Address copied to clipboard");
+          }}>
+            <Clipboard color="#ffffff" size={17} />
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col items-center justify-center mt-[40px] lg:px-0 md:px-16 px-3 gap-[34px]">
@@ -188,7 +194,7 @@ const Profile = () => {
             </button>
           ) : (
             <Button
-              onClick={handleConnect}
+              onClick={() => handleConnect({})}
               text="Connect wallet"
               fontSize="md:text-[24px] text-[15px] w-full rounded-[5px]"
               height="md:h-[76px] h-[33px]"

@@ -1,6 +1,6 @@
 // assets
-import { generateAvatarFromAddress } from "src/lib/utils";
-import { LeaderboardProp } from "src/state/slices/appSlice";
+import { generateAvatarFromAddress } from "../../../lib/utils";
+import { LeaderboardProp } from "../../../state/slices/appSlice";
 // import badge from "../../../assets/leaderboard/badge.svg";
 // import DEFAULT_PROFILE from "../../../assets/leaderboard/default_profile.svg";
 

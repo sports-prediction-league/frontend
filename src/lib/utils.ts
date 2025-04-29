@@ -1,10 +1,10 @@
 import { adventurer } from "@dicebear/collection";
 import { createAvatar } from "@dicebear/core";
 import axios from "axios";
-import { GroupedVirtualMatches, MatchData } from "src/state/slices/appSlice";
+import { GroupedVirtualMatches, MatchData } from "../state/slices/appSlice";
 
 export const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_RENDER_ENDPOINT,
+  baseURL: import.meta.env.VITE_RENDER_ENDPOINT,
   headers: {
     "Content-Type": "application/json",
   },
@@ -96,6 +96,37 @@ export function groupVirtualMatches(
 
   return sortedGroups;
 }
+
+export const groupMatchesByRound = (data: MatchData[]) => {
+  // Create an object to store groups
+  const groups: Record<number, MatchData[]> = {};
+
+  // Group items by the round value
+  data.forEach((item) => {
+    const roundValue = item.round;
+
+    // If this round doesn't exist in groups yet, create a new array
+    if (!groups[roundValue]) {
+      groups[roundValue] = [];
+    }
+
+    // Add the current item to its round group
+    groups[roundValue].push(item);
+  });
+
+  return Object.entries(groups)
+    .sort((a: any, b: any) => {
+      // Sort by round numbers in descending order (newest first)
+      // Extract numbers from strings like "Round 1", "Round 2", etc.
+      const roundA = parseInt(a[0].match(/\d+/)?.[0] || 0);
+      const roundB = parseInt(b[0].match(/\d+/)?.[0] || 0);
+      return roundB - roundA; // Descending order
+    })
+    .map((entry) => entry[1]); // Keep only the arrays of objects
+
+  // Convert the object of groups into an array of arrays
+  // return Object.values(groups);
+};
 
 export function formatDateNative(dateString: string): string {
   const date = new Date(dateString);
@@ -235,8 +266,8 @@ export function generateAvatarFromAddress(
 
 export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
-export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
-export const TOKEN_ADDRESS = process.env.REACT_APP_TOKEN_ADDRESS!;
-export const AVNU_API_KEY = process.env.REACT_APP_AVNU_API_KEY!;
+export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS!;
+export const TOKEN_ADDRESS = import.meta.env.VITE_TOKEN_ADDRESS!;
+export const AVNU_API_KEY = import.meta.env.VITE_AVNU_API_KEY!;
 export const TOKEN_DECIMAL = 18;
 export const MINI_APP_URL = "https://t.me/SPLBot/SPL";

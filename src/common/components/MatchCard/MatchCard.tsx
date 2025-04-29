@@ -1,10 +1,10 @@
 import HASHED_BACKGROUND from "../../../assets/scoringSystem/hashed_background.svg";
 import BX_STATS from "../../../assets/buttons/bx_stats.svg";
 import USERS_SOLID from "../../../assets/buttons/users_solid.svg";
-import { GroupedVirtualMatches, makePrediction, MatchData, removeVirtualMatchGroup } from "src/state/slices/appSlice";
+import { GroupedVirtualMatches, makePrediction, MatchData, removeVirtualMatchGroup } from "../../../state/slices/appSlice";
 import { useEffect, useState } from "react";
-import { formatTimeNative } from "src/lib/utils";
-import { useAppDispatch } from "src/state/store";
+import { formatTimeNative } from "../../../lib/utils";
+import { useAppDispatch } from "../../../state/store";
 
 
 interface Props {
@@ -72,7 +72,7 @@ const MatchCard = ({ active, matches }: Props) => {
   }
 
   return <div
-    className={` w-full my-8 ${status === "Ongoing" ? "bg-spl-green-100 border-2 border-spl-orange" : "border-2 dark:border-[#007332] border-[#0000001A]"} bg-cover bg-center p-2 rounded-lg bg-no-repeat`}
+    className={` w-full my-8 ${status === "Ongoing" ? "bg-[rgba(0,100,76,1)]  border-2 border-spl-orange" : "border-2 dark:border-[#007332] border-[#0000001A]"}  bg-cover bg-center p-2 rounded-lg bg-no-repeat`}
     style={status === "Ongoing" ? { backgroundImage: `url(${HASHED_BACKGROUND})` } : {}}
   >
     <div className={`dark:bg-[#031614] bg-[#E5EFED]  ${status === "Ongoing" ? "dark:text-[#00CB59] text-[#064F43]" : "dark:text-white/80 text-black/80"} rounded-t-lg p-1 text-xs gap-1 md:gap-0  flex items-center md:justify-between justify-center flex-wrap px-4`}>
@@ -155,7 +155,7 @@ const Match = ({ match, status }: MatchProps) => {
 
 
   const dispatch = useAppDispatch();
-  return <div className="md:px-5 px-0 my-5">
+  return <div className="md:px-3 px-0 my-5">
     <div className="dark:bg-[#031614] bg-white dark:border-[#007332] border-[#E4E5E5] border-2 rounded-lg">
       <p className="dark:text-white/80 text-black/80 text-[9px] pilat p-3 font-light">{match.details.league.league}&nbsp;&nbsp; {formatTimeNative(new Date(match.details.fixture.date).toISOString())}</p>
       <div className="grid grid-cols-12 gap-2 items-center p-3 dark:text-white text-black">
@@ -170,7 +170,7 @@ const Match = ({ match, status }: MatchProps) => {
           </div>
         </div>
 
-        <div className="md:col-span-8 col-span-4">
+        <div className="md:col-span-8 col-span-4 ">
           <div className="flex md:flex-nowrap flex-wrap justify-between items-center w-full gap-2 text-white">
             {
               Object.keys(match.details.odds).map((odd_key, index) => {
