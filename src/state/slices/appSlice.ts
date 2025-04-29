@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { groupMatchesByDate, groupVirtualMatches } from "src/lib/utils";
+import { groupVirtualMatches } from "../../lib/utils";
 
 interface Fixture {
   id: string;
@@ -90,6 +90,7 @@ export interface MatchData {
     odds: PredictionOdds;
     last_games?: { home?: string[]; away?: string[] };
   };
+  round: number;
 
   scored?: boolean;
   predicted?: boolean;

@@ -1,24 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
 
 // assets
-import DEFAULT_PROFILE from "../../../assets/leaderboard/default_profile.svg";
 // import BADGE from "../../../assets/leaderboard/badge.svg";
 import LEADER_1 from "../../../assets/leaderboard/leader_1.svg";
 import LEADER_2 from "../../../assets/leaderboard/leader_2.svg";
 import LEADER_3 from "../../../assets/leaderboard/leader_3.svg";
 
-import { useAppSelector } from "src/state/store";
-import toast from "react-hot-toast";
-import useContractInstance from "src/lib/useContractInstance";
-import { cairo } from "starknet";
-import { LeaderboardProp } from "src/state/slices/appSlice";
-import { apiClient, feltToString, generateAvatarFromAddress } from "src/lib/utils";
+import { useAppSelector } from "../../../state/store";
+import { generateAvatarFromAddress } from "../../../lib/utils";
 
-interface Props {
-  filter: boolean;
-  filter_result: LeaderboardProp[];
-}
-const LeaderBoardHero = ({ filter, filter_result }: Props) => {
+
+const LeaderBoardHero = () => {
   const { leaderboard: data } = useAppSelector((state) => state.app);
 
   return (

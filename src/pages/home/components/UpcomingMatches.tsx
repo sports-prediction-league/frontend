@@ -1,13 +1,9 @@
 // common components
-import { useAppSelector } from "src/state/store";
 import Title from "../../../common/components/tittle/Title";
-import { formatDateNative } from "src/lib/utils";
 import { useState } from "react";
-import ComingSoonModal from "src/common/components/modal/ComingSoonModal";
-import MatchCard from "../../../common/components/MatchCard/MatchCard";
+import ComingSoonModal from "../../../common/components/modal/ComingSoonModal";
 
 const UpcomingMatches = () => {
-  const { matches } = useAppSelector((state) => state.app);
   const [open_modal, set_open_modal] = useState(false);
   return (
     <div className="max-w-full flex flex-col items-center justify-center md:py-[70px] py-[24px] md:px-10 px-2">

@@ -7,7 +7,7 @@ import TELEGRAM from "../../assets/socialMedia/telegram.svg";
 const Footer = () => {
   return (
     <div
-      className={`md:min-h-[317px] h-fit w-full bg-spl-green-300 bg-cover bg-center pt-5 bg-no-repeat md:mt-[100px] mt-[50px] flex flex-col justify-between items-center`}
+      className={`md:min-h-[317px] md:block hidden h-fit w-full bg-spl-green-300 bg-cover bg-center pt-5 bg-no-repeat md:mt-[100px] mt-[50px] flex flex-col justify-between items-center`}
       style={{ backgroundImage: `url(${HASHED_BACKGROUND})` }}
     >
       <div className="flex flex-col md:flex-row justify-between items-center max-w-full w-full md:px-[90px] px-[16px]">

@@ -12,44 +12,37 @@ import {
   setCalldata,
   setConnectedAddress,
   setIsRegistered,
-  setLoaded,
   setLoadingState,
   // setPredictions,
   setReward,
   setRounds,
   setShowRegisterModal,
   update_profile,
-  updateLeaderboardImages,
   updateVirtualMatches,
   // updateMatches,
-} from "src/state/slices/appSlice";
-import { ThemeProvider } from "../context/ThemeContext";
+} from "./state/slices/appSlice";
+import { ThemeProvider } from "./context/ThemeContext";
 
 // ROUTER
-import Router from "../router/Router";
-import { cairo, RpcProvider, WalletAccount } from "starknet";
+import Router from "./router/Router";
+import { cairo } from "starknet";
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "src/state/store";
-import useConnect from "src/lib/useConnect";
-import useContractInstance from "src/lib/useContractInstance";
+import { useAppDispatch, useAppSelector } from "./state/store";
+import useConnect from "./lib/useConnect";
+import useContractInstance from "./lib/useContractInstance";
 import {
   apiClient,
-  CONTRACT_ADDRESS,
   feltToString,
   formatUnits,
-  groupMatchesByDate,
   groupVirtualMatches,
   parse_error,
-  TOKEN_DECIMAL,
-} from "src/lib/utils";
+} from "./lib/utils";
 import toast from "react-hot-toast";
-import RegisterModal from "src/common/components/modal/RegisterModal";
+import RegisterModal from "./common/components/modal/RegisterModal";
 
-import SPLASH from "../assets/splash/splash.gif";
-import SPLASH_DESKTOP from "../assets/splash/desktop_splash.gif";
-import { useSocket } from "src/lib/useSocket";
-import { TwitterIcon, TwitterShareButton, XIcon } from "react-share";
-import FootballField from "src/pages/home/components/Play";
+import SPLASH from "./assets/splash/splash.gif";
+import SPLASH_DESKTOP from "./assets/splash/desktop_splash.gif";
+import { useSocket } from "./lib/useSocket";
 import { SessionAccountInterface } from "@argent/invisible-sdk";
 declare global {
   interface Window {
@@ -82,15 +75,14 @@ declare global {
 
 
 function App() {
-  let socket = useSocket(process.env.REACT_APP_RENDER_ENDPOINT!, {
+  let socket = useSocket(import.meta.env.VITE_RENDER_ENDPOINT!, {
     reconnectionDelay: 10000,
     transports: ["websocket"],
     autoConnect: false,
   });
+  const [loaded, setLoaded] = useState(false);
   const dispatch = useAppDispatch();
   const {
-    current_round,
-    profile,
     matches,
     connected_address,
     show_register_modal,
@@ -117,9 +109,10 @@ function App() {
         dispatch(bulkSetVirtualMatches(groupVirtualMatches(response.data.data.matches.virtual)));
       }
       dispatch(setLoadingState(false));
-
+      setLoaded(true)
       // console.log(response.data);
     } catch (error: any) {
+
       toast.error(
         error.response?.data?.message || error.message || "An error occurred"
       );
@@ -129,7 +122,7 @@ function App() {
 
   const get_user_predictions = async (address: string) => {
     try {
-      if (current_round === 0) return;
+      // if (current_round === 0) return;
       const contract = getWalletProviderContract();
       const predictions = await contract!.get_user_matches_predictions(
         matches.virtual.map(mp => mp.matches.map(mp => cairo.felt(mp.details.fixture.id))).flat(),
@@ -174,6 +167,7 @@ function App() {
         connected_address ? contract!.get_user_reward(connected_address) : undefined
       ]);
 
+      console.log({ reward, connected_address })
       if (connected_address && reward) {
         dispatch(setReward(formatUnits(reward)))
       }
@@ -201,7 +195,7 @@ function App() {
 
   useEffect(() => {
     fetchLeaderboardAndUserReward();
-  }, []);
+  }, [connected_address]);
 
   const get_user_details = async (address: string) => {
     try {
@@ -229,11 +223,9 @@ function App() {
 
   useEffect(() => {
     if (connected_address) {
-      if (current_round !== 0) {
-        get_user_predictions(connected_address);
-      }
+      get_user_predictions(connected_address);
     }
-  }, [connected_address, current_round]);
+  }, [connected_address, loaded]);
 
   useEffect(() => {
     fetch_matches();
@@ -454,15 +446,15 @@ function App() {
 
 
   const [splash_active, set_splash_active] = useState(true);
-  const [isPageLoaded, setIsPageLoaded] = useState(false);
+  // const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   useEffect(() => {
     const handlePageLoad = () => {
-      setIsPageLoaded(true); // Page has fully loaded
+      // setIsPageLoaded(true); // Page has fully loaded
       // Start the 20-second timer
       const timer = setTimeout(() => {
         set_splash_active(false);
-      }, 7000);
+      }, 6000);
 
       // Cleanup timer
       return () => clearTimeout(timer);
@@ -559,9 +551,9 @@ function App() {
 
 
 
-  if (!isPageLoaded) {
-    return null; // Wait until the page has fully loaded
-  }
+  // if (!isPageLoaded) {
+  //   return null; // Wait until the page has fully loaded
+  // }
 
   // return <FootballField />
 
@@ -569,7 +561,7 @@ function App() {
     <ThemeProvider>
       {splash_active ? null : (
         <RegisterModal
-          t_username={profile?.username}
+          // t_username={profile?.username}
           loading={registering}
           onOpenChange={() => {
             dispatch(setShowRegisterModal(false));
