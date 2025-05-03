@@ -49,12 +49,13 @@ const RootLayout = () => {
           <p className="text-[9px]">My Predictions</p>
         </button>
 
-        <button onClick={async () => {
+        <button disabled={connecting} onClick={async () => {
           try {
             if (connected_address) {
               navigate("/profile");
               return;
             }
+            if (connecting) return;
             setConnecting(true)
             await handleConnect({});
             setConnecting(false)
@@ -64,7 +65,7 @@ const RootLayout = () => {
             toast.error(error.message || "OOPPSS");
           }
         }} className={`flex flex-col items-center justify-center ${location.pathname === "/profile" ? "text-black dark:text-white" : "text-black/60 dark:text-white/60"}`}>
-          {connecting ? <Loader size={22} color="white" className="mr-1.5 animate-spin" /> : !connected_address ? <Wallet /> : <CgProfile size={25} />}
+          {connecting ? <Loader size={22} className="mr-1.5 animate-spin dark:text-white text-black " /> : !connected_address ? <Wallet /> : <CgProfile size={25} />}
           <p className="text-[9px]">{connected_address ? "Profile" : "Connect"}</p>
         </button>
 

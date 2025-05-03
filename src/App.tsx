@@ -10,7 +10,6 @@ import {
   LeaderboardProp,
   MatchData,
   Prediction,
-  removeVirtualMatchGroup,
   setCalldata,
   setConnectedAddress,
   setIsRegistered,
@@ -47,6 +46,8 @@ import SPLASH from "./assets/splash/splash.gif";
 import SPLASH_DESKTOP from "./assets/splash/desktop_splash.gif";
 import { useSocket } from "./lib/useSocket";
 import { SessionAccountInterface } from "@argent/invisible-sdk";
+import WinModal from "./common/components/modal/Win";
+import SoccerGame from "./pages/home/components/Play";
 declare global {
   interface Window {
     Telegram?: {
@@ -89,12 +90,12 @@ function App() {
     matches,
     connected_address,
     show_register_modal,
-    reward
+
   } = useAppSelector((state) => state.app);
   const { getArgentWallet } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
     useContractInstance();
-
+  const [isWinModalOpen, setWinModalOpen] = useState(false);
   const fetch_matches = async () => {
     try {
       dispatch(setLoadingState(true));
@@ -316,6 +317,7 @@ function App() {
   const [registering, set_registering] = useState(false);
   const register_user = async (user_name?: string) => {
     try {
+      if (registering) return;
       set_registering(true);
       const contract = getWalletProviderContract();
 
@@ -595,17 +597,20 @@ function App() {
 
 
 
+
+
+
   // if (!isPageLoaded) {
   //   return null; // Wait until the page has fully loaded
   // }
 
-  // return <FootballField />
+  // return <SoccerGame />
 
   return (
     <ThemeProvider>
+      <WinModal points={20} isOpen={isWinModalOpen} onClose={() => { setWinModalOpen(false) }} />
       {splash_active ? null : (
         <RegisterModal
-          // t_username={profile?.username}
           loading={registering}
           onOpenChange={() => {
             dispatch(setShowRegisterModal(false));

@@ -91,6 +91,7 @@ const Header = () => {
 
           />
           <Button
+            disabled={connecting}
             text={connected_address ? "Profile" : "Connect Wallet"}
             onClick={async () => {
 
@@ -99,6 +100,7 @@ const Header = () => {
                   handleNavigation("/profile");
                   return;
                 }
+                if (connecting) return;
                 setConnecting(true)
                 await handleConnect({});
                 setConnecting(false)
