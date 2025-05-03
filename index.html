@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The ultimate sports prediction league" />
     <meta name="keywords" content="sports, prediction, football, SPL" />
+
+    <!-- Required for iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="SPL" />
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+
+    <!-- Default theme-color (will be overridden by JS below) -->
+    <meta name="theme-color" content="#ffffff" />
     <title>SPL</title>
     <link rel="manifest" href="/manifest.json" />
     <link
@@ -25,6 +33,30 @@
           (!("theme" in localStorage) &&
             window.matchMedia("(prefers-color-scheme: dark)").matches)
       );
+
+      const darkMode = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+
+      // --- Android theme-color ---
+      let themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (!themeMeta) {
+        themeMeta = document.createElement("meta");
+        themeMeta.name = "theme-color";
+        document.head.appendChild(themeMeta);
+      }
+      themeMeta.content = darkMode ? "#121212" : "#ffffff";
+
+      // --- iOS status bar style ---
+      let iosStatusBar = document.querySelector(
+        'meta[name="apple-mobile-web-app-status-bar-style"]'
+      );
+      if (!iosStatusBar) {
+        iosStatusBar = document.createElement("meta");
+        iosStatusBar.name = "apple-mobile-web-app-status-bar-style";
+        document.head.appendChild(iosStatusBar);
+      }
+      iosStatusBar.content = darkMode ? "black-translucent" : "default";
     </script>
   </head>
   <body>
