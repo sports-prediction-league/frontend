@@ -496,9 +496,11 @@ function App() {
       return () => clearTimeout(timer);
     };
 
-    window.addEventListener("load", handlePageLoad);
+    handlePageLoad()
 
-    return () => window.removeEventListener("load", handlePageLoad);
+    // window.addEventListener("load", handlePageLoad);
+
+    // return () => window.removeEventListener("load", handlePageLoad);
   }, []);
 
   const StartListeners = (address: string | null) => {
