@@ -1,0 +1,36 @@
+{
+  "name": "SPL",
+  "short_name": "SPL",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "start_url": "/",
+  "description": "The ultimate sports prediction league",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/spl-home.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Home screen",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshots/spl-leaderboard.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Leaderboard screen"
+    }
+  ]
+}
