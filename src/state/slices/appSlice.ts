@@ -317,12 +317,10 @@ export const appSlice = createSlice({
               prediction: existingGroup.matches[matchIndex].prediction,
             };
           } else {
-            alert("naaaahhh");
             // Add new match
             existingGroup.matches.push(match);
           }
         } else {
-          alert("never here");
           // Add new group
           //  state..push({
           //    date: matchDate,
