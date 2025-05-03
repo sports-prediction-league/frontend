@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { groupVirtualMatches } from "../../lib/utils";
+import { groupMatchesByRound, groupVirtualMatches } from "../../lib/utils";
 
 interface Fixture {
   id: string;
@@ -22,6 +22,56 @@ interface Fixture {
     status: "not_started" | "closed" | "live";
   };
 }
+
+export type UserPrediction = {
+  match_: {
+    id: string;
+    timestamp: number;
+    home: {
+      id: string;
+      goals: {
+        Some?: number;
+        None?: boolean;
+      };
+    };
+    away: {
+      id: string;
+      goals: {
+        Some?: number;
+        None?: boolean;
+      };
+    };
+    round: {
+      Some?: number;
+      None?: boolean;
+    };
+    match_type: {
+      variant: {
+        Live?: boolean;
+        Virtual?: boolean;
+      };
+    };
+  };
+  prediction: {
+    stake: number;
+    odd: {
+      Some?: {
+        value: number;
+        tag: string;
+      };
+      None?: boolean;
+    };
+    prediction_type: {
+      variant: {
+        Multiple?: string;
+        Single?: {
+          match_id: string;
+          odd: string;
+        };
+      };
+    };
+  };
+};
 
 type Position = {
   x: number;
@@ -106,7 +156,7 @@ export interface LeaderboardProp {
 }
 
 interface User {
-  id?: number;
+  id?: string;
   first_name?: string;
   last_name?: string;
   username?: string;
@@ -141,6 +191,7 @@ interface IAppState {
     virtual: GroupedVirtualMatches[];
     live: MatchData[][];
   };
+  prediction_history: UserPrediction[][];
   total_rounds: number;
   current_round: number;
   loading_state: boolean;
@@ -162,6 +213,7 @@ const initialState: IAppState = {
     virtual: [],
   },
   loaded: false,
+  prediction_history: [],
   is_registered: false,
   current_round: 0,
   show_register_modal: false,
@@ -317,36 +369,50 @@ export const appSlice = createSlice({
       const new_state = state.matches.virtual.filter(
         (ft) => ft.date !== action.payload
       );
-      state.matches.virtual = new_state;
+
+      const endedMatches = state.matches.virtual
+        .filter((ft) => ft.date === action.payload)
+        .map((mp) => mp.matches)
+        .flat();
+
+      for (let i = 0; i < endedMatches.length; i++) {
+        const endedMatch = endedMatches[i];
+        const prediction_history = state.prediction_history.flat();
+        const find = prediction_history.find(
+          (fd) => fd.match_.id === endedMatch.details.fixture.id
+        );
+        if (find) {
+          const newHistory: UserPrediction[] = prediction_history.map((mp) => {
+            if (mp.match_.id === find.match_.id) {
+              return {
+                ...mp,
+                match_: {
+                  ...mp.match_,
+                  home: {
+                    ...mp.match_.home,
+                    goals: {
+                      Some: Number(endedMatch.details.goals?.home),
+                    },
+                  },
+                  away: {
+                    ...mp.match_.away,
+                    goals: {
+                      Some: Number(endedMatch.details.goals?.away),
+                    },
+                  },
+                },
+              };
+            }
+            return mp;
+          });
+          const grouped = groupMatchesByRound(newHistory);
+          state.prediction_history = grouped;
+        }
+      }
+      if (endedMatches.length) {
+        state.matches.virtual = new_state;
+      }
     },
-
-    // setPredictions: (state, action: PayloadAction<Prediction[]>) => {
-    //   const new_matches = state.matches.map((mp) => {
-    //     return mp.map((mmp) => {
-    //       const find = action.payload.find(
-    //         (fd) => fd.match_id === mmp.details.fixture.id.toString()
-    //       );
-    //       if (find) {
-    //         return {
-    //           ...mmp,
-    //           predicted: true,
-    //           predictions: [
-    //             {
-    //               prediction: {
-    //                 prediction: `${find.home}:${find.away}`,
-    //                 stake: find.stake,
-    //               },
-    //             },
-    //           ],
-    //         };
-    //       }
-
-    //       return mmp;
-    //     });
-    //   });
-
-    //   state.matches = new_matches;
-    // },
 
     setConnectedAddress: (state, action: PayloadAction<any>) => {
       state.connected_address = action.payload;
@@ -354,6 +420,21 @@ export const appSlice = createSlice({
 
     setShowRegisterModal: (state, action: PayloadAction<boolean>) => {
       state.show_register_modal = action.payload;
+    },
+
+    setPredictionHistory: (state, action: PayloadAction<UserPrediction[]>) => {
+      const flat = state.prediction_history.flat();
+      const joined = [...action.payload, ...flat];
+      const grouped = groupMatchesByRound(joined);
+      state.prediction_history = grouped;
+    },
+
+    initializePredictionHistory: (
+      state,
+      action: PayloadAction<UserPrediction[]>
+    ) => {
+      const grouped = groupMatchesByRound(action.payload);
+      state.prediction_history = grouped;
     },
 
     makePrediction: (
@@ -565,6 +646,8 @@ export const {
   clearPredictions,
   removePredictions,
   submitPrediction,
+  setPredictionHistory,
+  initializePredictionHistory,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

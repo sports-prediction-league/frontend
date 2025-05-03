@@ -10,9 +10,11 @@ import Button from "../../../common/components/button/Button";
 import { useAppSelector } from "../../../state/store";
 import useConnect from "../../../lib/useConnect";
 import { Clipboard, Share2 } from "lucide-react";
-import ShareModal from "../../../common/components/modal/ShareModal";
 import { generateAvatarFromAddress } from "../../../lib/utils";
 import toast from "react-hot-toast";
+import { useTheme } from "../../../context/ThemeContext";
+import ShareOptions from "../../../common/components/modal/ShareOptions";
+import useEscapeKey from "../../../lib/useEscapeKey";
 
 const Profile = () => {
   const [_, setProgress] = useState(10);
@@ -26,7 +28,7 @@ const Profile = () => {
 
   const [rankAndPoint, setRankAndPoint] = useState<null | { rank: number, point: number }>(null);
 
-  const [open_modal, set_open_modal] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
 
   useEffect(() => {
     updateProgress(50);
@@ -43,22 +45,24 @@ const Profile = () => {
     }())
   }, [leaderboard])
 
+  const { isDark } = useTheme();
+
+  useEscapeKey(() => {
+    if (showShareOptions) {
+      setShowShareOptions(false)
+    }
+  })
+
   return (
-    <div className="">
-      <ShareModal
-        modal_title="Share your progress"
-        content={{
-          message: `🚀 I'm crushing it at #${rankAndPoint?.rank} on the @HQ_SPL Leaderboard! 🏆 Can you dethrone me? 💪 Prove your prediction skills and take me on in the ultimate sports showdown! ⚽🏀🔥 #PredictPlayWin #SPL`,
-          url: window.location.origin,
-        }}
-        open_modal={open_modal}
-        onClose={() => {
-          set_open_modal(false);
-        }}
-      />
-      {/* <div className="flex items-center justify-end my-5 mx-3">
-        <ThemeToggle />
-      </div> */}
+    <div onClick={() => {
+      if (showShareOptions) {
+        setShowShareOptions(false)
+      }
+    }} className="">
+
+
+
+
       <div className="md:my-10 my-5">
         <Title title="Profile" />
       </div>
@@ -73,27 +77,10 @@ const Profile = () => {
           />
         </div>
 
-        {/* <div className="text-center w-[250px] h-[5px] mx-auto mt-[50px] relative">
-          <div className="relative h-[5px] bg-[#e0e0e0] rounded-[5px] m-[10px_0]">
-            <img
-              src={BADGE}
-              alt="Badge"
-              className="w-[22px] h-[22px] absolute top-[-25px]"
-              style={{ left: `${progress - 5}%` }}
-            />
-            <div
-              className="bg-gradient-to-r from-[#2ec4b6] to-[#a6cee3] rounded-[5px] h-full"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-          <p className="mt-[10px] text-[14px] text-gray-600">
-            Until next badge
-          </p>
-        </div> */}
+
       </div>
 
       <div className="flex flex-col items-center justify-center mt-">
-        {/* <Button text="See all badges" fontSize="text-[10px]" /> */}
 
         <p className="mt-[38px] md:text-[36px] capitalize text-[20px] font-[Rubik] font-medium dark:text-spl-white">
           {profile?.username}
@@ -151,10 +138,22 @@ const Profile = () => {
           </div>
 
           {rankAndPoint?.rank && rankAndPoint.rank > 0 ? (
-            <div className="flex items-center mt-10 justify-center">
+            <div className="flex items-center mt-10 justify-center relative">
+              {/* Share options component */}
+              {showShareOptions && (
+                <ShareOptions
+                  text={`🏆 BOOM! Just hit Rank #${rankAndPoint?.rank} on @splxgg! My football predictions are 🔥. Think you can do better? Game on! 👉 ${window.location.origin} #Play_Predict_Win #PredictionKing #SPL`}
+                  isDarkMode={isDark}
+                  className="absolute w-64 left-1/2 bottom-10 transform -translate-x-1/2"
+                  style={{
+                    marginTop: '-70px',
+                    zIndex: 20
+                  }}
+                />
+              )}
               <Button
                 onClick={() => {
-                  set_open_modal(true);
+                  setShowShareOptions(!showShareOptions);
                 }}
                 text="Share your progress"
                 icon={<Share2 size={15} />}
@@ -188,7 +187,7 @@ const Profile = () => {
           {connected_address ? (
             <button
               onClick={handleDisconnect}
-              className="bg-red-600 text-spl-white text-[15px] font-bold font-[Lato] py-[10px] px-[20px] rounded-[10px] w-[277px] h-[56px]"
+              className="bg-red-600 text-spl-white text-[15px] font-bold font-[Lato] py-[10px] px-[20px] rounded-[10px] w-[277px] h-[50px]"
             >
               Disconnect Wallet
             </button>
@@ -197,7 +196,7 @@ const Profile = () => {
               onClick={() => handleConnect({})}
               text="Connect wallet"
               fontSize="md:text-[24px] text-[15px] w-full rounded-[5px]"
-              height="md:h-[76px] h-[33px]"
+              height="md:h-[76px] h-[50px]"
               width="md:w-[484px] w-[209px]"
             />
           )}

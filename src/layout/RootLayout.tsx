@@ -1,6 +1,6 @@
 // react router
 import { Outlet, useNavigate } from "react-router";
-import { BiFootball, BiSolidWallet } from "react-icons/bi";
+import { BiFootball } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
 // components
@@ -11,7 +11,7 @@ import { useAppSelector } from "../state/store";
 import { useState } from "react";
 import useConnect from "../lib/useConnect";
 import toast from "react-hot-toast";
-import { History, Loader, Trophy } from "lucide-react";
+import { History, Loader, Trophy, Wallet } from "lucide-react";
 
 const RootLayout = () => {
   const connected_address = useAppSelector(
@@ -42,22 +42,20 @@ const RootLayout = () => {
           <p className="text-[9px]">Leaderboard</p>
         </button>
         <button onClick={() => {
-          if (!connected_address) {
-            toast.error("Connect Wallet")
-            return;
-          }
+
           navigate("/history")
         }} className={`flex flex-col items-center justify-center ${location.pathname === "/history" ? "text-black dark:text-white" : "text-black/60 dark:text-white/60"}`}>
           <History size={25} />
           <p className="text-[9px]">My Predictions</p>
         </button>
 
-        <button onClick={async () => {
+        <button disabled={connecting} onClick={async () => {
           try {
             if (connected_address) {
               navigate("/profile");
               return;
             }
+            if (connecting) return;
             setConnecting(true)
             await handleConnect({});
             setConnecting(false)
@@ -67,8 +65,8 @@ const RootLayout = () => {
             toast.error(error.message || "OOPPSS");
           }
         }} className={`flex flex-col items-center justify-center ${location.pathname === "/profile" ? "text-black dark:text-white" : "text-black/60 dark:text-white/60"}`}>
-          {connecting ? <Loader size={22} color="white" className="mr-1.5 animate-spin" /> : !connected_address ? <BiSolidWallet /> : <CgProfile size={25} />}
-          <p className="text-[9px]">Profile</p>
+          {connecting ? <Loader size={22} className="mr-1.5 animate-spin dark:text-white text-black " /> : !connected_address ? <Wallet /> : <CgProfile size={25} />}
+          <p className="text-[9px]">{connected_address ? "Profile" : "Connect"}</p>
         </button>
 
       </div>
