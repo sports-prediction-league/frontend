@@ -12,6 +12,7 @@ import { useState } from "react";
 import useConnect from "../lib/useConnect";
 import toast from "react-hot-toast";
 import { History, Loader, Trophy, Wallet } from "lucide-react";
+import ScrollToTop from "../common/components/modal/Scroll";
 
 const RootLayout = () => {
   const connected_address = useAppSelector(
@@ -22,6 +23,7 @@ const RootLayout = () => {
   const { handleConnect } = useConnect();
   return (
     <div className="flex flex-col w-full">
+      <ScrollToTop />
       <Header />
       <div className="min-h-screen">
         <Outlet />

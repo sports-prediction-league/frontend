@@ -15,10 +15,10 @@ export default defineConfig({
         name: "SPL",
         short_name: "SPL",
         display: "standalone",
-        background_color: "#000000",
+        background_color: "#ffffff",
         start_url: "/",
         description: "The ultimate sports prediction league",
-        theme_color: "#000000",
+        theme_color: "#ffffff",
         icons: [
           {
             src: "/pwa-192x192.png",
