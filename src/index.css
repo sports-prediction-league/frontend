@@ -1,7 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
 
 @font-face {
   font-family: "Pilat Extended";
@@ -105,7 +105,7 @@ body {
   font-family: "Pilat Extended", sans-serif;
 }
 
-.pilat{
+.pilat {
   font-family: "Pilat Extended", sans-serif;
 }
 
@@ -113,13 +113,25 @@ p {
   margin: 0;
 }
 
+
 /* // Scoring System */
 .scoring-system-box-shadow {
   box-shadow: 20px 4px 4px 0px #00000040;
 }
 
+.gradient-border-rounded {
+  border-radius: 8px;
+  background: linear-gradient(91.42deg, rgba(0, 203, 89, 0.1) 0.04%, rgba(0, 115, 50, 0.1) 51.01%, rgba(0, 203, 89, 0.1) 99.97%);
+  padding: 1px;
+}
 
-
+.gradient-border-rounded-inner {
+  background: transparent;
+  /* Or your content background color */
+  border-radius: 7px;
+  height: 100%;
+  width: 100%;
+}
 
 
 .button-container {
@@ -252,6 +264,6 @@ p {
 }
 
 /* Clip path */
-.clip-path-triangle{
+.clip-path-triangle {
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 }

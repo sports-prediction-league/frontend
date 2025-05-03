@@ -1,5 +1,5 @@
 // interfaces
-import { TbLoader } from "react-icons/tb";
+import { Loader } from "lucide-react";
 import { IButtonProps } from "../../../interfaces";
 
 const Button = ({
@@ -37,7 +37,7 @@ const Button = ({
       {!loading ? text : null}
       {icon}
       {loading ? (
-        <TbLoader size={22} color="white" className="mr-1.5 animate-spin" />
+        <Loader size={22} color="white" className="mr-1.5 animate-spin" />
       ) : null}
     </button>
   );

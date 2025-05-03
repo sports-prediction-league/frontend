@@ -1,5 +1,5 @@
 import { Modal } from "antd";
-import { IoClose } from "react-icons/io5";
+import { X } from "lucide-react";
 import COMING_SOON from "../../../assets/coming_soon.png";
 interface Props {
   onClose: () => void;
@@ -25,7 +25,7 @@ const ComingSoonModal = ({ onClose, open_modal }: Props) => {
       }}
       closeIcon={
         <div className="border-[1.78px] border-[#00000080] p-2 rounded-lg">
-          <IoClose color="#00000080" />
+          <X color="#00000080" />
         </div>
       }
       okButtonProps={{ hidden: true }}
@@ -34,7 +34,7 @@ const ComingSoonModal = ({ onClose, open_modal }: Props) => {
       <div className="pilat space-y-2">
         <h2 className="text-[#2A2F3F] text-3xl font-[700]">Coming soon!</h2>
         <h5 className="text-xl font-[700] text-black">
-          This page will be available soon.
+          This feature will be available soon.
         </h5>
         <p className="font-[300] text-black w-1/2">
           Stay tuned for exciting updates—you won't have to wait long!

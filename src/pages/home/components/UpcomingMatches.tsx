@@ -1,13 +1,9 @@
 // common components
-import { useAppSelector } from "src/state/store";
-import PredictionCard from "../../../common/components/predictionCard/PredictionCard";
 import Title from "../../../common/components/tittle/Title";
-import { formatDateNative } from "src/lib/utils";
 import { useState } from "react";
-import ComingSoonModal from "src/common/components/modal/ComingSoonModal";
+import ComingSoonModal from "../../../common/components/modal/ComingSoonModal";
 
 const UpcomingMatches = () => {
-  const { matches } = useAppSelector((state) => state.app);
   const [open_modal, set_open_modal] = useState(false);
   return (
     <div className="max-w-full flex flex-col items-center justify-center md:py-[70px] py-[24px] md:px-10 px-2">
@@ -19,7 +15,7 @@ const UpcomingMatches = () => {
       />
       <Title title="Upcoming Matches" />
 
-      {matches.map((group, index) => {
+      {/* {matches.map((group, index) => {
         return (
           <div className="" key={index}>
             <div className="w-full flex justify-end mt-5">
@@ -32,28 +28,15 @@ const UpcomingMatches = () => {
 
             {group.slice(0, 2).map((match, key) => {
               return (
-                <PredictionCard
+                <MatchCard
                   key={key}
-                  predicting={false}
-                  keyIndex={key}
-                  onChangePrediction={() => {}}
-                  match={{
-                    ...match,
-                    predicted: true,
-                  }}
-                  onStakeClick={() => {}}
-                  onSeeStatsClick={() => {
-                    set_open_modal(true);
-                  }}
-                  onExplorePredictionsClick={() => {
-                    set_open_modal(true);
-                  }}
+
                 />
               );
             })}
           </div>
         );
-      })}
+      })} */}
       {/* 
       <div className="flex flex-col flex-wrap gap-[63px] md:mt-[63px] mt-[7px]">
         <PredictionCard

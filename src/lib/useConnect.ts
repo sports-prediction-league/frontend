@@ -1,30 +1,20 @@
-import { SessionAccountInterface, ArgentTMA } from "@argent/tma-wallet";
-import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "src/state/store";
-import { WalletAccount } from "starknet";
-import { connect, disconnect } from "starknetkit";
+import { useAppDispatch } from "../state/store";
+import { setConnectedAddress } from "../state/slices/appSlice";
 import {
-  ConnectCalldata,
-  setConnectedAddress,
-} from "src/state/slices/appSlice";
-import {
+  AVNU_API_KEY,
   CONTRACT_ADDRESS,
-  MINI_APP_URL,
   parseUnits,
   TOKEN_ADDRESS,
-  TOKEN_DECIMAL,
 } from "./utils";
-import toast from "react-hot-toast";
+import { ArgentWebWallet } from "@argent/invisible-sdk";
 
 const useConnect = () => {
-  const getArgentTMA = () => {
-    const argentTMA = ArgentTMA.init({
-      environment: "sepolia", // "sepolia" | "mainnet" (not supperted yet)
-      appName: "SPL", // Your Telegram app name
-      appTelegramUrl: MINI_APP_URL, // Your Telegram app URL
+  const getArgentWallet = () => {
+    const argentWebWallet = ArgentWebWallet.init({
+      appName: "SPL",
+      environment: "sepolia",
       sessionParams: {
         allowedMethods: [
-          // List of contracts/methods allowed to be called by the session key
           {
             contract: CONTRACT_ADDRESS,
             selector: "register_user",
@@ -38,64 +28,84 @@ const useConnect = () => {
             selector: "make_prediction",
           },
         ],
-        validityDays: 90, // session validity (in days) - default: 90
+
+        validityDays: 30,
+      },
+
+      paymasterParams: {
+        apiKey: AVNU_API_KEY, // avnu paymasters API Key
       },
     });
 
-    return argentTMA;
+    return argentWebWallet;
   };
 
-  const is_mini_app = useAppSelector((state) => state.app.is_mini_app);
   const dispatch = useAppDispatch();
 
-  const handleConnect = async (approvals?: any[], callbackData?: string) => {
+  const handleConnect = async ({
+    callbackData,
+    approval = parseUnits("100").toString(),
+  }: {
+    callbackData?: string;
+    approval?: string;
+  }) => {
     try {
-      if (is_mini_app) {
-        const argentTMA = getArgentTMA();
+      const argentWebWallet = getArgentWallet();
+      const response = await argentWebWallet.requestConnection({
+        callbackData: callbackData,
+        approvalRequests: [
+          {
+            tokenAddress: TOKEN_ADDRESS as any,
+            amount: approval.toString(),
+            // Your dapp contract
+            spender: CONTRACT_ADDRESS as any,
+          },
+        ],
+      });
+      console.log(response);
 
-        // If not connected, trigger a connection request
-        // It will open the wallet and ask the user to approve the connection
-        // The wallet will redirect back to the app and the account will be available
-        // from the connect() method -- see above
-        await argentTMA.requestConnection({
-          callbackData:
-            callbackData ?? JSON.stringify({ type: "none" } as ConnectCalldata),
-          approvalRequests: approvals,
-        });
-      } else {
-        const { wallet } = await connect();
-
-        if (wallet && wallet.isConnected) {
-          const myFrontendProviderUrl =
-            "https://free-rpc.nethermind.io/sepolia-juno/v0_7";
-
-          const myWalletAccount = new WalletAccount(
-            { nodeUrl: myFrontendProviderUrl },
-            wallet as any
-          );
-          window.Wallet = {
-            Account: myWalletAccount as any,
-            IsConnected: true,
-          };
-          // Dispatch a custom event to notify about the change
-          const event = new Event("windowWalletClassChange");
-          window.dispatchEvent(event);
-        }
+      if (response) {
+        window.Wallet = {
+          Account: response.account,
+          IsConnected: true,
+        };
+        // Dispatch a custom event to notify about the change
+        const event = new Event("windowWalletClassChange");
+        window.dispatchEvent(event);
+        return response.callbackData;
       }
     } catch (error: any) {
-      toast.error(error.message || "error here");
-      console.log(error);
+      // toast.error(error.message || "error here");
+      // console.log(error);
+      throw error;
+    }
+  };
+
+  const approveToken = async (amount: string) => {
+    try {
+      const argentWebWallet = getArgentWallet();
+      const response = await argentWebWallet.requestApprovals([
+        {
+          tokenAddress: TOKEN_ADDRESS as any,
+          amount: parseUnits(amount).toString(),
+          // Your dapp contract
+          spender: CONTRACT_ADDRESS as any,
+        },
+      ]);
+      console.log(response);
+
+      return response;
+    } catch (error: any) {
+      // toast.error(error.message || "error here");
+      // console.log(error);
+      throw error;
     }
   };
 
   const handleDisconnect = async () => {
-    if (is_mini_app) {
-      const argentTMA = getArgentTMA();
+    const argentWebWallet = getArgentWallet();
+    await argentWebWallet.clearSession();
 
-      await argentTMA.clearSession();
-    } else {
-      await disconnect();
-    }
     window.Wallet = {
       Account: undefined,
       IsConnected: false,
@@ -105,7 +115,7 @@ const useConnect = () => {
     window.dispatchEvent(event);
   };
 
-  return { handleConnect, handleDisconnect, getArgentTMA };
+  return { handleConnect, handleDisconnect, getArgentWallet, approveToken };
 };
 
 export default useConnect;

@@ -1,8 +1,6 @@
 import { Modal } from "antd";
-import { TbLoader } from "react-icons/tb";
-import { IoClose } from "react-icons/io5";
+import { Loader, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import Button from "../button/Button";
 
 interface Props {
   open: boolean;
@@ -32,7 +30,7 @@ const RegisterModal = ({
           content: { background: "#042822" },
           header: { background: "#042822", color: "white" },
         }}
-        closeIcon={<IoClose color="white" />}
+        closeIcon={<X color="white" />}
         okButtonProps={{ hidden: true }}
         cancelButtonProps={{ hidden: true }}
       >
@@ -76,7 +74,7 @@ const RegisterModal = ({
             >
               {loading ? (
                 <>
-                  <TbLoader size={22} className="mr-1.5 animate-spin" /> PLEASE
+                  <Loader size={22} className="mr-1.5 animate-spin" /> PLEASE
                   WAIT...
                 </>
               ) : (

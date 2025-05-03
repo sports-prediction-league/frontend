@@ -1,14 +1,23 @@
+import { adventurer } from "@dicebear/collection";
+import { createAvatar } from "@dicebear/core";
 import axios from "axios";
-import { MatchData } from "src/state/slices/appSlice";
+import {
+  GroupedVirtualMatches,
+  MatchData,
+  UserPrediction,
+} from "../state/slices/appSlice";
 
 export const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_RENDER_ENDPOINT,
+  baseURL: import.meta.env.VITE_RENDER_ENDPOINT,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-export const parseUnits = (value: string, decimals: number = 18): bigint => {
+export const parseUnits = (
+  value: string,
+  decimals: number = TOKEN_DECIMAL
+): bigint => {
   const [integerPart, fractionalPart = ""] = value.split(".");
 
   // Pad fractional part to the right with zeros up to `decimals`
@@ -22,7 +31,7 @@ export const parseUnits = (value: string, decimals: number = 18): bigint => {
 
 export const formatUnits = (
   value: string | bigint,
-  decimals: number = 18
+  decimals: number = TOKEN_DECIMAL
 ): string => {
   const bigValue = BigInt(value); // Convert to BigInt for precision
   const divisor = BigInt(10 ** decimals); // 10^decimals
@@ -67,6 +76,64 @@ export function groupMatchesByDate(matches: MatchData[]): MatchData[][] {
   // Convert the map values (arrays of matches) into a two-dimensional array
   return Array.from(groupedMatches.values());
 }
+
+export function groupVirtualMatches(
+  matches: MatchData[]
+): GroupedVirtualMatches[] {
+  const groupedMatches = matches.reduce((groups, match) => {
+    const date = match.details.fixture.date; // Extract date (ignore time)
+    const key = `${date}-${match.details.league.league}`; // Unique key for each date-league group
+
+    if (!groups[key]) {
+      groups[key] = {
+        date: new Date(date).toISOString(),
+        league: match.details.league.league,
+        matches: [],
+      };
+    }
+
+    groups[key].matches.push(match);
+    return groups;
+  }, {} as Record<string, { date: string; league: string; matches: MatchData[] }>);
+
+  // Step 2: Convert to Array & Sort by Date
+  const sortedGroups = Object.values(groupedMatches).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  return sortedGroups;
+}
+
+export const groupMatchesByRound = (data: UserPrediction[]) => {
+  // Create an object to store groups
+  const groups: Record<number, UserPrediction[]> = {};
+
+  // Group items by the round value
+  data.forEach((item) => {
+    const roundValue = item.match_.round.Some;
+    if (!roundValue) return;
+    // If this round doesn't exist in groups yet, create a new array
+    if (!groups[roundValue]) {
+      groups[roundValue] = [];
+    }
+
+    // Add the current item to its round group
+    groups[roundValue].push(item);
+  });
+
+  return Object.entries(groups)
+    .sort((a: any, b: any) => {
+      // Sort by round numbers in descending order (newest first)
+      // Extract numbers from strings like "Round 1", "Round 2", etc.
+      const roundA = parseInt(a[0].match(/\d+/)?.[0] || 0);
+      const roundB = parseInt(b[0].match(/\d+/)?.[0] || 0);
+      return roundB - roundA; // Descending order
+    })
+    .map((entry) => entry[1]); // Keep only the arrays of objects
+
+  // Convert the object of groups into an array of arrays
+  // return Object.values(groups);
+};
 
 export function formatDateNative(dateString: string): string {
   const date = new Date(dateString);
@@ -163,6 +230,123 @@ export function calculateScore(
   return point;
 }
 
+export const getTagName = (tag: string): string => {
+  let name = "";
+  switch (tag) {
+    case "1":
+      name = "home";
+      break;
+    case "2":
+      name = "away";
+      break;
+
+    case "x":
+      name = "draw";
+      break;
+    default:
+      break;
+  }
+  return name;
+};
+
+export const checkWin = (
+  tag: string,
+  scores: { home: number; away: number }
+): boolean => {
+  let win = false;
+  switch (tag) {
+    case "1":
+      if (scores.home > scores.away) {
+        win = true;
+      }
+      break;
+    case "2":
+      if (scores.away > scores.home) {
+        win = true;
+      }
+      break;
+
+    case "x":
+      if (scores.home === scores.away) {
+        win = true;
+      }
+      break;
+    default:
+      break;
+  }
+  return win;
+};
+
+export const deserializePredictions = (predictions: UserPrediction[]) => {
+  const result: UserPrediction[] = predictions.map((mp) => {
+    return {
+      ...mp,
+      match_: {
+        ...mp.match_,
+        timestamp: Number(mp.match_.timestamp),
+        id: feltToString(mp.match_.id),
+        home: {
+          id: mp.match_.home.id.toString(),
+          goals:
+            mp.match_.home.goals.Some != undefined
+              ? { Some: Number(mp.match_.home.goals.Some) }
+              : { None: true },
+        },
+        away: {
+          id: mp.match_.away.id.toString(),
+          goals:
+            mp.match_.away.goals.Some != undefined
+              ? { Some: Number(mp.match_.away.goals.Some) }
+              : { None: true },
+        },
+        round: mp.match_.round.Some
+          ? { Some: Number(mp.match_.round.Some) }
+          : { None: true },
+        match_type: {
+          variant: mp.match_.match_type.variant.Live
+            ? { Live: true }
+            : { Virtual: true },
+        },
+      },
+      prediction: {
+        ...mp.prediction,
+        odd: mp.prediction.odd.Some
+          ? {
+              Some: {
+                tag:
+                  mp.prediction.odd.Some.tag.toString().length < 3
+                    ? mp.prediction.odd.Some.tag.toString()
+                    : feltToString(mp.prediction.odd.Some.tag),
+                value: Number(mp.prediction.odd.Some.value),
+              },
+            }
+          : { None: true },
+        stake: Number(mp.prediction.stake),
+        prediction_type: {
+          variant: mp.prediction.prediction_type.variant.Multiple
+            ? {
+                Multiple: feltToString(
+                  mp.prediction.prediction_type.variant.Multiple
+                ),
+              }
+            : {
+                Single: {
+                  match_id: feltToString(
+                    mp.prediction.prediction_type.variant.Single?.match_id
+                  ),
+                  odd: feltToString(
+                    mp.prediction.prediction_type.variant.Single?.odd
+                  ),
+                },
+              },
+        },
+      },
+    };
+  });
+
+  return result;
+};
+
 export const feltToString = (felt: any) =>
   felt
     // To hex
@@ -188,9 +372,26 @@ export function parse_error(error?: string): string {
   }
 }
 
+export function generateAvatarFromAddress(
+  address?: string,
+  toString?: boolean
+) {
+  const avatar = createAvatar(adventurer, {
+    seed: `address-${address?.toLowerCase()}`,
+  });
+
+  if (toString) {
+    return avatar.toString();
+  }
+  const svg = avatar.toDataUri();
+
+  return svg;
+}
+
 export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
-export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS!;
-export const TOKEN_ADDRESS = process.env.REACT_APP_TOKEN_ADDRESS!;
+export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS!;
+export const TOKEN_ADDRESS = import.meta.env.VITE_TOKEN_ADDRESS!;
+export const AVNU_API_KEY = import.meta.env.VITE_AVNU_API_KEY!;
 export const TOKEN_DECIMAL = 18;
 export const MINI_APP_URL = "https://t.me/SPLBot/SPL";

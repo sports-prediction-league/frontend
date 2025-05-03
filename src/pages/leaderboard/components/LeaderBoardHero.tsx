@@ -1,24 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
 
 // assets
-import DEFAULT_PROFILE from "../../../assets/leaderboard/default_profile.svg";
 // import BADGE from "../../../assets/leaderboard/badge.svg";
 import LEADER_1 from "../../../assets/leaderboard/leader_1.svg";
 import LEADER_2 from "../../../assets/leaderboard/leader_2.svg";
 import LEADER_3 from "../../../assets/leaderboard/leader_3.svg";
 
-import { useAppSelector } from "src/state/store";
-import toast from "react-hot-toast";
-import useContractInstance from "src/lib/useContractInstance";
-import { cairo } from "starknet";
-import { LeaderboardProp } from "src/state/slices/appSlice";
-import { apiClient, feltToString } from "src/lib/utils";
+import { useAppSelector } from "../../../state/store";
+import { generateAvatarFromAddress } from "../../../lib/utils";
 
-interface Props {
-  filter: boolean;
-  filter_result: LeaderboardProp[];
-}
-const LeaderBoardHero = ({ filter, filter_result }: Props) => {
+
+const LeaderBoardHero = () => {
   const { leaderboard: data } = useAppSelector((state) => state.app);
 
   return (
@@ -30,22 +21,11 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
               <div className="relative">
                 <img
                   src={
-                    (filter ? filter_result : data).length > 1
-                      ? (filter ? filter_result : data)[1]?.user
-                          ?.profile_picture
-                        ? `data:image/jpeg;base64,${
-                            (filter ? filter_result : data)[1]?.user
-                              ?.profile_picture
-                          }`
-                        : ""
-                      : ""
+                    generateAvatarFromAddress(data[1]?.user?.address)
                   }
                   alt=""
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
-                    (e.target as HTMLImageElement).src = DEFAULT_PROFILE;
-                  }}
-                  className="w-full h-full rounded-full"
+
+                  className="w-full h-full rounded-full bg-[#C9F2E9]"
                 />
                 <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 lg:-bottom-7 -bottom-3 ">
                   <img
@@ -60,24 +40,20 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
             <div className="w-full h-full flex flex-col justify-center items-center">
               <div className="lg:w-[133px] md:w-[100px] w-[57px] break-words mt-3">
                 <p className="text-spl-black capitalize lg:text-[15px] md:text-[12px] text-[10px] md:leading-6 font-medium text-center">
-                  {(filter ? filter_result : data).length > 1
-                    ? `${(filter ? filter_result : data)[1]?.user?.username}`
-                    : null}
+                  {data[1]?.user?.username}
                 </p>
+
+                {data.length > 1 ? <p className="text-spl-black/50 capitalize md:text-[10px] text-[7px] text-mute font-medium text-center">
+                  {
+                    `${data[1]?.user?.address?.slice(0, 7)}...${data[1]?.user?.address?.slice(-5)}`
+                  }
+                </p> : null}
 
                 <p className="text-[#009BD6] lg:text-[31px] md:text-[14px] text-[12px] font-bold text-center">
-                  {(filter ? filter_result : data).length > 1
-                    ? (filter ? filter_result : data)[1]?.totalPoints
-                    : null}
+                  {data[1]?.totalPoints}
                 </p>
 
-                {/* {(filter ? filter_result : data).length > 1 ? (
-                  <img
-                    src={BADGE}
-                    alt="ICON"
-                    className="mx-auto mt-3 lg:w-[25px] w-[11px] md:w-[18px] md:h-[18px] lg:h-[25px] h-[11px]"
-                  />
-                ) : null} */}
+
               </div>
             </div>
           </div>
@@ -89,25 +65,14 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
                   <div className="relative">
                     <img
                       src={
-                        (filter ? filter_result : data).length
-                          ? (filter ? filter_result : data)[0]?.user
-                              ?.profile_picture
-                            ? `data:image/jpeg;base64,${
-                                (filter ? filter_result : data)[0]?.user
-                                  .profile_picture
-                              }`
-                            : ""
-                          : ""
+                        generateAvatarFromAddress(data[0]?.user?.address)
                       }
                       alt=""
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
-                        (e.target as HTMLImageElement).src = DEFAULT_PROFILE;
-                      }}
-                      className="rounded-full w-full h-full"
+
+                      className="rounded-full bg-[#C9F2E9] w-full h-full"
                     />
                     <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 lg:-bottom-7 -bottom-3">
-                      {/* <p className="font-semibold text-[8px] text-spl-white">1</p> */}
+
                       <img
                         src={LEADER_1}
                         alt="ICON"
@@ -120,24 +85,23 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
                 <div className="w-full h-full flex flex-col justify-center items-center">
                   <div className="lg:w-[210px] md:w-[150px] w-[57px] break-words mt-3">
                     <p className="text-spl-black capitalize lg:text-[25px] md:text-[15px]  text-[10px] md:leading-[36px] font-medium text-center">
-                      {(filter ? filter_result : data).length
-                        ? `${
-                            (filter ? filter_result : data)[0]?.user?.username
-                          }`
-                        : null}
+                      {
+                        data[0]?.user?.username
+                      }
                     </p>
+
+                    {data.length > 0 ? <p className="text-spl-black/50 capitalize md:text-[10px] text-[7px] text-mute font-medium text-center">
+                      {
+                        `${data[0]?.user?.address?.slice(0, 7)}...${data[0]?.user?.address?.slice(-5)}`
+                      }
+                    </p> : null}
 
                     <p className="text-[#FFAA00] lg:text-[31px] md:text-[20px] text-[12px] font-bold text-center">
-                      {(filter ? filter_result : data).length
-                        ? (filter ? filter_result : data)[0]?.totalPoints
-                        : null}
+                      {data[0]?.totalPoints}
+
                     </p>
 
-                    {/* <img
-                      src={BADGE}
-                      alt="ICON"
-                      className="mx-auto mt-3 lg:w-[35px] w-[15px] md:w-[22px] md:h-[22px] lg:h-[35px] h-[15px]"
-                    /> */}
+
                   </div>
                 </div>
               </div>
@@ -149,22 +113,10 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
               <div className="relative">
                 <img
                   src={
-                    (filter ? filter_result : data).length > 2
-                      ? (filter ? filter_result : data)[2]?.user
-                          ?.profile_picture
-                        ? `data:image/jpeg;base64,${
-                            (filter ? filter_result : data)[2]?.user
-                              ?.profile_picture
-                          }`
-                        : ""
-                      : ""
+                    generateAvatarFromAddress(data[2]?.user?.address)
                   }
                   alt=""
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
-                    (e.target as HTMLImageElement).src = DEFAULT_PROFILE;
-                  }}
-                  className="w-full h-full rounded"
+                  className="w-full h-full rounded-full bg-[#C9F2E9]"
                 />
                 <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 lg:-bottom-7 -bottom-3 ">
                   <img
@@ -179,24 +131,17 @@ const LeaderBoardHero = ({ filter, filter_result }: Props) => {
             <div className="w-full h-full flex flex-col justify-center items-center">
               <div className="lg:w-[133px] md:w-[100px] w-[57px] break-words mt-3">
                 <p className="text-spl-black capitalize lg:text-[15px] md:text-[12px] text-[10px] md:leading-6 font-medium text-center">
-                  {(filter ? filter_result : data).length > 2
-                    ? `${(filter ? filter_result : data)[2]?.user?.username}`
-                    : null}
+                  {data[2]?.user?.username}
                 </p>
+                {data.length > 2 ? <p className="text-spl-black/50 capitalize md:text-[10px] text-[7px] text-mute font-medium text-center">
+                  {
+                    `${data[2]?.user?.address?.slice(0, 7)}...${data[2]?.user?.address?.slice(-5)}`
+                  }
+                </p> : null}
 
                 <p className="text-[#00D95F] lg:text-[31px] md:text-[14px] text-[12px] font-bold text-center">
-                  {(filter ? filter_result : data).length > 2
-                    ? (filter ? filter_result : data)[2]?.totalPoints
-                    : null}
+                  {data[2]?.totalPoints}
                 </p>
-
-                {/* {(filter ? filter_result : data).length > 2 ? (
-                  <img
-                    src={BADGE}
-                    alt="ICON"
-                    className="mx-auto mt-3 lg:w-[25px] w-[11px] md:w-[18px] md:h-[18px] lg:h-[25px] h-[11px]"
-                  />
-                ) : null} */}
               </div>
             </div>
           </div>
