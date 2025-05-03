@@ -47,7 +47,7 @@ import SPLASH_DESKTOP from "./assets/splash/desktop_splash.gif";
 import { useSocket } from "./lib/useSocket";
 import { SessionAccountInterface } from "@argent/invisible-sdk";
 import WinModal from "./common/components/modal/Win";
-import SoccerGame from "./pages/home/components/Play";
+// import SoccerGame from "./pages/home/components/Play";
 declare global {
   interface Window {
     Telegram?: {
