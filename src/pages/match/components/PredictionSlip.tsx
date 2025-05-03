@@ -1,9 +1,9 @@
 import { Loader, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import useConnect from "../../../lib/useConnect";
 import useContractInstance from "../../../lib/useContractInstance";
-import { apiClient, CONTRACT_ADDRESS, parse_error, parseUnits } from "../../../lib/utils";
+import { apiClient, CONTRACT_ADDRESS, formatUnits, parse_error, parseUnits, TOKEN_DECIMAL } from "../../../lib/utils";
 import {
     clearPredictions,
     MatchData,
@@ -21,7 +21,7 @@ const PredictionSlip = ({ }: Props) => {
         .flat();
     const { connected_address } = useAppSelector((state) => state.app);
     const dispatch = useAppDispatch();
-    const stakeRef = useRef<HTMLInputElement>(null);
+    const [stakeRef, setStake] = useState("0")
     const { getWalletProviderContract, getWalletProviderContractERC20 } = useContractInstance();
     const [predicting, setPredicting] = useState(false);
     const { handleConnect } = useConnect();
@@ -35,7 +35,7 @@ const PredictionSlip = ({ }: Props) => {
     function validateStake(stakeFee: string, predictionsLength: number): {
         totalStake: bigint,
         perPredictionStake: bigint,
-    } {
+    } | undefined {
         const normalizedStake = stakeFee.trim();
 
         if (!normalizedStake) {
@@ -47,7 +47,8 @@ const PredictionSlip = ({ }: Props) => {
 
         const numericStake = Number(normalizedStake);
         if (isNaN(numericStake) || numericStake < 0) {
-            throw new Error("Invalid stake amount: must be a valid positive number");
+            toast.error("Invalid stake amount: must be a valid positive number");
+            return;
         }
         if (numericStake === 0) {
             return {
@@ -57,17 +58,19 @@ const PredictionSlip = ({ }: Props) => {
         }
 
         if (predictionsLength <= 0) {
-            throw new Error("Number of predictions must be greater than 0");
+            toast.error("Number of predictions must be greater than 0");
+            return;
         }
 
         const perPrediction = numericStake / predictionsLength;
 
         // Convert total and per prediction to BigInt
-        const totalStake = parseUnits(numericStake.toFixed(18));
-        const perPredictionStake = parseUnits(perPrediction.toFixed(18));
+        const totalStake = parseUnits(numericStake.toFixed(TOKEN_DECIMAL));
+        const perPredictionStake = parseUnits(perPrediction.toFixed(TOKEN_DECIMAL));
 
         if (perPredictionStake < BigInt(1)) {
-            throw new Error("Each prediction must be at least 1 unit (wei)");
+            toast.error("Each prediction must be at least 1 unit (wei)");
+            return;
         }
 
         return {
@@ -80,7 +83,7 @@ const PredictionSlip = ({ }: Props) => {
     const submit = async () => {
         try {
             if (predicting) return;
-            if (!stakeRef.current) return;
+            if (!stakeRef) return;
             const account = window.Wallet?.Account;
 
             const predictions = matches.filter(
@@ -93,18 +96,19 @@ const PredictionSlip = ({ }: Props) => {
 
                 return;
             }
-            const stake = validateStake(stakeRef.current!.value, predictions.length)
-
+            const stake = validateStake(stakeRef, predictions.length)
+            if (!stake) return;
 
             setPredicting(true);
             if (!account) {
-                await handleConnect({ approval: Number(stake.totalStake) > 100 ? (Number(stake.totalStake) + 100).toString() : undefined })
+                await handleConnect({ approval: Number(stake.totalStake) > 100 ? (Number(stake.totalStake) + Number(parseUnits("100"))).toString() : undefined })
             } else {
                 const erc20Contract = getWalletProviderContractERC20();
                 const getAllowance = await erc20Contract!.allowance(connected_address, CONTRACT_ADDRESS!);
+
                 if (Number(getAllowance) < Number(stake.totalStake)) {
                     console.log({ getAllowance, stake })
-                    await handleConnect({ approval: (Number(stake.totalStake) + 100).toString() })
+                    await handleConnect({ approval: (Number(stake.totalStake) + Number(parseUnits("100"))).toString() })
 
                     // await approveToken(((Number(stake.totalStake) - Number(getAllowance)) + 100).toString())
                 }
@@ -162,6 +166,8 @@ const PredictionSlip = ({ }: Props) => {
             console.log(response.data)
             if (response.data.success) {
                 dispatch(submitPrediction());
+                const event = new Event("PREDICTION_MADE");
+                window.dispatchEvent(event);
                 toast.success("Prediction Successful")
 
             } else {
@@ -269,7 +275,7 @@ const PredictionSlip = ({ }: Props) => {
                                         Number((mp.details.odds as any)[mp.prediction!.key!].odd)
                                     )
                                     .reduce((acc, num) => acc + num, 0)
-                                    .toFixed(1)}
+                                    .toFixed(2)}
                             </p>
                         </div>
                         <div className="grid grid-cols-2 items-center justify-between dark:text-white text-black pilat text-xs font-light">
@@ -278,8 +284,12 @@ const PredictionSlip = ({ }: Props) => {
                                 <p className="text-[9px] font-bold m-0">USDC</p>
                                 <input
                                     autoFocus
-                                    ref={stakeRef}
-                                    defaultValue={0}
+                                    onChange={(e) => {
+
+                                        setStake(e.target.value);
+
+                                    }}
+                                    defaultValue={stakeRef}
                                     type="text"
                                     inputMode="decimal"
                                     pattern="^\d*\.?\d*$"
@@ -291,7 +301,35 @@ const PredictionSlip = ({ }: Props) => {
                             <p>Potential Win</p>
                             <div className="flex items-center gap-2">
                                 <p className="text-[9px] font-bold m-0">USDC</p>
-                                <p className="text-[9px]">3.4</p>
+                                <p className="text-[9px]">{validateStake(stakeRef, matches.filter(
+                                    (ft) =>
+                                        Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+                                ).length) ? slipType === "Single" ? matches
+                                    .filter(
+                                        (ft) =>
+                                            Boolean(ft.prediction) &&
+                                            ft.details.fixture.date > Date.now() && !ft.predicted
+                                    )
+                                    .map((mp) =>
+                                        Number((mp.details.odds as any)[mp.prediction!.key!].odd) * Number(formatUnits(validateStake(stakeRef, matches.filter(
+                                            (ft) =>
+                                                Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+                                        ).length)?.perPredictionStake ?? "0"))
+                                    )
+                                    .reduce((acc, num) => acc + num, 0)
+                                    .toFixed(2) : (matches
+                                        .filter(
+                                            (ft) =>
+                                                Boolean(ft.prediction) &&
+                                                ft.details.fixture.date > Date.now() && !ft.predicted
+                                        )
+                                        .map((mp) =>
+                                            Number((mp.details.odds as any)[mp.prediction!.key!].odd)
+                                        )
+                                        .reduce((acc, num) => acc + num, 0) * Number(formatUnits(validateStake(stakeRef, matches.filter(
+                                            (ft) =>
+                                                Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+                                        ).length)?.totalStake ?? ""))).toFixed(2) : 0}</p>
                             </div>
                         </div>
                     </div>

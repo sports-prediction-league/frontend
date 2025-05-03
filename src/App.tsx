@@ -6,9 +6,11 @@ import {
   bulkSetVirtualMatches,
   ConnectCalldata,
   InitDataUnsafe,
+  initializePredictionHistory,
   LeaderboardProp,
   MatchData,
   Prediction,
+  removeVirtualMatchGroup,
   setCalldata,
   setConnectedAddress,
   setIsRegistered,
@@ -32,6 +34,7 @@ import useConnect from "./lib/useConnect";
 import useContractInstance from "./lib/useContractInstance";
 import {
   apiClient,
+  deserializePredictions,
   feltToString,
   formatUnits,
   groupVirtualMatches,
@@ -86,10 +89,12 @@ function App() {
     matches,
     connected_address,
     show_register_modal,
+    reward
   } = useAppSelector((state) => state.app);
   const { getArgentWallet } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
     useContractInstance();
+
   const fetch_matches = async () => {
     try {
       dispatch(setLoadingState(true));
@@ -124,8 +129,10 @@ function App() {
     try {
       // if (current_round === 0) return;
       const contract = getWalletProviderContract();
+      const matchesIDS = matches.virtual.map(mp => mp.matches.map(mp => cairo.felt(mp.details.fixture.id))).flat();
+      if (matchesIDS.length === 0) return;
       const predictions = await contract!.get_user_matches_predictions(
-        matches.virtual.map(mp => mp.matches.map(mp => cairo.felt(mp.details.fixture.id))).flat(),
+        matchesIDS,
         address
       );
 
@@ -154,22 +161,26 @@ function App() {
   };
 
 
-  async function fetchLeaderboardAndUserReward() {
+  async function fetchLeaderboardAndUserReward(address: string | null) {
     try {
-      const contract = connected_address
+      const contract = address
         ? getWalletProviderContract()
         : getRPCProviderContract();
-      const [leaderboard, reward] = await Promise.all([
+      const [leaderboard, _reward] = await Promise.all([
         contract!.get_leaderboard(
           cairo.uint256(1),
           cairo.uint256(1000)
         ),
-        connected_address ? contract!.get_user_reward(connected_address) : undefined
+        address ? contract!.get_user_reward(address) : undefined
       ]);
 
-      console.log({ reward, connected_address })
-      if (connected_address && reward) {
-        dispatch(setReward(formatUnits(reward)))
+
+      if (address && _reward) {
+        const formatedValue = formatUnits(_reward);
+        // if (Number(formatedValue) > Number(reward)) {
+        //   alert(`Win===>> ${Number(formatedValue) - Number(reward)}`);
+        // }
+        dispatch(setReward(formatedValue))
       }
       let structured_data: LeaderboardProp[] = [];
 
@@ -179,7 +190,7 @@ function App() {
           user: {
             username: feltToString(element.user.username),
             address: `0x0${element.user?.address?.toString(16)}`,
-            id: Number(element.user?.id),
+            id: feltToString(element.user?.id),
           },
           totalPoints: Number(element.total_score) / 100,
         };
@@ -194,8 +205,9 @@ function App() {
   }
 
   useEffect(() => {
-    fetchLeaderboardAndUserReward();
+    fetchLeaderboardAndUserReward(connected_address);
   }, [connected_address]);
+
 
   const get_user_details = async (address: string) => {
     try {
@@ -274,8 +286,30 @@ function App() {
 
 
 
+  useEffect(() => {
+    const handle_update = async () => {
+      try {
+        if (!connected_address) {
+          return;
+        }
+        const contract = getWalletProviderContract();
+        const predictions = await contract!.get_user_predictions(connected_address);
+        console.log(predictions);
+        dispatch(initializePredictionHistory(deserializePredictions(predictions)));
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
+    const listener = () => {
+      handle_update(); // call the async function inside a sync wrapper
+    };
 
+    window.addEventListener("PREDICTION_MADE", listener);
+    return () => {
+      window.removeEventListener("PREDICTION_MADE", listener);
+    };
+  }, [connected_address]);
 
 
 
@@ -362,7 +396,7 @@ function App() {
           addLeaderboard({
             totalPoints: 0,
             user: {
-              id: Number(id),
+              id: id,
               username: user_name.trim().toLowerCase(),
               address: connected_address,
             },
@@ -465,18 +499,22 @@ function App() {
     return () => window.removeEventListener("load", handlePageLoad);
   }, []);
 
-  const StartListeners = () => {
+  const StartListeners = (address: string | null) => {
     socket.on("update-matches", (updated_matches: MatchData[]) => {
       console.log({ updated_matches });
       // dispatch(updateMatches(updated_matches));
     });
 
 
-    socket.on("new-matches", async (new_matches: MatchData[]) => {
-      console.log({ new_matches });
+    socket.on("new-matches", async (event: { newMatches: MatchData[], fetchLeaderboard: boolean }) => {
+      console.log({ event });
 
-      dispatch(bulkAddVirtualMatches(groupVirtualMatches(new_matches)));
-      await fetchLeaderboardAndUserReward();
+      if (event.newMatches.length > 0) {
+        dispatch(bulkAddVirtualMatches(groupVirtualMatches(event.newMatches)));
+      }
+      if (event.fetchLeaderboard) {
+        await fetchLeaderboardAndUserReward(address);
+      }
     });
 
     socket.on("match-events-response", (response: MatchData[]) => {
@@ -498,9 +536,15 @@ function App() {
 
 
   useEffect(() => {
-    socket.connect();
-    StartListeners();
-  }, []);
+    if (!socket.connected) {
+      socket.connect();
+    }
+    if (connected_address) {
+      StartListeners(connected_address);
+    }
+
+
+  }, [connected_address]);
 
   useEffect(() => {
 

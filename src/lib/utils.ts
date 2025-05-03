@@ -1,7 +1,11 @@
 import { adventurer } from "@dicebear/collection";
 import { createAvatar } from "@dicebear/core";
 import axios from "axios";
-import { GroupedVirtualMatches, MatchData } from "../state/slices/appSlice";
+import {
+  GroupedVirtualMatches,
+  MatchData,
+  UserPrediction,
+} from "../state/slices/appSlice";
 
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_RENDER_ENDPOINT,
@@ -10,7 +14,10 @@ export const apiClient = axios.create({
   },
 });
 
-export const parseUnits = (value: string, decimals: number = 18): bigint => {
+export const parseUnits = (
+  value: string,
+  decimals: number = TOKEN_DECIMAL
+): bigint => {
   const [integerPart, fractionalPart = ""] = value.split(".");
 
   // Pad fractional part to the right with zeros up to `decimals`
@@ -24,7 +31,7 @@ export const parseUnits = (value: string, decimals: number = 18): bigint => {
 
 export const formatUnits = (
   value: string | bigint,
-  decimals: number = 18
+  decimals: number = TOKEN_DECIMAL
 ): string => {
   const bigValue = BigInt(value); // Convert to BigInt for precision
   const divisor = BigInt(10 ** decimals); // 10^decimals
@@ -97,14 +104,14 @@ export function groupVirtualMatches(
   return sortedGroups;
 }
 
-export const groupMatchesByRound = (data: MatchData[]) => {
+export const groupMatchesByRound = (data: UserPrediction[]) => {
   // Create an object to store groups
-  const groups: Record<number, MatchData[]> = {};
+  const groups: Record<number, UserPrediction[]> = {};
 
   // Group items by the round value
   data.forEach((item) => {
-    const roundValue = item.round;
-
+    const roundValue = item.match_.round.Some;
+    if (!roundValue) return;
     // If this round doesn't exist in groups yet, create a new array
     if (!groups[roundValue]) {
       groups[roundValue] = [];
@@ -222,6 +229,123 @@ export function calculateScore(
 
   return point;
 }
+
+export const getTagName = (tag: string): string => {
+  let name = "";
+  switch (tag) {
+    case "1":
+      name = "home";
+      break;
+    case "2":
+      name = "away";
+      break;
+
+    case "x":
+      name = "draw";
+      break;
+    default:
+      break;
+  }
+  return name;
+};
+
+export const checkWin = (
+  tag: string,
+  scores: { home: number; away: number }
+): boolean => {
+  let win = false;
+  switch (tag) {
+    case "1":
+      if (scores.home > scores.away) {
+        win = true;
+      }
+      break;
+    case "2":
+      if (scores.away > scores.home) {
+        win = true;
+      }
+      break;
+
+    case "x":
+      if (scores.home === scores.away) {
+        win = true;
+      }
+      break;
+    default:
+      break;
+  }
+  return win;
+};
+
+export const deserializePredictions = (predictions: UserPrediction[]) => {
+  const result: UserPrediction[] = predictions.map((mp) => {
+    return {
+      ...mp,
+      match_: {
+        ...mp.match_,
+        timestamp: Number(mp.match_.timestamp),
+        id: feltToString(mp.match_.id),
+        home: {
+          id: mp.match_.home.id.toString(),
+          goals:
+            mp.match_.home.goals.Some != undefined
+              ? { Some: Number(mp.match_.home.goals.Some) }
+              : { None: true },
+        },
+        away: {
+          id: mp.match_.away.id.toString(),
+          goals:
+            mp.match_.away.goals.Some != undefined
+              ? { Some: Number(mp.match_.away.goals.Some) }
+              : { None: true },
+        },
+        round: mp.match_.round.Some
+          ? { Some: Number(mp.match_.round.Some) }
+          : { None: true },
+        match_type: {
+          variant: mp.match_.match_type.variant.Live
+            ? { Live: true }
+            : { Virtual: true },
+        },
+      },
+      prediction: {
+        ...mp.prediction,
+        odd: mp.prediction.odd.Some
+          ? {
+              Some: {
+                tag:
+                  mp.prediction.odd.Some.tag.toString().length < 3
+                    ? mp.prediction.odd.Some.tag.toString()
+                    : feltToString(mp.prediction.odd.Some.tag),
+                value: Number(mp.prediction.odd.Some.value),
+              },
+            }
+          : { None: true },
+        stake: Number(mp.prediction.stake),
+        prediction_type: {
+          variant: mp.prediction.prediction_type.variant.Multiple
+            ? {
+                Multiple: feltToString(
+                  mp.prediction.prediction_type.variant.Multiple
+                ),
+              }
+            : {
+                Single: {
+                  match_id: feltToString(
+                    mp.prediction.prediction_type.variant.Single?.match_id
+                  ),
+                  odd: feltToString(
+                    mp.prediction.prediction_type.variant.Single?.odd
+                  ),
+                },
+              },
+        },
+      },
+    };
+  });
+
+  return result;
+};
 
 export const feltToString = (felt: any) =>
   felt

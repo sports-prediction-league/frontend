@@ -13,6 +13,7 @@ import PredictionSlip from "../components/PredictionSlip";
 import { X } from "lucide-react";
 import { MdOnlinePrediction } from "react-icons/md";
 import { Modal } from "antd";
+import { useTheme } from "../../../context/ThemeContext";
 
 
 
@@ -82,13 +83,13 @@ const Match = () => {
 
   const [open_modal, set_open_modal] = useState(false);
   const [slip_open, set_slip_open] = useState(false);
-
+  const { isDark, } = useTheme();
 
   return (
     <div className="xl:px-48 px-3" >
       <MatchHero />
       <Modal
-
+        wrapClassName={isDark ? "dark" : undefined}
         open={slip_open}
         onCancel={() => {
           set_slip_open(false);
@@ -96,17 +97,16 @@ const Match = () => {
 
         styles={{
           content: {
-            background: "#042822",
+            background: isDark ? "#042822" : "white",
             border: "none",
             borderRadius: "10px",
             padding: "15px 2px"
           },
-          // header: { background: "white", color: "white", padding: "2px" },
 
         }}
         destroyOnClose
 
-        closeIcon={<X color="white" />}
+        closeIcon={<X color={isDark ? "white" : "rgba(0,0,0,.8)"} />}
 
         okButtonProps={{ hidden: true }}
         cancelButtonProps={{ hidden: true }}

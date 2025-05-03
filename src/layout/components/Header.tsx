@@ -57,7 +57,7 @@ const Header = () => {
 
         <div className="md:flex hidden flex-wrap justify-end items-center gap-[15px] ">
           <Button
-            text="Upcoming Matches"
+            text="Matches"
             onClick={() => handleNavigation("/")}
             background={location.pathname === "/" ? undefined : "#FFFFFF"}
             textColor={location.pathname === "/" ? undefined : "#000000"}
@@ -72,6 +72,19 @@ const Header = () => {
             }
             textColor={
               location.pathname === "/leaderboard" ? undefined : "#000000"
+            }
+            fontWeight="font-medium"
+            fontSize=" md:text-sm text-xs leading-none"
+
+          />
+          <Button
+            text="My Predictions"
+            onClick={() => handleNavigation("/history")}
+            background={
+              location.pathname === "/history" ? undefined : "#FFFFFF"
+            }
+            textColor={
+              location.pathname === "/history" ? undefined : "#000000"
             }
             fontWeight="font-medium"
             fontSize=" md:text-sm text-xs leading-none"
