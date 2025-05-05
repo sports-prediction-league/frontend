@@ -1,26 +1,31 @@
-import { CircleX } from "lucide-react";
+import { CircleX, Loader } from "lucide-react";
 import Title from "../../../common/components/tittle/Title";
 import PredictionSlip from "../../match/components/PredictionSlip";
 import { FaRegCircleCheck } from "react-icons/fa6";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../state/store";
 import useContractInstance from "../../../lib/useContractInstance";
 import { initializePredictionHistory, UserPrediction } from "../../../state/slices/appSlice";
 import { checkWin, deserializePredictions, formatDateNative, formatUnits, getTagName } from "../../../lib/utils";
 const History = () => {
+    const [loading, setLoading] = useState(false);
     const { connected_address, prediction_history } = useAppSelector(state => state.app);
     const { getWalletProviderContract } = useContractInstance()
     const dispatch = useAppDispatch();
     useEffect(() => {
         (async function () {
             try {
+                if (loading) return;
                 if (!connected_address) return;
                 if (prediction_history.length > 0) return;
                 const contract = getWalletProviderContract();
+                setLoading(true);
                 const predictions = await contract!.get_user_predictions(connected_address);
                 console.log(predictions)
                 dispatch(initializePredictionHistory(deserializePredictions(predictions)));
+                setLoading(false);
             } catch (error: any) {
+                setLoading(false);
 
                 console.log(error)
             }
@@ -30,6 +35,16 @@ const History = () => {
         <div className="md:my-10 my-5">
             <Title title="Prediction History" />
         </div>
+
+        {loading ? <div className="flex items-center justify-center">
+            <Loader size={22} className="mr-1.5 animate-spin dark:text-white text-black " />
+        </div> : null}
+
+        {!loading && prediction_history.length == 0 ?
+            <div className="flex items-center justify-center">
+                <p className="dark:text-white/50 text-black/50">No Predictions made</p>
+            </div> : null
+        }
 
         <div className="xl:px-48 px-3" >
             <div className=" w-full flex flex-col md:gap-[90px] gap-[18px]">
@@ -58,7 +73,7 @@ const History = () => {
                                     <div className="flex md:items-center items-start md:flex-row flex-col gap-4 justify-between dark:text-white/80 text-[#064F43] font-[450] text-xs px-5 py-7 border-b-[1px] dark:border-b-white/10 border-b-[#0000001A]">
                                         {/* <p>Prediction type: Multiple</p> */}
                                         {/* <p>Total odds: 32.30</p> */}
-                                        <p>Total stake: {Number(formatUnits(totalStakes.toString())).toFixed(2)}<span className="text-[7px]">USDC</span></p>
+                                        <p>Total stake: {Number(formatUnits(totalStakes.toLocaleString("fullwide", { useGrouping: false }))).toFixed(2)}<span className="text-[7px]">USDC</span></p>
                                         <p>Total return: {Number(formatUnits(totalReturns)).toFixed(2)} <span className="text-[7px]">USDC</span></p>
                                     </div>
 
@@ -135,7 +150,7 @@ const Card = ({ prediction }: Props) => {
 
                 </div>
                 <div className="flex items-center gap-2">
-                    <p>stake: {Number(formatUnits(prediction.prediction.stake.toString())).toFixed(2)}</p>
+                    <p>stake: {Number(formatUnits(prediction.prediction.stake.toLocaleString("fullwide", { useGrouping: false, }))).toFixed(2)}</p>
                     {prediction.prediction.odd.Some ? <p>|</p> : null}
                     {prediction.prediction.odd.Some ? <p>odd: {prediction.prediction.odd.Some?.value / 100}</p> : null}
                 </div>
