@@ -5,18 +5,18 @@ import { useTheme } from '../../../context/ThemeContext';
 import useEscapeKey from '../../../lib/useEscapeKey';
 
 interface WinModalProps {
-    points: number;
+    rank: string;
     isOpen?: boolean;
     onClose?: () => void;
-    shareText?: string;
+    shareText: string;
     // shareUrl?: string;
 }
 
 export default function WinModal({
-    points = 10.5,
+    rank,
     isOpen,
     onClose = () => { },
-    shareText = "I just upgraded to {points} points!",
+    shareText,
     // shareUrl = window.location.href
 }: WinModalProps) {
 
@@ -26,7 +26,7 @@ export default function WinModal({
     const [showShareOptions, setShowShareOptions] = useState(false);
 
     // Format share text with actual points
-    const formattedShareText = shareText.replace('{points}', points.toString());
+    // const formattedShareText = shareText.replace('{points}', points.toString());
 
     // Colors configuration based on mode
     const colors = {
@@ -131,8 +131,8 @@ export default function WinModal({
                     Congratulations!
                 </h2>
                 <p className="text-xl font-semibold mb-6" style={{ color: colors.text.secondary }}>
-                    You've upgraded to <span className="text-2xl" style={{ color: colors.text.highlight }}>
-                        {points} points
+                    You've ranked up to <span className="text-2xl" style={{ color: colors.text.highlight }}>
+                        #{rank}
                     </span>!
                 </p>
 
@@ -164,7 +164,7 @@ export default function WinModal({
                 {/* Share options component */}
                 {showShareOptions && (
                     <ShareOptions
-                        text={formattedShareText}
+                        text={shareText}
                         // url={shareUrl}
                         isDarkMode={isDarkMode}
                         className="absolute w-64 left-1/2 bottom-10 transform -translate-x-1/2"

@@ -10,14 +10,19 @@ import {
   LeaderboardProp,
   MatchData,
   Prediction,
+  removeUser,
+  reset,
   setCalldata,
   setConnectedAddress,
   setIsRegistered,
   setLoadingState,
+  setPredictions,
+  setPredictionStatus,
   // setPredictions,
   setReward,
   setRounds,
   setShowRegisterModal,
+  submitPrediction,
   update_profile,
   updateVirtualMatches,
   // updateMatches,
@@ -48,6 +53,7 @@ import { useSocket } from "./lib/useSocket";
 import { SessionAccountInterface } from "@argent/invisible-sdk";
 import WinModal from "./common/components/modal/Win";
 // import SoccerGame from "./pages/home/components/Play";
+// import SoccerGame from "./pages/home/components/Play";
 declare global {
   interface Window {
     Telegram?: {
@@ -71,27 +77,21 @@ declare global {
   }
 }
 
-
-
-
-
-
-
-
 function App() {
   let socket = useSocket(import.meta.env.VITE_RENDER_ENDPOINT!, {
     reconnectionDelay: 10000,
     transports: ["websocket"],
     autoConnect: false,
   });
+  const [rankAndPoint, setRankAndPoint] = useState<null | {
+    rank: number;
+    point: number;
+  }>(null);
+
   const [loaded, setLoaded] = useState(false);
   const dispatch = useAppDispatch();
-  const {
-    matches,
-    connected_address,
-    show_register_modal,
-
-  } = useAppSelector((state) => state.app);
+  const { matches, connected_address, show_register_modal, predicted_matches } =
+    useAppSelector((state) => state.app);
   const { getArgentWallet } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
     useContractInstance();
@@ -100,7 +100,7 @@ function App() {
     try {
       dispatch(setLoadingState(true));
       const response = await apiClient.get("/matches");
-      console.log(response.data)
+      console.log(response.data);
 
       if (response.data.success) {
         // const groupedLiveMatches = groupMatchesByDate(
@@ -112,13 +112,18 @@ function App() {
             response.data.data.current_round,
           ])
         );
-        dispatch(bulkSetVirtualMatches(groupVirtualMatches(response.data.data.matches.virtual)));
+        if (matches.virtual.length === 0) {
+          dispatch(
+            bulkSetVirtualMatches(
+              groupVirtualMatches(response.data.data.matches.virtual)
+            )
+          );
+        }
       }
       dispatch(setLoadingState(false));
-      setLoaded(true)
+      setLoaded(true);
       // console.log(response.data);
     } catch (error: any) {
-
       toast.error(
         error.response?.data?.message || error.message || "An error occurred"
       );
@@ -130,14 +135,16 @@ function App() {
     try {
       // if (current_round === 0) return;
       const contract = getWalletProviderContract();
-      const matchesIDS = matches.virtual.map(mp => mp.matches.map(mp => cairo.felt(mp.details.fixture.id))).flat();
+      const matchesIDS = matches.virtual
+        .map((mp) => mp.matches.map((mp) => cairo.felt(mp.details.fixture.id)))
+        .flat();
       if (matchesIDS.length === 0) return;
       const predictions = await contract!.get_user_matches_predictions(
         matchesIDS,
         address
       );
 
-      console.log({ predictions })
+      // console.log({ predictions })
 
       let structured: Prediction[] = [];
 
@@ -146,21 +153,63 @@ function App() {
 
         if (element.inputed) {
           structured.push({
-            away: Number(element.away),
-            home: Number(element.home),
-            inputed: element.inputed,
-            match_id: `${element.match_id}`,
-            stake: Number(element.stake).toString(),
+            stake: Number(element.stake),
+            odd: element.odd.Some
+              ? {
+                Some: {
+                  tag:
+                    element.odd.Some.tag.toString().length < 3
+                      ? element.odd.Some.tag.toString()
+                      : feltToString(element.odd.Some.tag),
+                  value: Number(element.odd.Some.value),
+                },
+              }
+              : { None: true },
+            prediction_type: {
+              variant: element.prediction_type.variant.Multiple
+                ? {
+                  Multiple: {
+                    match_id: feltToString(
+                      element.prediction_type.variant.Multiple.match_id
+                    ),
+                    pair_id: feltToString(
+                      element.prediction_type.variant.Multiple.pair_id
+                    ),
+                    odd: feltToString(
+                      element.prediction_type.variant.Multiple.odd
+                    ),
+                  },
+                }
+                : {
+                  Single: {
+                    match_id: feltToString(
+                      element.prediction_type.variant.Single?.match_id
+                    ),
+                    odd: feltToString(
+                      element.prediction_type.variant.Single?.odd
+                    ),
+                  },
+                },
+            },
           });
         }
       }
 
-      // dispatch(setPredictions(structured));
+      dispatch(setPredictions(structured));
     } catch (error: any) {
       console.log(error);
     }
   };
 
+  useEffect(() => {
+    (function () {
+      if (predicted_matches.length > 0) {
+        if (matches.virtual.length > 0) {
+          dispatch(setPredictions());
+        }
+      }
+    })();
+  }, [matches]);
 
   async function fetchLeaderboardAndUserReward(address: string | null) {
     try {
@@ -168,20 +217,17 @@ function App() {
         ? getWalletProviderContract()
         : getRPCProviderContract();
       const [leaderboard, _reward] = await Promise.all([
-        contract!.get_leaderboard(
-          cairo.uint256(1),
-          cairo.uint256(1000)
-        ),
-        address ? contract!.get_user_reward(address) : undefined
+        contract!.get_leaderboard(cairo.uint256(1), cairo.uint256(1000)),
+        address ? contract!.get_user_reward(address) : undefined,
       ]);
-
 
       if (address && _reward) {
         const formatedValue = formatUnits(_reward);
+
         // if (Number(formatedValue) > Number(reward)) {
         //   alert(`Win===>> ${Number(formatedValue) - Number(reward)}`);
         // }
-        dispatch(setReward(formatedValue))
+        dispatch(setReward(formatedValue));
       }
       let structured_data: LeaderboardProp[] = [];
 
@@ -195,11 +241,52 @@ function App() {
           },
           totalPoints: Number(element.total_score) / 100,
         };
+
         structured_data.push(construct);
       }
+
+      const sorted = structured_data.sort(
+        (a, b) => b.totalPoints - a.totalPoints
+      );
+
+      if (address) {
+        const userIndex = sorted.findIndex(
+          (fd) =>
+            parseInt(fd.user.address ?? "0x0", 16) === parseInt(address, 16)
+        );
+        if (userIndex !== -1) {
+          const construct = sorted[userIndex];
+          const localstorageRankAndPoint =
+            localStorage.getItem("rank_and_point");
+          if (localstorageRankAndPoint) {
+            const parsed = JSON.parse(localstorageRankAndPoint);
+            if (userIndex + 1 < Number(parsed.rank)) {
+              setRankAndPoint({
+                point: construct.totalPoints,
+                rank: userIndex + 1,
+              });
+              setWinModalOpen(true);
+            }
+          } else {
+            if (construct.totalPoints > 0) {
+              setRankAndPoint({
+                point: construct.totalPoints,
+                rank: userIndex + 1,
+              });
+              setWinModalOpen(true);
+            }
+          }
+
+          localStorage.setItem(
+            "rank_and_point",
+            JSON.stringify({
+              rank: userIndex + 1,
+              point: construct.totalPoints,
+            })
+          );
+        }
+      }
       dispatch(bulkAddLeaderboard(structured_data));
-
-
     } catch (error) {
       console.log({ error });
     }
@@ -208,7 +295,6 @@ function App() {
   useEffect(() => {
     fetchLeaderboardAndUserReward(connected_address);
   }, [connected_address]);
-
 
   const get_user_details = async (address: string) => {
     try {
@@ -220,9 +306,14 @@ function App() {
         }
       } else {
         dispatch(setIsRegistered(true));
-        dispatch(update_profile({ username: feltToString(result.username), id: feltToString(result.id), address: `0x0${BigInt(result.address).toString(16)}` }))
+        dispatch(
+          update_profile({
+            username: feltToString(result.username),
+            id: feltToString(result.id),
+            address: `0x0${BigInt(result.address).toString(16)}`,
+          })
+        );
       }
-
     } catch (error) {
       console.log(error);
     }
@@ -245,30 +336,28 @@ function App() {
   }, []);
 
   useEffect(() => {
-    let interval: any;
+    let interval: NodeJS.Timeout | null = null;
+
     const handle_wallet_change = () => {
       if (!window.Wallet?.IsConnected) {
-        dispatch(setConnectedAddress(null));
+        dispatch(reset());
         return;
       }
-      interval = setInterval(() => {
-        if (connected_address) {
-          clearInterval(interval);
-        }
-        if (window.Wallet) {
-          if ((window.Wallet.Account as any)?.address) {
-            if (!connected_address) {
-              dispatch(
-                setConnectedAddress(
-                  (window.Wallet?.Account as any)?.address ?? null
-                )
-              );
-            }
 
-            clearInterval(interval);
-          }
-        } else {
-          clearInterval(interval);
+      if (interval) clearInterval(interval);
+
+      interval = setInterval(() => {
+        const address = window.Wallet?.Account?.address;
+
+        if (!connected_address && address) {
+          dispatch(setConnectedAddress(address));
+          clearInterval(interval!);
+          interval = null;
+        }
+
+        if (connected_address || !window.Wallet) {
+          clearInterval(interval!);
+          interval = null;
         }
       }, 500);
     };
@@ -276,16 +365,15 @@ function App() {
     handle_wallet_change();
 
     window.addEventListener("windowWalletClassChange", handle_wallet_change);
+
     return () => {
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
       window.removeEventListener(
         "windowWalletClassChange",
         handle_wallet_change
       );
     };
-  }, []);
-
-
+  }, [connected_address, dispatch]);
 
   useEffect(() => {
     const handle_update = async () => {
@@ -294,9 +382,13 @@ function App() {
           return;
         }
         const contract = getWalletProviderContract();
-        const predictions = await contract!.get_user_predictions(connected_address);
-        console.log(predictions);
-        dispatch(initializePredictionHistory(deserializePredictions(predictions)));
+        const predictions = await contract!.get_user_predictions(
+          connected_address
+        );
+
+        dispatch(
+          initializePredictionHistory(deserializePredictions(predictions))
+        );
       } catch (error) {
         console.error(error);
       }
@@ -312,7 +404,20 @@ function App() {
     };
   }, [connected_address]);
 
-
+  useEffect(() => {
+    window.addEventListener("MAKE_OUTSIDE_EXECUTION_CALL", (event: Event) => {
+      if (!socket.connected) {
+        return;
+      }
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail.payload && customEvent.detail.type) {
+        socket.emit("make-outside-execution-call", customEvent.detail);
+      }
+    });
+    return () => {
+      window.removeEventListener("MAKE_OUTSIDE_EXECUTION_CALL", () => { });
+    };
+  }, []);
 
   const [registering, set_registering] = useState(false);
   const register_user = async (user_name?: string) => {
@@ -363,13 +468,11 @@ function App() {
         return;
       }
 
-
       const account = window.Wallet.Account;
 
       // const tx = await account.execute(call);
       // const receipt = await account.waitForTransaction(tx.transaction_hash);
       // console.log(receipt);
-
 
       // const oi = await account.getDeploymentPayload();
       // setRes(JSON.stringify(oi));
@@ -377,7 +480,6 @@ function App() {
       const outsideExecutionPayload = await account.getOutsideExecutionPayload({
         calls: [call],
       });
-
 
       // console.log(outsideExecutionPayload)
 
@@ -388,34 +490,53 @@ function App() {
         return;
       }
 
-      const response = await apiClient.post(
-        "/execute",
-        outsideExecutionPayload
-      );
+      const user_construct = {
+        totalPoints: 0,
+        user: {
+          id: id,
+          username: user_name.trim().toLowerCase(),
+          address: connected_address,
+        },
+      };
 
-      if (response.data.success) {
-        dispatch(
-          addLeaderboard({
-            totalPoints: 0,
-            user: {
-              id: id,
-              username: user_name.trim().toLowerCase(),
-              address: connected_address,
-            },
-          })
-        );
-        dispatch(setShowRegisterModal(false));
-        dispatch(setIsRegistered(true));
-        toast.success("Username set!");
-      } else {
-        toast.error(
-          response.data?.message ?? "OOOPPPSSS!! Something went wrong"
-        );
-      }
+      dispatch(addLeaderboard(user_construct))
 
-      set_registering(false);
+      const event = new CustomEvent("MAKE_OUTSIDE_EXECUTION_CALL", {
+        detail: {
+          type: "REGISTRATION",
+          payload: outsideExecutionPayload,
+        },
+      });
+      window.dispatchEvent(event);
+
+      // const response = await apiClient.post(
+      //   "/execute",
+      //   outsideExecutionPayload
+      // );
+
+      // if (response.data.success) {
+      //   dispatch(
+      // addLeaderboard({
+      //   totalPoints: 0,
+      //   user: {
+      //     id: id,
+      //     username: user_name.trim().toLowerCase(),
+      //     address: connected_address,
+      //   },
+      // })
+      //   );
+      //   dispatch(setShowRegisterModal(false));
+      //   dispatch(setIsRegistered(true));
+      //   toast.success("Username set!");
+      // } else {
+      //   toast.error(
+      //     response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+      //   );
+      // }
+
+      // set_registering(false);
     } catch (error: any) {
-      console.log(error)
+      console.log(error);
       toast.error(
         error.response?.data?.message
           ? parse_error(error.response?.data?.message)
@@ -424,8 +545,6 @@ function App() {
       set_registering(false);
     }
   };
-
-
 
   // useEffect(() => {
   //   if (connected_address) {
@@ -480,7 +599,6 @@ function App() {
   // }, [connected_address]);
   // const [res, set_res] = useState("");
 
-
   const [splash_active, set_splash_active] = useState(true);
   // const [isPageLoaded, setIsPageLoaded] = useState(false);
 
@@ -496,7 +614,7 @@ function App() {
       return () => clearTimeout(timer);
     };
 
-    handlePageLoad()
+    handlePageLoad();
 
     // window.addEventListener("load", handlePageLoad);
 
@@ -509,35 +627,74 @@ function App() {
       // dispatch(updateMatches(updated_matches));
     });
 
+    socket.on(
+      "new-matches",
+      async (event: { newMatches: MatchData[]; fetchLeaderboard: boolean }) => {
+        console.log({ event });
 
-    socket.on("new-matches", async (event: { newMatches: MatchData[], fetchLeaderboard: boolean }) => {
-      console.log({ event });
-
-      if (event.newMatches.length > 0) {
-        dispatch(bulkAddVirtualMatches(groupVirtualMatches(event.newMatches)));
+        if (event.newMatches.length > 0) {
+          dispatch(
+            bulkAddVirtualMatches(groupVirtualMatches(event.newMatches))
+          );
+        }
+        if (event.fetchLeaderboard) {
+          await fetchLeaderboardAndUserReward(address);
+        }
       }
-      if (event.fetchLeaderboard) {
-        await fetchLeaderboardAndUserReward(address);
-      }
-    });
+    );
 
     socket.on("match-events-response", (response: MatchData[]) => {
-      console.log({ match_event_response: response }, "==========>>>>>>>")
-      dispatch(updateVirtualMatches(response))
-    })
+      console.log({ match_event_response: response }, "==========>>>>>>>");
+      dispatch(updateVirtualMatches(response));
+    });
+
+    socket.on(
+      "execution-response",
+      (response: { type: "REGISTRATION" | "PREDICTION"; tx: any }) => {
+        console.log({ response }, "execution response ==========>>>>>>>");
+        if (response.type === "PREDICTION") {
+          if (response.tx.success) {
+            const event = new Event("PREDICTION_MADE");
+            window.dispatchEvent(event);
+            toast.success("Prediction Successful");
+            dispatch(submitPrediction());
+          } else {
+            toast.error(response.tx.message);
+          }
+
+          dispatch(setPredictionStatus(false));
+        } else if (response.type === "REGISTRATION") {
+          if (response.tx.success) {
+
+            dispatch(setShowRegisterModal(false));
+            dispatch(setIsRegistered(true));
+            toast.success("Username set!");
+          } else {
+            dispatch(removeUser(address!))
+            toast.error(response.tx.message);
+          }
+
+          set_registering(false);
+        }
+      }
+    );
   };
+
+
 
 
   useEffect(() => {
     window.addEventListener("matchStatusChange", (event: Event) => {
       const customEvent = event as CustomEvent;
+      if (!socket.connected) {
+        return;
+      }
       socket.emit("match-events-request", customEvent.detail);
       // console.log("Match status changed:", customEvent.detail);
     });
 
     return () => window.removeEventListener("matchStatusChange", () => { });
-  }, [])
-
+  }, []);
 
   useEffect(() => {
     if (!socket.connected) {
@@ -546,19 +703,16 @@ function App() {
     if (connected_address) {
       StartListeners(connected_address);
     }
-
-
   }, [connected_address]);
 
   useEffect(() => {
-
     const argentWebWallet = getArgentWallet();
     argentWebWallet
       .connect()
       .then((res) => {
-
         if (!res) {
           console.log("Not connected");
+          localStorage.removeItem("rank_and_point");
           return;
         }
 
@@ -567,6 +721,7 @@ function App() {
 
         if (account.getSessionStatus() !== "VALID") {
           console.log("Session is not valid");
+          localStorage.removeItem("rank_and_point");
           return;
         }
 
@@ -586,7 +741,7 @@ function App() {
 
         const event = new Event("windowWalletClassChange");
         window.dispatchEvent(event);
-        console.log(res)
+        console.log(res);
         console.log("Callback data", callbackData); // -- custom_callback_string
         console.log("Approval transaction hash", approvalTransactionHash); // -- custom_callback_string
       })
@@ -595,22 +750,25 @@ function App() {
       });
   }, []);
 
-
-
-
-
-
-
-
   // if (!isPageLoaded) {
   //   return null; // Wait until the page has fully loaded
   // }
 
-  // return <SoccerGame />
+  // if (matches.virtual.length) {
+  //   return <SoccerGame gameEvent={matches.virtual[0]?.matches[0]?.details?.events ?? []} />
+  // }
 
   return (
     <ThemeProvider>
-      <WinModal points={20} isOpen={isWinModalOpen} onClose={() => { setWinModalOpen(false) }} />
+      <WinModal
+        rank={rankAndPoint?.rank?.toString() ?? ""}
+        shareText={`🏆 BOOM! Just hit Rank #${rankAndPoint?.rank} on @splxgg! My football predictions are 🔥. Think you can do better? Game on! 👉 ${window.location.origin} #Play_Predict_Win #PredictionKing #SPL`}
+        isOpen={isWinModalOpen && rankAndPoint !== null}
+        onClose={() => {
+          setWinModalOpen(false);
+          setRankAndPoint(null);
+        }}
+      />
       {splash_active ? null : (
         <RegisterModal
           loading={registering}

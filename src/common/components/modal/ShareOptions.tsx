@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Twitter, Facebook, Linkedin, Copy, Check } from 'lucide-react';
+import { Facebook, Linkedin, Copy, Check } from 'lucide-react';
+import { RiTwitterXFill } from "react-icons/ri";
+import { FaTelegram } from "react-icons/fa";
 
 interface ShareOptionsProps {
     text: string;
@@ -24,9 +26,10 @@ const ShareOptions = ({
         border: isDarkMode ? '#2D947A' : '#E6E6E6',
         text: isDarkMode ? '#FFFFFF' : '#042822',
         iconBg: {
-            twitter: '#1DA1F2',
+            twitter: '#000000',
             facebook: '#4267B2',
             linkedin: '#0077B5',
+            telegram: '#0088cc',
             copy: isDarkMode ? '#2D947A' : '#00644C'
         }
     };
@@ -44,6 +47,11 @@ const ShareOptions = ({
 
     const shareToLinkedin = () => {
         const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(text)}`;
+        window.open(shareUrl, '_blank');
+    };
+
+    const shareToTelegram = () => {
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(text)}`;
         window.open(shareUrl, '_blank');
     };
 
@@ -78,7 +86,7 @@ const ShareOptions = ({
                     className="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
                     style={{ backgroundColor: colors.iconBg.twitter }}
                 >
-                    <Twitter size={18} color="#FFFFFF" />
+                    <RiTwitterXFill size={18} color="#FFFFFF" />
                 </button>
 
                 <button
@@ -95,6 +103,14 @@ const ShareOptions = ({
                     style={{ backgroundColor: colors.iconBg.linkedin }}
                 >
                     <Linkedin size={18} color="#FFFFFF" />
+                </button>
+
+                <button
+                    onClick={shareToTelegram}
+                    className="w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                    style={{ backgroundColor: colors.iconBg.telegram }}
+                >
+                    <FaTelegram size={18} color="#FFFFFF" />
                 </button>
 
                 <button

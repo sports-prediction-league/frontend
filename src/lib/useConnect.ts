@@ -50,6 +50,7 @@ const useConnect = () => {
     approval?: string;
   }) => {
     try {
+      console.log(approval.toString());
       const argentWebWallet = getArgentWallet();
       const response = await argentWebWallet.requestConnection({
         callbackData: callbackData,
@@ -110,6 +111,7 @@ const useConnect = () => {
       Account: undefined,
       IsConnected: false,
     };
+    localStorage.removeItem("rank_and_point");
     dispatch(setConnectedAddress(null));
     const event = new Event("windowWalletClassChange");
     window.dispatchEvent(event);

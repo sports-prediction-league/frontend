@@ -21,11 +21,11 @@ const LeaderBoard = () => {
 
       <div className="flex flex-col justify-center items-center gap-[14px] md:mt-[72px] mt-[24px] w-full px-3">
         {(data)
-          .slice(0)
+          .slice(3)
           .map((_data: LeaderboardProp, _key: number) => {
             return (
               <PointCard
-                index={_key}
+                index={_key + 3}
                 data={_data}
                 key={_key}
                 active={
