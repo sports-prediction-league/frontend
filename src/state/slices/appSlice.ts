@@ -1,6 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { groupMatchesByRound, groupVirtualMatches } from "../../lib/utils";
+import {
+  getTagName,
+  groupMatchesByRound,
+  groupVirtualMatches,
+} from "../../lib/utils";
 
 interface Fixture {
   id: string;
@@ -52,25 +56,7 @@ export type UserPrediction = {
       };
     };
   };
-  prediction: {
-    stake: number;
-    odd: {
-      Some?: {
-        value: number;
-        tag: string;
-      };
-      None?: boolean;
-    };
-    prediction_type: {
-      variant: {
-        Multiple?: string;
-        Single?: {
-          match_id: string;
-          odd: string;
-        };
-      };
-    };
-  };
+  prediction: Prediction;
 };
 
 type Position = {
@@ -101,10 +87,10 @@ interface Team {
   logo: string;
 }
 
-interface Teams {
+export type Teams = {
   home: Team;
   away: Team;
-}
+};
 
 export type GroupedVirtualMatches = {
   date: string;
@@ -168,13 +154,29 @@ interface User {
   };
 }
 
-export interface Prediction {
-  inputed: boolean;
-  match_id: string;
-  home: Number;
-  away: Number;
-  stake: string;
-}
+export type Prediction = {
+  stake: number;
+  odd: {
+    Some?: {
+      value: number;
+      tag: string;
+    };
+    None?: boolean;
+  };
+  prediction_type: {
+    variant: {
+      Multiple?: {
+        match_id: string;
+        pair_id: string;
+        odd: string;
+      };
+      Single?: {
+        match_id: string;
+        odd: string;
+      };
+    };
+  };
+};
 
 export interface InitDataUnsafe {
   user?: User;
@@ -191,11 +193,13 @@ interface IAppState {
     virtual: GroupedVirtualMatches[];
     live: MatchData[][];
   };
+  predicting: boolean;
   prediction_history: UserPrediction[][];
   total_rounds: number;
   current_round: number;
   loading_state: boolean;
   profile: null | User;
+  predicted_matches: Prediction[];
   // is_mini_app: boolean;
   loaded: boolean;
   is_registered: boolean;
@@ -212,6 +216,8 @@ const initialState: IAppState = {
     live: [],
     virtual: [],
   },
+  predicting: false,
+  predicted_matches: [],
   loaded: false,
   prediction_history: [],
   is_registered: false,
@@ -239,12 +245,43 @@ export const appSlice = createSlice({
       state.leaderboard = sorted;
     },
 
+    reset: (state) => {
+      state.profile = null;
+      state.prediction_history = [];
+      state.connected_address = null;
+      state.connect_calldata = null;
+      (state.reward = "0"), (state.is_registered = false);
+      state.show_register_modal = false;
+    },
+
+    removeUser: (state, action: PayloadAction<string>) => {
+      const filter = state.leaderboard.filter(
+        (ft) =>
+          parseInt(ft.user.address ?? "0x0", 16) !==
+          parseInt(action.payload!, 16)
+      );
+
+      state.leaderboard = filter;
+      state.profile = {
+        address: state.profile?.address,
+      };
+    },
+
     addLeaderboard: (state, action: PayloadAction<LeaderboardProp>) => {
-      state.leaderboard.push(action.payload);
+      if (action.payload.user.address) {
+        const filter = state.leaderboard.filter(
+          (ft) =>
+            parseInt(ft.user.address ?? "0x0", 16) !==
+            parseInt(action.payload.user.address!, 16)
+        );
+
+        state.leaderboard = [...filter, action.payload];
+      }
       state.profile = {
         ...state.profile,
         username: action.payload.user.username,
         id: action.payload.user.id,
+        address: action.payload.user?.address,
         point: {
           point: 0,
           rank: state.leaderboard.length,
@@ -287,6 +324,10 @@ export const appSlice = createSlice({
       action: PayloadAction<GroupedVirtualMatches[]>
     ) => {
       state.matches.virtual = action.payload;
+    },
+
+    setPredictionStatus: (state, action: PayloadAction<boolean>) => {
+      state.predicting = action.payload;
     },
 
     updateVirtualMatches: (state, action: PayloadAction<MatchData[]>) => {
@@ -447,6 +488,7 @@ export const appSlice = createSlice({
         }[]
       >
     ) => {
+      if (state.predicting) return;
       for (let i = 0; i < action.payload.length; i++) {
         const element = action.payload[i];
         const existingGroup = state.matches.virtual.find(
@@ -569,6 +611,48 @@ export const appSlice = createSlice({
       state.loading_state = action.payload;
     },
 
+    clearPredictedMatches: (state) => {
+      state.predicted_matches = [];
+    },
+
+    setPredictions: (
+      state,
+      action: PayloadAction<Prediction[] | undefined>
+    ) => {
+      const flat_matches = state.matches.virtual.map((mp) => mp.matches).flat();
+      if (flat_matches.length === 0) {
+        state.predicted_matches = action.payload!;
+        return;
+      }
+
+      const appended = flat_matches.map((mp) => {
+        const find = (action.payload || state.predicted_matches).find(
+          (fd) =>
+            fd.prediction_type.variant.Multiple?.match_id ===
+              mp.details.fixture.id ||
+            fd.prediction_type.variant.Single?.match_id ===
+              mp.details.fixture.id
+        );
+
+        if (find) {
+          return {
+            ...mp,
+            predicted: true,
+            prediction: {
+              key: getTagName(find.odd.Some?.tag ?? ""),
+              id:
+                find.prediction_type.variant.Multiple?.odd ||
+                find.prediction_type.variant.Single?.odd,
+            },
+          };
+        }
+        return mp;
+      });
+
+      state.matches.virtual = groupVirtualMatches(appended);
+      // state.predicted_matches = [];
+    },
+
     setCalldata: (state, action: PayloadAction<ConnectCalldata | null>) => {
       if (!action.payload) {
         state.connect_calldata = null;
@@ -628,7 +712,7 @@ export const {
   setLoadingState,
   update_profile,
   setConnectedAddress,
-  // setPredictions,
+  setPredictions,
   setLoaded,
   updateVirtualMatches,
   updateLeaderboardImages,
@@ -637,7 +721,9 @@ export const {
   addLeaderboard,
   removeVirtualMatchGroup,
   bulkAddVirtualMatches,
+  clearPredictedMatches,
   // updateMatches,
+  reset,
   setReward,
   makePrediction,
   setCalldata,
@@ -646,6 +732,8 @@ export const {
   submitPrediction,
   setPredictionHistory,
   initializePredictionHistory,
+  setPredictionStatus,
+  removeUser,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

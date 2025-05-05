@@ -10,6 +10,7 @@ import { useAppDispatch } from "../../../state/store";
 interface Props {
   active?: boolean;
   matches: GroupedVirtualMatches;
+  onClickGameSimul: (match: MatchData) => void
 
 
 }
@@ -19,7 +20,7 @@ const formatTime = (ms: number) => {
   const seconds = Math.floor((ms % 60000) / 1000);
   return `${minutes}:${seconds}mins`;
 };
-const MatchCard = ({ active, matches }: Props) => {
+const MatchCard = ({ active, matches, onClickGameSimul }: Props) => {
   const dispatch = useAppDispatch();
   const [timeLeft, setTimeLeft] = useState("");
   const [status, setStatus] = useState<"Ongoing" | "Upcoming" | "Ended">("Upcoming"); // "Upcoming", "Ongoing", "Ended"
@@ -83,7 +84,7 @@ const MatchCard = ({ active, matches }: Props) => {
 
 
     {matches.matches.map((match, index) => {
-      return <Match status={status} key={index} match={match} />
+      return <Match onClickGameSimul={onClickGameSimul} status={status} key={index} match={match} />
     })}
 
   </div>
@@ -97,10 +98,12 @@ interface MatchProps {
   // onSelectOdd: (match_id: string, value: string) => void;
   // predictions: Record<string, any>;
   status: "Ongoing" | "Upcoming" | "Ended";
+  onClickGameSimul: (match: MatchData) => void
+
 
 }
 
-const Match = ({ match, status }: MatchProps) => {
+const Match = ({ match, status, onClickGameSimul }: MatchProps) => {
 
   const [score, setScore] = useState({ home: 0, away: 0 });
   // const [gameTime, setGameTime] = useState(0); // Track match time in seconds
@@ -191,7 +194,7 @@ const Match = ({ match, status }: MatchProps) => {
       <div className="bg-[#00644C33] rounded-b-[6px] flex items-center justify-between px-3 py-1">
         <button className="md:text-[9px] text-start text-[7px] dark:text-[#00CB59] text-[#064F43]">See More Goal Options</button>
         <div className="flex items-center gap-2 text-white">
-          <button className="bg-[#00644C] text-[7px] flex items-center gap-0.5 px-1 py-0.5 rounded font-light"> <img src={BX_STATS} className="w-3" alt="" /> See team stats</button>
+          <button onClick={() => { onClickGameSimul(match) }} className="bg-[#00644C] text-[7px] flex items-center gap-0.5 px-1 py-0.5 rounded font-light"> <img src={BX_STATS} className="w-3" alt="" /> See team stats</button>
           <button className="bg-[#00644C] text-[7px] flex items-center gap-0.5 px-1 py-0.5 rounded font-light"> <img src={USERS_SOLID} className="w-3" alt="" /> See team stats</button>
         </div>
       </div>

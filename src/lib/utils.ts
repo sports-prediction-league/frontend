@@ -325,9 +325,17 @@ export const deserializePredictions = (predictions: UserPrediction[]) => {
         prediction_type: {
           variant: mp.prediction.prediction_type.variant.Multiple
             ? {
-                Multiple: feltToString(
-                  mp.prediction.prediction_type.variant.Multiple
-                ),
+                Multiple: {
+                  match_id: feltToString(
+                    mp.prediction.prediction_type.variant.Multiple.match_id
+                  ),
+                  pair_id: feltToString(
+                    mp.prediction.prediction_type.variant.Multiple.pair_id
+                  ),
+                  odd: feltToString(
+                    mp.prediction.prediction_type.variant.Multiple.odd
+                  ),
+                },
               }
             : {
                 Single: {

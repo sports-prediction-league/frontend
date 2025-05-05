@@ -3,27 +3,28 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import useConnect from "../../../lib/useConnect";
 import useContractInstance from "../../../lib/useContractInstance";
-import { apiClient, CONTRACT_ADDRESS, formatUnits, parse_error, parseUnits, TOKEN_DECIMAL } from "../../../lib/utils";
+import { CONTRACT_ADDRESS, formatUnits, parse_error, parseUnits, TOKEN_DECIMAL } from "../../../lib/utils";
 import {
     clearPredictions,
     MatchData,
     removePredictions,
-    submitPrediction,
+    setPredictionStatus,
 } from "../../../state/slices/appSlice";
 import { useAppDispatch, useAppSelector } from "../../../state/store";
 import { cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
 interface Props { }
 const PredictionSlip = ({ }: Props) => {
     const [slipType, setSlipType] = useState<"Single" | "Multiple">("Single");
-
+    const predicting = useAppSelector(state => state.app.predicting);
     const matches = useAppSelector((state) => state.app.matches.virtual)
         .map((mp) => mp.matches)
         .flat();
+
     const { connected_address } = useAppSelector((state) => state.app);
     const dispatch = useAppDispatch();
     const [stakeRef, setStake] = useState("0")
     const { getWalletProviderContract, getWalletProviderContractERC20 } = useContractInstance();
-    const [predicting, setPredicting] = useState(false);
+    // const [predicting, setPredicting] = useState(false);
     const { handleConnect } = useConnect();
     /**
      * Validates a stake fee input and ensures it can be evenly divided among predictions
@@ -92,23 +93,24 @@ const PredictionSlip = ({ }: Props) => {
             )
             if (predictions.length < 1) {
                 toast.error("No predictions");
-                setPredicting(false);
+                // dispatch(setPredictionStatus(false))
 
                 return;
             }
             const stake = validateStake(stakeRef, predictions.length)
             if (!stake) return;
 
-            setPredicting(true);
+            dispatch(setPredictionStatus(true))
+
             if (!account) {
-                await handleConnect({ approval: Number(stake.totalStake) > 100 ? (Number(stake.totalStake) + Number(parseUnits("100"))).toString() : undefined })
+                await handleConnect({ approval: Number(stake.totalStake) > 100 ? (Number(stake.totalStake) + Number(parseUnits("100"))).toLocaleString("fullwide", { useGrouping: false }) : undefined })
             } else {
                 const erc20Contract = getWalletProviderContractERC20();
                 const getAllowance = await erc20Contract!.allowance(connected_address, CONTRACT_ADDRESS!);
 
                 if (Number(getAllowance) < Number(stake.totalStake)) {
                     console.log({ getAllowance, stake })
-                    await handleConnect({ approval: (Number(stake.totalStake) + Number(parseUnits("100"))).toString() })
+                    await handleConnect({ approval: (Number(stake.totalStake) + Number(parseUnits("100"))).toLocaleString("fullwide", { useGrouping: false }) })
 
                     // await approveToken(((Number(stake.totalStake) - Number(getAllowance)) + 100).toString())
                 }
@@ -151,7 +153,9 @@ const PredictionSlip = ({ }: Props) => {
 
 
             if (!call) {
-                setPredicting(false);
+                dispatch(setPredictionStatus(false))
+
+                // setPredicting(false);
 
                 toast.error("Invalid call construct");
                 return;
@@ -159,23 +163,32 @@ const PredictionSlip = ({ }: Props) => {
             // await account?.execute([call!]);
             const outsideExecutionPayload = await account?.getOutsideExecutionPayload({ calls: [call] });
 
-            const response = await apiClient.post(
-                "/execute",
-                outsideExecutionPayload
-            );
-            console.log(response.data)
-            if (response.data.success) {
-                dispatch(submitPrediction());
-                const event = new Event("PREDICTION_MADE");
-                window.dispatchEvent(event);
-                toast.success("Prediction Successful")
+            const event = new CustomEvent("MAKE_OUTSIDE_EXECUTION_CALL", {
+                detail: {
+                    type: "PREDICTION",
+                    payload: outsideExecutionPayload
+                },
+            });
+            window.dispatchEvent(event);
 
-            } else {
-                toast.error(
-                    response.data?.message ?? "OOOPPPSSS!! Something went wrong"
-                );
-            }
-            setPredicting(false);
+            // const response = await apiClient.post(
+            //     "/execute",
+            //     outsideExecutionPayload
+            // );
+            // console.log(response.data)
+            // if (response.data.success) {
+            //     dispatch(submitPrediction());
+            // const event = new Event("PREDICTION_MADE");
+            // window.dispatchEvent(event);
+            //     toast.success("Prediction Successful")
+
+            // } else {
+            //     toast.error(
+            //         response.data?.message ?? "OOOPPPSSS!! Something went wrong"
+            //     );
+            // }
+            // dispatch(setPredictionStatus(false))
+
         } catch (error: any) {
             console.log(error);
             toast.error(
@@ -183,7 +196,8 @@ const PredictionSlip = ({ }: Props) => {
                     ? parse_error(error.response?.data?.message)
                     : error.message || "An error occurred"
             );
-            setPredicting(false);
+            dispatch(setPredictionStatus(false))
+
         }
     };
 
