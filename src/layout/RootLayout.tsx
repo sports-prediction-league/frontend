@@ -27,7 +27,7 @@ const RootLayout = () => {
       <Header />
       <div className="bg-red-500 sticky top-16 z-50  flex items-center md:justify-center gap-10 justify-between text-white py-2 px-5 text-xs">
         <p>Low on test tokens?</p>
-        <Link className="underline " target="_blank" to="https://google.com">MINT HERE</Link>
+        <Link className="underline " target="_blank" to="https://sepolia.voyager.online/contract/0x006b1699541f3571cb27f3bd99768748eda96f7da11ca02bf32eeec11147e77e#writeContract">MINT HERE</Link>
       </div>
       <div className="min-h-screen">
         <Outlet />
