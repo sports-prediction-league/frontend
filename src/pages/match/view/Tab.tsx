@@ -59,7 +59,7 @@ const TwoTabApp: React.FC = () => {
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0} // Removes the bounce
-                        onDragEnd={(e, { offset, velocity }) =>
+                        onDragEnd={(_: any, { offset, velocity }) =>
                             handleSwipe(offset.x, velocity.x)
                         }
                     >
