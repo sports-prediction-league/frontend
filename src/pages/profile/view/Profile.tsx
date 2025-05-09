@@ -7,24 +7,28 @@ import STAR_ICON from "../../../assets/profile/star_icon.svg";
 import RANK_ICON from "../../../assets/profile/rank_icon.svg";
 
 import Button from "../../../common/components/button/Button";
-import { useAppSelector } from "../../../state/store";
+import { useAppDispatch, useAppSelector } from "../../../state/store";
 import useConnect from "../../../lib/useConnect";
 import { Clipboard, Share2 } from "lucide-react";
-import { generateAvatarFromAddress } from "../../../lib/utils";
+import { generateAvatarFromAddress, parse_error } from "../../../lib/utils";
 import toast from "react-hot-toast";
 import { useTheme } from "../../../context/ThemeContext";
 import ShareOptions from "../../../common/components/modal/ShareOptions";
 import useEscapeKey from "../../../lib/useEscapeKey";
+import { setClaimingRewardStatus } from "../../../state/slices/appSlice";
+import useContractInstance from "../../../lib/useContractInstance";
 
 const Profile = () => {
   const [_, setProgress] = useState(10);
   const { handleDisconnect, handleConnect } = useConnect();
-  const { profile, connected_address, reward, leaderboard } = useAppSelector(
+  const { profile, connected_address, reward, leaderboard, claimingReward } = useAppSelector(
     (state) => state.app
   );
+  const dispatch = useAppDispatch();
   const updateProgress = (newProgress: number) => {
     setProgress(newProgress);
   };
+  const { getWalletProviderContract } = useContractInstance()
 
   const [rankAndPoint, setRankAndPoint] = useState<null | { rank: number, point: number }>(null);
 
@@ -52,6 +56,45 @@ const Profile = () => {
       setShowShareOptions(false)
     }
   })
+
+
+
+  const handleClaim = async () => {
+    try {
+      if (Number(reward) <= 0) {
+        toast.error("ZERO_BALANCE");
+        return;
+      }
+      if (claimingReward) return;
+      let account = window.Wallet?.Account;
+      dispatch(setClaimingRewardStatus(true));
+      if (!account) {
+        await handleConnect({});
+        account = window.Wallet.Account;
+      }
+
+      const contract = getWalletProviderContract();
+
+      const call = contract?.populate("claim_reward")
+      const outsideExecutionPayload = await account!.getOutsideExecutionPayload({ calls: [call!] });
+
+      const event = new CustomEvent("MAKE_OUTSIDE_EXECUTION_CALL", {
+        detail: {
+          type: "WITHDRAWAL",
+          payload: outsideExecutionPayload
+        },
+      });
+      window.dispatchEvent(event);
+    } catch (error: any) {
+      console.log(error);
+      toast.error(
+        error.response?.data?.message
+          ? parse_error(error.response?.data?.message)
+          : error.message || "An error occurred"
+      );
+      dispatch(setClaimingRewardStatus(false))
+    }
+  }
 
   return (
     <div onClick={() => {
@@ -93,12 +136,12 @@ const Profile = () => {
               )}`
               : ""}
           </p>
-          <button onClick={async () => {
+          {connected_address ? <button onClick={async () => {
             await navigator.clipboard.writeText(connected_address ?? "")
             toast.success("Address copied to clipboard");
           }}>
-            <Clipboard color="#ffffff" size={17} />
-          </button>
+            <Clipboard className="text-black dark:text-white" size={17} />
+          </button> : null}
         </div>
       </div>
 
@@ -167,7 +210,7 @@ const Profile = () => {
 
         <div className="lg:w-[832px] w-full h-fit p-[36px] dark:bg-[#042822] bg-spl-green-300 md:rounded-[45px] rounded-[20px] flex flex-col items-center justify-center">
           <p className="text-spl-white md:text-[24px] text-[15px]">
-            Available for withdrawal
+            Available to claim
           </p>
           <p className="text-spl-white font-bold md:text-[30px] text-[15px] md:mt-5 mt-2">
             {Number(reward).toFixed(3)} <span className="text-[10px]">USDC</span>
@@ -175,7 +218,10 @@ const Profile = () => {
 
           <div className="md:mt-[60px] mt-[20px]">
             <Button
-              text="Withdraw"
+              disabled={claimingReward}
+              loading={claimingReward}
+              onClick={handleClaim}
+              text="Claim reward"
               fontSize="md:text-[20px] text-xs rounded-[5px]"
               height="md:h-[76px] h-[43px]"
               width="md:w-[484px] w-[219px]"

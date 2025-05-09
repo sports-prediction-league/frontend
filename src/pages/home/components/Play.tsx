@@ -19,7 +19,6 @@ export type GameEvent = {
 //     away: number;
 // };
 
-
 function generateRealisticCommentary(event: GameEvent, gameTime: number, score: { home: number, away: number }): string {
     const minuteStamp = `[${Math.floor(gameTime / 60)}:${(gameTime % 60).toString().padStart(2, '0')}]`;
     const teamName = event.team === 'home' ? 'Blue Team' : 'Red Team';
@@ -87,7 +86,6 @@ function generateRealisticCommentary(event: GameEvent, gameTime: number, score: 
             return `${minuteStamp} Interesting development on the pitch.`;
     }
 }
-
 
 // interface PredictionOdds {
 //     homeWin: number;
@@ -332,14 +330,14 @@ function generateRealisticCommentary(event: GameEvent, gameTime: number, score: 
 //         .sort((a, b) => a.time - b.time);
 // }
 
-
 interface Props {
     gameEvent?: GameEvent[],
     teams?: Teams,
+    timestamp: number
 
 }
 
-const SoccerGame = ({ gameEvent, teams }: Props) => {
+const SoccerGame = ({ gameEvent, teams, timestamp }: Props) => {
     const [gameTime, setGameTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [score, setScore] = useState({ home: 0, away: 0 });
@@ -365,7 +363,7 @@ const SoccerGame = ({ gameEvent, teams }: Props) => {
         // console.log(script)
         if (gameEvents.length === 0) {
             if (gameEvent) {
-                setGameEvents(gameEvent || []);
+                setGameEvents(gameEvent);
                 setIsPlaying(true)
             }
         }
@@ -375,6 +373,27 @@ const SoccerGame = ({ gameEvent, teams }: Props) => {
     useEffect(() => {
         if (!isPlaying || isGameOver || gameEvents.length === 0) return;
 
+        const now = Date.now();
+        if (now > timestamp) {
+            const timeInMinutes = (now - timestamp) / 1000;
+            for (let i = 0; i < (gameEvent ?? []).length; i++) {
+                const event = (gameEvent ?? [])[i];
+                if (event.time <= timeInMinutes) {
+                    if (event.type === "goal") {
+                        setScore(prevScore => ({
+                            ...prevScore,
+                            [event.team!]: prevScore[event.team!] + 1
+                        }));
+                    }
+                    const commentaryLine = generateRealisticCommentary(event, Math.round(event.time), score);
+                    setGameLog(prev => [...prev.slice(-5), commentaryLine]);
+                    setGameTime(Math.round(event.time));
+                    lastProcessedTime.current = Math.round(event.time);
+                }
+
+            }
+
+        }
         const gameLoop = setInterval(() => {
             setGameTime(prev => {
                 const newTime = prev + 1;
@@ -458,10 +477,10 @@ const SoccerGame = ({ gameEvent, teams }: Props) => {
         <div className="w-full  mx-auto p-4">
             <div className="grid grid-cols-2 gap-4 dark:text-white/80 text-black/80 items-center justify-between">
                 <div className="flex items-center justify-start">
-                    <p className='line-clamp-1'>{teams?.home.name}</p>
+                    <p className='line-clamp-1 font-bold md:text-xl text-lg'>{teams?.home.name}</p>
                 </div>
                 <div className="flex items-center justify-end">
-                    <p className='line-clamp-1'>{teams?.away.name}</p>
+                    <p className='line-clamp-1 font-bold md:text-xl text-lg'>{teams?.away.name}</p>
                 </div>
             </div>
             <div className="bg-[#1B4D3E] relative w-full aspect-[3/2] rounded-lg overflow-hidden">
@@ -484,11 +503,28 @@ const SoccerGame = ({ gameEvent, teams }: Props) => {
                     </div>
                 )}
 
+
+                {Date.now() < timestamp && (
+                    <div className="absolute inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                        <div className="md:text-6xl text-3xl font-bold text-white animate-fade-in-out">
+                            Match Not started
+                        </div>
+                    </div>
+                )}
+
                 {/* Goal Animation */}
                 {showGoal && (
                     <div className="absolute inset-0 flex items-center justify-center z-50">
                         <div className={`md:text-8xl text-4xl font-bold ${scoringTeam === 'home' ? 'text-blue-500' : 'text-red-500'} animate-bounce drop-shadow-lg`}>
                             GOAL!
+                        </div>
+                    </div>
+                )}
+
+                {isGameOver && (
+                    <div className="absolute inset-0 flex items-center justify-center z-50">
+                        <div className={`md:text-6xl text-4xl font-bold ${scoringTeam === 'home' ? 'text-blue-500' : 'text-red-500'} animate-bounce drop-shadow-lg`}>
+                            Game Over!
                         </div>
                     </div>
                 )}

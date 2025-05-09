@@ -22,6 +22,7 @@ import {
   setReward,
   setRounds,
   setShowRegisterModal,
+  setClaimingRewardStatus,
   submitPrediction,
   update_profile,
   updateVirtualMatches,
@@ -52,6 +53,7 @@ import SPLASH_DESKTOP from "./assets/splash/desktop_splash.gif";
 import { useSocket } from "./lib/useSocket";
 import { SessionAccountInterface } from "@argent/invisible-sdk";
 import WinModal from "./common/components/modal/Win";
+import TwoTabApp from "./pages/match/view/Tab";
 // import SoccerGame from "./pages/home/components/Play";
 // import SoccerGame from "./pages/home/components/Play";
 declare global {
@@ -90,7 +92,7 @@ function App() {
 
   const [loaded, setLoaded] = useState(false);
   const dispatch = useAppDispatch();
-  const { matches, connected_address, show_register_modal, predicted_matches } =
+  const { matches, connected_address, show_register_modal, predicted_matches, predicting } =
     useAppSelector((state) => state.app);
   const { getArgentWallet } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
@@ -411,6 +413,7 @@ function App() {
       }
       const customEvent = event as CustomEvent;
       if (customEvent.detail.payload && customEvent.detail.type) {
+        if (predicting) return;
         socket.emit("make-outside-execution-call", customEvent.detail);
       }
     });
@@ -650,7 +653,7 @@ function App() {
 
     socket.on(
       "execution-response",
-      (response: { type: "REGISTRATION" | "PREDICTION"; tx: any }) => {
+      (response: { type: "REGISTRATION" | "PREDICTION" | "WITHDRAWAL"; tx: any }) => {
         console.log({ response }, "execution response ==========>>>>>>>");
         if (response.type === "PREDICTION") {
           if (response.tx.success) {
@@ -675,6 +678,18 @@ function App() {
           }
 
           set_registering(false);
+        } else if (response.type === "WITHDRAWAL") {
+          if (response.tx.success) {
+
+
+            dispatch(setReward("0"));
+            toast.success("Reward claimed!");
+          } else {
+
+            toast.error(response.tx.message);
+          }
+
+          dispatch(setClaimingRewardStatus(false))
         }
       }
     );
@@ -757,6 +772,8 @@ function App() {
   // if (matches.virtual.length) {
   //   return <SoccerGame gameEvent={matches.virtual[0]?.matches[0]?.details?.events ?? []} />
   // }
+
+  // return <TwoTabApp />
 
   return (
     <ThemeProvider>
