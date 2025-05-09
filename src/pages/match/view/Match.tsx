@@ -210,7 +210,7 @@ const Match = () => {
         <div className="grid grid-cols-12 w-full gap-3">
           <div className="md:col-span-8 col-span-12 w-full">
 
-            {(current_league < 2 ? current_league === 1 ? matches.virtual.filter(ft => ft.matches[0]?.details.fixture.date > Date.now()) : matches.virtual : matches.virtual.filter(ft => ft.league.toLowerCase() === Leagues[current_league - 2].league.toLowerCase())).map((match, index) => {
+            {(current_league < 2 ? matches.virtual : matches.virtual.filter(ft => ft.league.toLowerCase() === Leagues[current_league - 2].league.toLowerCase())).map((match, index) => {
               return <MatchCard
                 onShowComingSoon={() => setShowComingSoon(true)}
                 onStartGame={() => {
