@@ -117,7 +117,7 @@ const Match = ({ match, status, onClickGameSimul, onShowComingSoon }: MatchProps
   useEffect(() => {
     const matchStart = new Date(match.details.fixture.date).getTime();
     const matchEnd = matchStart + 2 * 60 * 1000; // Match lasts 2 minutes
-
+    setScore({ home: 0, away: 0 })
     const events = match.details.events || []; // All match events
 
     // Function to update the game time and track goals
