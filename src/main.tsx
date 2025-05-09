@@ -7,10 +7,10 @@ import { store } from './state/store.ts'
 import { Toaster } from 'react-hot-toast'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Provider store={store}>
-      <App />
-      <Toaster position="bottom-left" />
-    </Provider>
-  </StrictMode>,
+  // <StrictMode>
+  <Provider store={store}>
+    <App />
+    <Toaster position="bottom-left" />
+  </Provider>
+  // {/* </StrictMode>, */}
 )

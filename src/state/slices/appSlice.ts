@@ -193,6 +193,7 @@ interface IAppState {
     virtual: GroupedVirtualMatches[];
     live: MatchData[][];
   };
+  claimingReward: boolean;
   predicting: boolean;
   prediction_history: UserPrediction[][];
   total_rounds: number;
@@ -225,6 +226,7 @@ const initialState: IAppState = {
   show_register_modal: false,
   total_rounds: 0,
   loading_state: true,
+  claimingReward: false,
   profile: null,
   // is_mini_app: false,
   connected_address: null,
@@ -328,6 +330,10 @@ export const appSlice = createSlice({
 
     setPredictionStatus: (state, action: PayloadAction<boolean>) => {
       state.predicting = action.payload;
+    },
+
+    setClaimingRewardStatus: (state, action: PayloadAction<boolean>) => {
+      state.claimingReward = action.payload;
     },
 
     updateVirtualMatches: (state, action: PayloadAction<MatchData[]>) => {
@@ -734,6 +740,7 @@ export const {
   initializePredictionHistory,
   setPredictionStatus,
   removeUser,
+  setClaimingRewardStatus,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

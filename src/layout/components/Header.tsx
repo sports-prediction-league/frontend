@@ -48,7 +48,7 @@ const Header = () => {
           <img
             src={SPL_LOGO}
             alt="SPL LOGO"
-            onClick={() => handleNavigation("/home")}
+            // onClick={() => handleNavigation("/home")}
             className="cursor-pointer md:w-[40px] md:h-[40px] w-[25px] h-[25px]"
           />
           <ThemeToggle />
