@@ -85,7 +85,7 @@ const PredictionSlip = ({ }: Props) => {
         try {
             if (predicting) return;
             if (!stakeRef) return;
-            const account = window.Wallet?.Account;
+            let account = window.Wallet?.Account;
 
             const predictions = matches.filter(
                 (ft) =>
@@ -100,23 +100,30 @@ const PredictionSlip = ({ }: Props) => {
             const stake = validateStake(stakeRef, predictions.length)
             if (!stake) return;
 
+
             dispatch(setPredictionStatus(true))
+            const erc20Contract = getWalletProviderContractERC20();
 
             if (!account) {
                 await handleConnect({ approval: Number(stake.totalStake) > 100 ? (Number(stake.totalStake) + Number(parseUnits("100"))).toLocaleString("fullwide", { useGrouping: false }) : undefined })
+                account = window.Wallet.Account;
             } else {
-                const erc20Contract = getWalletProviderContractERC20();
                 const getAllowance = await erc20Contract!.allowance(connected_address, CONTRACT_ADDRESS!);
 
                 if (Number(getAllowance) < Number(stake.totalStake)) {
-                    console.log({ getAllowance, stake })
+                    // console.log({ getAllowance, stake })
                     await handleConnect({ approval: (Number(stake.totalStake) + Number(parseUnits("100"))).toLocaleString("fullwide", { useGrouping: false }) })
 
                     // await approveToken(((Number(stake.totalStake) - Number(getAllowance)) + 100).toString())
                 }
             }
 
-
+            const balance = await erc20Contract!.balanceOf(connected_address);
+            if (Number(balance) < Number(stake.totalStake)) {
+                dispatch(setPredictionStatus(false));
+                toast.error("INSUFFICIENT_BALANCE");
+                return;
+            }
 
             // const getAllowance = await getERC
             // console.log({ stake })

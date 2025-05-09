@@ -65,7 +65,9 @@ const Match = () => {
 
   const [gameSimul, setGameSimul] = useState<{
     gameEvent: GameEvent[],
-    teams: Teams
+    teams: Teams,
+    timestamp: number,
+    matchId: string
   } | null>(null)
 
 
@@ -93,10 +95,12 @@ const Match = () => {
   const [showGameSimul, setShowGameSimul] = useState(false);
   const { isDark, } = useTheme();
   const isMobile = useIsMobile()
+  const [showComingSooon, setShowComingSoon] = useState(false)
 
   return (
     <div className="xl:px-48 px-3" >
       <MatchHero />
+      <ComingSoonModal onClose={() => setShowComingSoon(false)} open_modal={showComingSooon} />
       <Modal
         wrapClassName={isDark ? "dark" : undefined}
         open={slip_open && isMobile && matches.virtual.map((mp) => mp.matches)
@@ -158,7 +162,7 @@ const Match = () => {
 
       >
         <div className=" mt-10">
-          <SoccerGame teams={gameSimul?.teams} gameEvent={gameSimul?.gameEvent} />
+          <SoccerGame timestamp={gameSimul?.timestamp ?? 0} teams={gameSimul?.teams} gameEvent={gameSimul?.gameEvent} />
         </div>
       </Modal>
 
@@ -206,11 +210,22 @@ const Match = () => {
         <div className="grid grid-cols-12 w-full gap-3">
           <div className="md:col-span-8 col-span-12 w-full">
 
-            {(current_league < 2 ? matches.virtual : matches.virtual.filter(ft => ft.league.toLowerCase() === Leagues[current_league - 2].league.toLowerCase())).map((match, index) => {
-              return <MatchCard onClickGameSimul={(game) => {
-                setGameSimul({ gameEvent: game.details.events ?? [], teams: game.details.teams })
-                setShowGameSimul(true)
-              }} key={index} matches={match} active={Date.now() >= new Date(match.date).getTime()} />
+            {(current_league < 2 ? current_league === 1 ? matches.virtual.filter(ft => ft.matches[0]?.details.fixture.date > Date.now()) : matches.virtual : matches.virtual.filter(ft => ft.league.toLowerCase() === Leagues[current_league - 2].league.toLowerCase())).map((match, index) => {
+              return <MatchCard
+                onShowComingSoon={() => setShowComingSoon(true)}
+                onStartGame={() => {
+
+                  if (gameSimul?.gameEvent?.length === 0) {
+                    const find = match.matches.find(fd => fd.details.fixture.id === gameSimul.matchId);
+                    if (find && find.details.events?.length) {
+                      setGameSimul({ gameEvent: find.details.events ?? [], teams: find.details.teams, timestamp: find.details.fixture.date, matchId: find.details.fixture.id })
+
+                    }
+                  }
+                }} onClickGameSimul={(game) => {
+                  setGameSimul({ gameEvent: game.details.events ?? [], teams: game.details.teams, timestamp: game.details.fixture.date, matchId: game.details.fixture.id })
+                  setShowGameSimul(true)
+                }} key={index} matches={match} active={Date.now() >= new Date(match.date).getTime()} />
             })}
           </div>
           <div className="col-span-4 md:block hidden">

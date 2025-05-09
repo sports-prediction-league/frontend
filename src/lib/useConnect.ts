@@ -27,6 +27,10 @@ const useConnect = () => {
             contract: CONTRACT_ADDRESS,
             selector: "make_prediction",
           },
+          {
+            contract: CONTRACT_ADDRESS,
+            selector: "claim_reward",
+          },
         ],
 
         validityDays: 30,
@@ -50,7 +54,6 @@ const useConnect = () => {
     approval?: string;
   }) => {
     try {
-      console.log(approval.toString());
       const argentWebWallet = getArgentWallet();
       const response = await argentWebWallet.requestConnection({
         callbackData: callbackData,

@@ -1,5 +1,5 @@
 // react router
-import { Outlet, useNavigate } from "react-router";
+import { Link, Outlet, useNavigate } from "react-router";
 import { BiFootball } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
@@ -25,6 +25,10 @@ const RootLayout = () => {
     <div className="flex flex-col w-full">
       <ScrollToTop />
       <Header />
+      <div className="bg-red-500 sticky top-16 z-50  flex items-center md:justify-center gap-10 justify-between text-white py-2 px-5 text-xs">
+        <p>Low on test tokens?</p>
+        <Link className="underline " target="_blank" to="https://google.com">MINT HERE</Link>
+      </div>
       <div className="min-h-screen">
         <Outlet />
       </div>
