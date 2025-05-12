@@ -3,7 +3,13 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import useConnect from "../../../lib/useConnect";
 import useContractInstance from "../../../lib/useContractInstance";
-import { CONTRACT_ADDRESS, formatUnits, parse_error, parseUnits, TOKEN_DECIMAL } from "../../../lib/utils";
+import {
+    CONTRACT_ADDRESS,
+    formatUnits,
+    parse_error,
+    parseUnits,
+    TOKEN_DECIMAL,
+} from "../../../lib/utils";
 import {
     clearPredictions,
     MatchData,
@@ -11,19 +17,27 @@ import {
     updateLoadingStates,
 } from "../../../state/slices/appSlice";
 import { useAppDispatch, useAppSelector } from "../../../state/store";
-import { cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
+import {
+    cairo,
+    CairoCustomEnum,
+    CairoOption,
+    CairoOptionVariant,
+} from "starknet";
 interface Props { }
 const PredictionSlip = ({ }: Props) => {
     const [slipType, setSlipType] = useState<"Single" | "Multiple">("Single");
-    const predicting = useAppSelector(state => state.app.loading_states.predicting);
+    const predicting = useAppSelector(
+        (state) => state.app.loading_states.predicting
+    );
     const matches = useAppSelector((state) => state.app.matches.virtual)
         .map((mp) => mp.matches)
         .flat();
 
     const { connected_address } = useAppSelector((state) => state.app);
     const dispatch = useAppDispatch();
-    const [stakeRef, setStake] = useState("0")
-    const { getWalletProviderContract, getWalletProviderContractERC20 } = useContractInstance();
+    const [stakeRef, setStake] = useState("0");
+    const { getWalletProviderContract, getWalletProviderContractERC20 } =
+        useContractInstance();
     // const [predicting, setPredicting] = useState(false);
     const { handleConnect } = useConnect();
     /**
@@ -33,10 +47,15 @@ const PredictionSlip = ({ }: Props) => {
      * @returns The validated stake as bigint in proper units or 0n if no stake
      * @throws Error if the stake is invalid, below minimum, or can't be evenly divided
      */
-    function validateStake(stakeFee: string, predictionsLength: number): {
-        totalStake: bigint,
-        perPredictionStake: bigint,
-    } | undefined {
+    function validateStake(
+        stakeFee: string,
+        predictionsLength: number
+    ):
+        | {
+            totalStake: bigint;
+            perPredictionStake: bigint;
+        }
+        | undefined {
         const normalizedStake = stakeFee.trim();
 
         if (!normalizedStake) {
@@ -80,122 +99,118 @@ const PredictionSlip = ({ }: Props) => {
         };
     }
 
-
     const submit = async () => {
         try {
             if (predicting) return;
             if (!stakeRef) return;
             let account = window.Wallet?.Account;
-
             const predictions = matches.filter(
                 (ft) =>
-                    Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
-            )
+                    Boolean(ft.prediction) &&
+                    ft.details.fixture.date > Date.now() &&
+                    !ft.predicted
+            );
             if (predictions.length < 1) {
                 toast.error("No predictions");
-                // dispatch(setPredictionStatus(false))
-
                 return;
             }
-            const stake = validateStake(stakeRef, predictions.length)
+            const stake = validateStake(stakeRef, predictions.length);
             if (!stake) return;
-
-
-            dispatch(updateLoadingStates({ predicting: true }))
+            dispatch(updateLoadingStates({ predicting: true }));
             const erc20Contract = getWalletProviderContractERC20();
 
             if (!account) {
-                await handleConnect({ approval: Number(stake.totalStake) > 100 ? (Number(stake.totalStake) + Number(parseUnits("100"))).toLocaleString("fullwide", { useGrouping: false }) : undefined })
-                account = window.Wallet.Account;
+                account = (
+                    await handleConnect({
+                        approval:
+                            Number(stake.totalStake) > 100
+                                ? (
+                                    Number(stake.totalStake) + Number(parseUnits("100"))
+                                ).toLocaleString("fullwide", { useGrouping: false })
+                                : undefined,
+                    })
+                )?.account;
             } else {
-                const getAllowance = await erc20Contract!.allowance(connected_address, CONTRACT_ADDRESS!);
+                const getAllowance = await erc20Contract!.allowance(
+                    connected_address,
+                    CONTRACT_ADDRESS!
+                );
 
                 if (Number(getAllowance) < Number(stake.totalStake)) {
-                    // console.log({ getAllowance, stake })
-                    await handleConnect({ approval: (Number(stake.totalStake) + Number(parseUnits("100"))).toLocaleString("fullwide", { useGrouping: false }) })
-
-                    // await approveToken(((Number(stake.totalStake) - Number(getAllowance)) + 100).toString())
+                    await handleConnect({
+                        approval: (
+                            Number(stake.totalStake) + Number(parseUnits("100"))
+                        ).toLocaleString("fullwide", { useGrouping: false }),
+                    });
                 }
             }
+            const address = connected_address ?? account?.address;
+            if (!address) {
+                toast.error("OOPPPSSS!!! Try again");
+                dispatch(updateLoadingStates({ predicting: false }));
+                return;
+            }
 
-            const balance = await erc20Contract!.balanceOf(connected_address);
+            const balance = await erc20Contract!.balanceOf(address);
             if (Number(balance) < Number(stake.totalStake)) {
                 dispatch(updateLoadingStates({ predicting: false }));
                 toast.error("INSUFFICIENT_BALANCE");
                 return;
             }
-
-            // const getAllowance = await getERC
-            // console.log({ stake })
-
             const pairId = Math.random().toString(36).substring(2, 12);
-
             const contract = getWalletProviderContract();
             let call;
-
             if (slipType === "Single") {
-
-                const construct = predictions.map(mp => {
+                const construct = predictions.map((mp) => {
                     return {
                         stake: cairo.uint256(stake.perPredictionStake),
-                        prediction_type: new CairoCustomEnum({ Single: { match_id: cairo.felt(mp.details.fixture.id), odd: cairo.felt(mp.prediction!.id!) } }),
-                        pair: new CairoOption(CairoOptionVariant.None)
-                    }
-                })
-
-                call = contract?.populate("make_bulk_prediction", [
-                    construct
-                ])
+                        prediction_type: new CairoCustomEnum({
+                            Single: {
+                                match_id: cairo.felt(mp.details.fixture.id),
+                                odd: cairo.felt(mp.prediction!.id!),
+                            },
+                        }),
+                        pair: new CairoOption(CairoOptionVariant.None),
+                    };
+                });
+                call = contract?.populate("make_bulk_prediction", [construct]);
             } else {
                 const construct = {
                     stake: cairo.uint256(stake.totalStake),
-                    prediction_type: predictions.length === 1 ? new CairoCustomEnum({ Single: { match_id: cairo.felt(predictions[0].details.fixture.id), odd: cairo.felt(predictions[0].prediction?.id!) } }) : new CairoCustomEnum({ Multiple: predictions.map(mp => ({ match_id: cairo.felt(mp.details.fixture.id), odd: cairo.felt(mp.prediction?.id!) })) }),
-                    pair: new CairoOption(CairoOptionVariant.Some, cairo.felt(pairId))
-                }
-                call = contract?.populate("make_prediction", [
-                    construct
-                ])
+                    prediction_type:
+                        predictions.length === 1
+                            ? new CairoCustomEnum({
+                                Single: {
+                                    match_id: cairo.felt(predictions[0].details.fixture.id),
+                                    odd: cairo.felt(predictions[0].prediction?.id!),
+                                },
+                            })
+                            : new CairoCustomEnum({
+                                Multiple: predictions.map((mp) => ({
+                                    match_id: cairo.felt(mp.details.fixture.id),
+                                    odd: cairo.felt(mp.prediction?.id!),
+                                })),
+                            }),
+                    pair: new CairoOption(CairoOptionVariant.Some, cairo.felt(pairId)),
+                };
+                call = contract?.populate("make_prediction", [construct]);
             }
-
-
-
             if (!call) {
-                dispatch(updateLoadingStates({ predicting: false }))
-
-                // setPredicting(false);
+                dispatch(updateLoadingStates({ predicting: false }));
 
                 toast.error("Invalid call construct");
                 return;
             }
-            // await account?.execute([call!]);
-            const outsideExecutionPayload = await account?.getOutsideExecutionPayload({ calls: [call] });
-
+            const outsideExecutionPayload = await account?.getOutsideExecutionPayload(
+                { calls: [call] }
+            );
             const event = new CustomEvent("MAKE_OUTSIDE_EXECUTION_CALL", {
                 detail: {
                     type: "PREDICTION",
-                    payload: outsideExecutionPayload
+                    payload: outsideExecutionPayload,
                 },
             });
             window.dispatchEvent(event);
-
-            // const response = await apiClient.post(
-            //     "/execute",
-            //     outsideExecutionPayload
-            // );
-            // console.log(response.data)
-            // if (response.data.success) {
-            //     dispatch(submitPrediction());
-            // const event = new Event("PREDICTION_MADE");
-            // window.dispatchEvent(event);
-            //     toast.success("Prediction Successful")
-
-            // } else {
-            //     toast.error(
-            //         response.data?.message ?? "OOOPPPSSS!! Something went wrong"
-            //     );
-            // }
-            // dispatch(setPredictionStatus(false))
-
         } catch (error: any) {
             console.log(error);
             toast.error(
@@ -203,8 +218,7 @@ const PredictionSlip = ({ }: Props) => {
                     ? parse_error(error.response?.data?.message)
                     : error.message || "An error occurred"
             );
-            dispatch(updateLoadingStates({ predicting: false }))
-
+            dispatch(updateLoadingStates({ predicting: false }));
         }
     };
 
@@ -216,7 +230,9 @@ const PredictionSlip = ({ }: Props) => {
                     {
                         matches.filter(
                             (ft) =>
-                                Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+                                Boolean(ft.prediction) &&
+                                ft.details.fixture.date > Date.now() &&
+                                !ft.predicted
                         ).length
                     }
                 </div>
@@ -225,7 +241,9 @@ const PredictionSlip = ({ }: Props) => {
                 {matches
                     .filter(
                         (ft) =>
-                            Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+                            Boolean(ft.prediction) &&
+                            ft.details.fixture.date > Date.now() &&
+                            !ft.predicted
                     )
                     .map((mp, index) => {
                         return (
@@ -238,7 +256,10 @@ const PredictionSlip = ({ }: Props) => {
                     })}
 
                 {matches.filter(
-                    (ft) => Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+                    (ft) =>
+                        Boolean(ft.prediction) &&
+                        ft.details.fixture.date > Date.now() &&
+                        !ft.predicted
                 ).length ? (
                     <div className="flex items-center justify-end">
                         <button
@@ -254,7 +275,10 @@ const PredictionSlip = ({ }: Props) => {
             </div>
 
             {matches.filter(
-                (ft) => Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
+                (ft) =>
+                    Boolean(ft.prediction) &&
+                    ft.details.fixture.date > Date.now() &&
+                    !ft.predicted
             ).length ? (
                 <div className="border-[0.5px] my-2 space-y-7 border-[#007332]  p-2 rounded-lg mt-10">
                     <div className="flex items-center justify-between">
@@ -290,7 +314,8 @@ const PredictionSlip = ({ }: Props) => {
                                     .filter(
                                         (ft) =>
                                             Boolean(ft.prediction) &&
-                                            ft.details.fixture.date > Date.now() && !ft.predicted
+                                            ft.details.fixture.date > Date.now() &&
+                                            !ft.predicted
                                     )
                                     .map((mp) =>
                                         Number((mp.details.odds as any)[mp.prediction!.key!].odd)
@@ -306,9 +331,7 @@ const PredictionSlip = ({ }: Props) => {
                                 <input
                                     autoFocus
                                     onChange={(e) => {
-
                                         setStake(e.target.value);
-
                                     }}
                                     defaultValue={stakeRef}
                                     type="text"
@@ -322,43 +345,94 @@ const PredictionSlip = ({ }: Props) => {
                             <p>Potential Win</p>
                             <div className="flex items-center gap-2">
                                 <p className="text-[9px] font-bold m-0">USDC</p>
-                                <p className="text-[9px]">{validateStake(stakeRef, matches.filter(
-                                    (ft) =>
-                                        Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
-                                ).length) ? slipType === "Single" ? matches
-                                    .filter(
-                                        (ft) =>
-                                            Boolean(ft.prediction) &&
-                                            ft.details.fixture.date > Date.now() && !ft.predicted
-                                    )
-                                    .map((mp) =>
-                                        Number((mp.details.odds as any)[mp.prediction!.key!].odd) * Number(formatUnits(validateStake(stakeRef, matches.filter(
-                                            (ft) =>
-                                                Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
-                                        ).length)?.perPredictionStake ?? "0"))
-                                    )
-                                    .reduce((acc, num) => acc + num, 0)
-                                    .toFixed(2) : (matches
-                                        .filter(
+                                <p className="text-[9px]">
+                                    {validateStake(
+                                        stakeRef,
+                                        matches.filter(
                                             (ft) =>
                                                 Boolean(ft.prediction) &&
-                                                ft.details.fixture.date > Date.now() && !ft.predicted
-                                        )
-                                        .map((mp) =>
-                                            Number((mp.details.odds as any)[mp.prediction!.key!].odd)
-                                        )
-                                        .reduce((acc, num) => acc + num, 0) * Number(formatUnits(validateStake(stakeRef, matches.filter(
-                                            (ft) =>
-                                                Boolean(ft.prediction) && ft.details.fixture.date > Date.now() && !ft.predicted
-                                        ).length)?.totalStake ?? ""))).toFixed(2) : 0}</p>
+                                                ft.details.fixture.date > Date.now() &&
+                                                !ft.predicted
+                                        ).length
+                                    )
+                                        ? slipType === "Single"
+                                            ? matches
+                                                .filter(
+                                                    (ft) =>
+                                                        Boolean(ft.prediction) &&
+                                                        ft.details.fixture.date > Date.now() &&
+                                                        !ft.predicted
+                                                )
+                                                .map(
+                                                    (mp) =>
+                                                        Number(
+                                                            (mp.details.odds as any)[mp.prediction!.key!]
+                                                                .odd
+                                                        ) *
+                                                        Number(
+                                                            formatUnits(
+                                                                validateStake(
+                                                                    stakeRef,
+                                                                    matches.filter(
+                                                                        (ft) =>
+                                                                            Boolean(ft.prediction) &&
+                                                                            ft.details.fixture.date > Date.now() &&
+                                                                            !ft.predicted
+                                                                    ).length
+                                                                )?.perPredictionStake ?? "0"
+                                                            )
+                                                        )
+                                                )
+                                                .reduce((acc, num) => acc + num, 0)
+                                                .toFixed(2)
+                                            : (
+                                                matches
+                                                    .filter(
+                                                        (ft) =>
+                                                            Boolean(ft.prediction) &&
+                                                            ft.details.fixture.date > Date.now() &&
+                                                            !ft.predicted
+                                                    )
+                                                    .map((mp) =>
+                                                        Number(
+                                                            (mp.details.odds as any)[mp.prediction!.key!]
+                                                                .odd
+                                                        )
+                                                    )
+                                                    .reduce((acc, num) => acc + num, 0) *
+                                                Number(
+                                                    formatUnits(
+                                                        validateStake(
+                                                            stakeRef,
+                                                            matches.filter(
+                                                                (ft) =>
+                                                                    Boolean(ft.prediction) &&
+                                                                    ft.details.fixture.date > Date.now() &&
+                                                                    !ft.predicted
+                                                            ).length
+                                                        )?.totalStake ?? ""
+                                                    )
+                                                )
+                                            ).toFixed(2)
+                                        : 0}
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <button disabled={predicting} onClick={submit} className="border border-[#00CB59] w-full gap-1 rounded-lg text-center flex items-center justify-center text-white px-3 py-3 [box-shadow:0px_6.5px_32.5px_0px_#00CA9A1A] bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]">
-                        {
-                            predicting ? <><Loader size={18} className="animate-spin" /> <p>predicting...</p></> : "Predict"
-                        }
+                    <button
+                        disabled={predicting}
+                        onClick={submit}
+                        className="border border-[#00CB59] w-full gap-1 rounded-lg text-center flex items-center justify-center text-white px-3 py-3 [box-shadow:0px_6.5px_32.5px_0px_#00CA9A1A] bg-[linear-gradient(#00644C,#00644C),radial-gradient(circle_at_0%_0%,rgba(0,202,154,0.6)_0%,rgba(0,100,76,0.6)_100%)]"
+                    >
+                        {predicting ? (
+                            <>
+                                <Loader size={18} className="animate-spin" />{" "}
+                                <p>predicting...</p>
+                            </>
+                        ) : (
+                            "Predict"
+                        )}
                     </button>
                     <p className="text-center text-xs text-[#ED1C24]">
                         Note!! you can stake between 0-10000 usdc

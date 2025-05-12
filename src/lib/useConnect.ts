@@ -80,7 +80,7 @@ const useConnect = () => {
         // Dispatch a custom event to notify about the change
         const event = new Event("windowWalletClassChange");
         window.dispatchEvent(event);
-        return response.callbackData;
+        return response;
       }
     } catch (error: any) {
       // toast.error(error.message || "error here");
