@@ -193,8 +193,11 @@ interface IAppState {
     virtual: GroupedVirtualMatches[];
     live: MatchData[][];
   };
-  claimingReward: boolean;
-  predicting: boolean;
+  loading_states: {
+    claimingReward: boolean;
+    predicting: boolean;
+    minting: boolean;
+  };
   prediction_history: UserPrediction[][];
   total_rounds: number;
   current_round: number;
@@ -217,7 +220,11 @@ const initialState: IAppState = {
     live: [],
     virtual: [],
   },
-  predicting: false,
+  loading_states: {
+    predicting: false,
+    claimingReward: false,
+    minting: false,
+  },
   predicted_matches: [],
   loaded: false,
   prediction_history: [],
@@ -226,7 +233,6 @@ const initialState: IAppState = {
   show_register_modal: false,
   total_rounds: 0,
   loading_state: true,
-  claimingReward: false,
   profile: null,
   // is_mini_app: false,
   connected_address: null,
@@ -328,13 +334,27 @@ export const appSlice = createSlice({
       state.matches.virtual = action.payload;
     },
 
-    setPredictionStatus: (state, action: PayloadAction<boolean>) => {
-      state.predicting = action.payload;
+    updateLoadingStates: (
+      state,
+      action: PayloadAction<{
+        predicting?: boolean;
+        claimingReward?: boolean;
+        minting?: boolean;
+      }>
+    ) => {
+      state.loading_states = {
+        ...state.loading_states,
+        ...action.payload,
+      };
     },
 
-    setClaimingRewardStatus: (state, action: PayloadAction<boolean>) => {
-      state.claimingReward = action.payload;
-    },
+    // setPredictionStatus: (state, action: PayloadAction<boolean>) => {
+    //   state.predicting = action.payload;
+    // },
+
+    // setClaimingRewardStatus: (state, action: PayloadAction<boolean>) => {
+    //   state.claimingReward = action.payload;
+    // },
 
     updateVirtualMatches: (state, action: PayloadAction<MatchData[]>) => {
       const newMatches = action.payload;
@@ -494,7 +514,7 @@ export const appSlice = createSlice({
         }[]
       >
     ) => {
-      if (state.predicting) return;
+      if (state.loading_states.predicting) return;
       for (let i = 0; i < action.payload.length; i++) {
         const element = action.payload[i];
         const existingGroup = state.matches.virtual.find(
@@ -738,9 +758,8 @@ export const {
   submitPrediction,
   setPredictionHistory,
   initializePredictionHistory,
-  setPredictionStatus,
   removeUser,
-  setClaimingRewardStatus,
+  updateLoadingStates,
 } = appSlice.actions;
 
 // // Other code such as selectors can use the imported `RootState` type

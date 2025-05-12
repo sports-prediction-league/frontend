@@ -28,6 +28,10 @@ const useConnect = () => {
             selector: "make_prediction",
           },
           {
+            contract: TOKEN_ADDRESS,
+            selector: "mint",
+          },
+          {
             contract: CONTRACT_ADDRESS,
             selector: "claim_reward",
           },

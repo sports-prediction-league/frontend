@@ -1,5 +1,5 @@
 // react router
-import { Link, Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { BiFootball } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
@@ -7,27 +7,70 @@ import { CgProfile } from "react-icons/cg";
 // import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
-import { useAppSelector } from "../state/store";
+import { useAppDispatch, useAppSelector } from "../state/store";
 import { useState } from "react";
 import useConnect from "../lib/useConnect";
 import toast from "react-hot-toast";
 import { History, Loader, Trophy, Wallet } from "lucide-react";
 import ScrollToTop from "../common/components/modal/Scroll";
+import { updateLoadingStates } from "../state/slices/appSlice";
+import useContractInstance from "../lib/useContractInstance";
+import { parse_error, parseUnits } from "../lib/utils";
+import { cairo } from "starknet";
 
 const RootLayout = () => {
-  const connected_address = useAppSelector(
-    (state) => state.app.connected_address
+  const { connected_address, loading_states } = useAppSelector(
+    (state) => state.app
   );
   const navigate = useNavigate();
   const [connecting, setConnecting] = useState(false)
   const { handleConnect } = useConnect();
+  const dispatch = useAppDispatch()
+
+  const { getWalletProviderContractERC20 } = useContractInstance();
+
+  const mint = async () => {
+    try {
+
+      if (loading_states.minting) return;
+      let account = window.Wallet?.Account;
+      dispatch(updateLoadingStates({ minting: true }));
+
+
+      if (!account) {
+        await handleConnect({});
+        account = window.Wallet.Account;
+      }
+
+
+      const ERC20Contract = getWalletProviderContractERC20();
+
+      const call = ERC20Contract?.populate("mint", [connected_address!, cairo.uint256(parseUnits("100"))])
+      const outsideExecutionPayload = await account!.getOutsideExecutionPayload({ calls: [call!] })
+      const event = new CustomEvent("MAKE_OUTSIDE_EXECUTION_CALL", {
+        detail: {
+          type: "MINT",
+          payload: outsideExecutionPayload
+        },
+      });
+      window.dispatchEvent(event);
+    } catch (error: any) {
+      console.log(error);
+      toast.error(
+        error.response?.data?.message
+          ? parse_error(error.response?.data?.message)
+          : error.message || "An error occurred"
+      );
+      dispatch(updateLoadingStates({ minting: false }))
+    }
+  }
   return (
     <div className="flex flex-col w-full">
       <ScrollToTop />
       <Header />
       <div className="bg-red-500 sticky top-16 z-50  flex items-center md:justify-center gap-10 justify-between text-white py-2 px-5 text-xs">
         <p>Low on test tokens?</p>
-        <Link className="underline " target="_blank" to="https://sepolia.voyager.online/contract/0x006b1699541f3571cb27f3bd99768748eda96f7da11ca02bf32eeec11147e77e#writeContract">MINT HERE</Link>
+        {loading_states.minting ? <Loader size={22} className="mr-1.5 animate-spin text-white" /> : <button onClick={mint} disabled={loading_states.minting} className="underline">MINT</button>}
       </div>
       <div className="min-h-screen">
         <Outlet />

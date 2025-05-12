@@ -8,14 +8,14 @@ import {
     clearPredictions,
     MatchData,
     removePredictions,
-    setPredictionStatus,
+    updateLoadingStates,
 } from "../../../state/slices/appSlice";
 import { useAppDispatch, useAppSelector } from "../../../state/store";
 import { cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
 interface Props { }
 const PredictionSlip = ({ }: Props) => {
     const [slipType, setSlipType] = useState<"Single" | "Multiple">("Single");
-    const predicting = useAppSelector(state => state.app.predicting);
+    const predicting = useAppSelector(state => state.app.loading_states.predicting);
     const matches = useAppSelector((state) => state.app.matches.virtual)
         .map((mp) => mp.matches)
         .flat();
@@ -101,7 +101,7 @@ const PredictionSlip = ({ }: Props) => {
             if (!stake) return;
 
 
-            dispatch(setPredictionStatus(true))
+            dispatch(updateLoadingStates({ predicting: true }))
             const erc20Contract = getWalletProviderContractERC20();
 
             if (!account) {
@@ -120,7 +120,7 @@ const PredictionSlip = ({ }: Props) => {
 
             const balance = await erc20Contract!.balanceOf(connected_address);
             if (Number(balance) < Number(stake.totalStake)) {
-                dispatch(setPredictionStatus(false));
+                dispatch(updateLoadingStates({ predicting: false }));
                 toast.error("INSUFFICIENT_BALANCE");
                 return;
             }
@@ -160,7 +160,7 @@ const PredictionSlip = ({ }: Props) => {
 
 
             if (!call) {
-                dispatch(setPredictionStatus(false))
+                dispatch(updateLoadingStates({ predicting: false }))
 
                 // setPredicting(false);
 
@@ -203,7 +203,7 @@ const PredictionSlip = ({ }: Props) => {
                     ? parse_error(error.response?.data?.message)
                     : error.message || "An error occurred"
             );
-            dispatch(setPredictionStatus(false))
+            dispatch(updateLoadingStates({ predicting: false }))
 
         }
     };
