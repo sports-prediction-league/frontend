@@ -17,12 +17,11 @@ import {
   setIsRegistered,
   setLoadingState,
   setPredictions,
-  setPredictionStatus,
+  updateLoadingStates,
   // setPredictions,
   setReward,
   setRounds,
   setShowRegisterModal,
-  setClaimingRewardStatus,
   submitPrediction,
   update_profile,
   updateVirtualMatches,
@@ -92,7 +91,7 @@ function App() {
 
   const [loaded, setLoaded] = useState(false);
   const dispatch = useAppDispatch();
-  const { matches, connected_address, show_register_modal, predicted_matches, predicting } =
+  const { matches, connected_address, show_register_modal, predicted_matches } =
     useAppSelector((state) => state.app);
   const { getArgentWallet } = useConnect();
   const { getWalletProviderContract, getRPCProviderContract } =
@@ -413,7 +412,7 @@ function App() {
       }
       const customEvent = event as CustomEvent;
       if (customEvent.detail.payload && customEvent.detail.type) {
-        if (predicting) return;
+        // if (loading_statespredicting) return;
         socket.emit("make-outside-execution-call", customEvent.detail);
       }
     });
@@ -653,8 +652,10 @@ function App() {
 
     socket.on(
       "execution-response",
-      (response: { type: "REGISTRATION" | "PREDICTION" | "WITHDRAWAL"; tx: any }) => {
+      (response: { type: "REGISTRATION" | "PREDICTION" | "WITHDRAWAL" | "MINT"; tx: any }) => {
         console.log({ response }, "execution response ==========>>>>>>>");
+
+
         if (response.type === "PREDICTION") {
           if (response.tx.success) {
             const event = new Event("PREDICTION_MADE");
@@ -665,7 +666,7 @@ function App() {
             toast.error(response.tx.message);
           }
 
-          dispatch(setPredictionStatus(false));
+          dispatch(updateLoadingStates({ predicting: false }));
         } else if (response.type === "REGISTRATION") {
           if (response.tx.success) {
 
@@ -689,7 +690,15 @@ function App() {
             toast.error(response.tx.message);
           }
 
-          dispatch(setClaimingRewardStatus(false))
+          dispatch(updateLoadingStates({ claimingReward: false }))
+        } else if (response.type === "MINT") {
+          if (response.tx.success) {
+            toast.success("Tokens minted!");
+          } else {
+
+            toast.error(response.tx.message);
+          }
+          dispatch(updateLoadingStates({ minting: false }))
         }
       }
     );

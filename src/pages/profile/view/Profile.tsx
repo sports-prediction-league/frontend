@@ -15,13 +15,13 @@ import toast from "react-hot-toast";
 import { useTheme } from "../../../context/ThemeContext";
 import ShareOptions from "../../../common/components/modal/ShareOptions";
 import useEscapeKey from "../../../lib/useEscapeKey";
-import { setClaimingRewardStatus } from "../../../state/slices/appSlice";
+import { updateLoadingStates } from "../../../state/slices/appSlice";
 import useContractInstance from "../../../lib/useContractInstance";
 
 const Profile = () => {
   const [_, setProgress] = useState(10);
   const { handleDisconnect, handleConnect } = useConnect();
-  const { profile, connected_address, reward, leaderboard, claimingReward } = useAppSelector(
+  const { profile, connected_address, reward, leaderboard, loading_states } = useAppSelector(
     (state) => state.app
   );
   const dispatch = useAppDispatch();
@@ -65,9 +65,9 @@ const Profile = () => {
         toast.error("ZERO_BALANCE");
         return;
       }
-      if (claimingReward) return;
+      if (loading_states.claimingReward) return;
       let account = window.Wallet?.Account;
-      dispatch(setClaimingRewardStatus(true));
+      dispatch(updateLoadingStates({ claimingReward: true }));
       if (!account) {
         await handleConnect({});
         account = window.Wallet.Account;
@@ -92,7 +92,7 @@ const Profile = () => {
           ? parse_error(error.response?.data?.message)
           : error.message || "An error occurred"
       );
-      dispatch(setClaimingRewardStatus(false))
+      dispatch(updateLoadingStates({ claimingReward: false }))
     }
   }
 
@@ -218,8 +218,8 @@ const Profile = () => {
 
           <div className="md:mt-[60px] mt-[20px]">
             <Button
-              disabled={claimingReward}
-              loading={claimingReward}
+              disabled={loading_states.claimingReward}
+              loading={loading_states.claimingReward}
               onClick={handleClaim}
               text="Claim reward"
               fontSize="md:text-[20px] text-xs rounded-[5px]"
