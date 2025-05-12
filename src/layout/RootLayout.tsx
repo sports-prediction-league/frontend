@@ -4,7 +4,6 @@ import { BiFootball } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
 // components
-// import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { useAppDispatch, useAppSelector } from "../state/store";
@@ -38,14 +37,18 @@ const RootLayout = () => {
 
 
       if (!account) {
-        await handleConnect({});
-        account = window.Wallet.Account;
+        account = (await handleConnect({}))?.account;
       }
 
 
       const ERC20Contract = getWalletProviderContractERC20();
-
-      const call = ERC20Contract?.populate("mint", [connected_address!, cairo.uint256(parseUnits("100"))])
+      const address = connected_address ?? account?.address;
+      if (!address) {
+        toast.error("OOPPPSSS!!! Try again");
+        dispatch(updateLoadingStates({ minting: false }))
+        return;
+      }
+      const call = ERC20Contract?.populate("mint", [address, cairo.uint256(parseUnits("100"))])
       const outsideExecutionPayload = await account!.getOutsideExecutionPayload({ calls: [call!] })
       const event = new CustomEvent("MAKE_OUTSIDE_EXECUTION_CALL", {
         detail: {

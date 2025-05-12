@@ -69,8 +69,7 @@ const Profile = () => {
       let account = window.Wallet?.Account;
       dispatch(updateLoadingStates({ claimingReward: true }));
       if (!account) {
-        await handleConnect({});
-        account = window.Wallet.Account;
+        account = (await handleConnect({}))?.account;
       }
 
       const contract = getWalletProviderContract();
